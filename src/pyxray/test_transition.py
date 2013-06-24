@@ -14,31 +14,29 @@ import logging
 # Third party modules.
 
 # Local modules.
-from pymontecarlo.testcase import TestCase
-
-from pymontecarlo.util.transition import \
+from transition import \
     (Transition, get_transitions, transitionset, from_string,
      K_family, L_family, M_family, N_family,
      Ka, Kb, La, Lb, Lg, Ma, Mb, Mg,
      LI, LII, LIII, MI, MII, MIII, MIV, MV,
      iupac2latex, siegbahn2latex, _siegbahn_unicode_to_ascii)
-from pymontecarlo.util.subshell import Subshell
+from subshell import Subshell
 
 # Globals and constants variables.
-from pymontecarlo.util.transition import _SUBSHELLS, _SIEGBAHNS
+from transition import _SUBSHELLS, _SIEGBAHNS
 
 
-class TestTransition(TestCase):
+class TestTransition(unittest.TestCase):
 
     def setUp(self):
-        TestCase.setUp(self)
+        unittest.TestCase.setUp(self)
 
         for i, shells in enumerate(_SUBSHELLS):
             x = Transition(13, shells[0], shells[1])
             setattr(self, 'x%i' % i, x)
 
     def tearDown(self):
-        TestCase.tearDown(self)
+        unittest.TestCase.tearDown(self)
 
     def testskeleton(self):
         self.assertTrue(True)
@@ -68,13 +66,6 @@ class TestTransition(TestCase):
         self.assertGreater(Transition(13, 4, 1), Transition(6, 4, 1))
         self.assertGreater(Transition(13, 4, 1), Transition(13, 9, 4))
         self.assertEqual(Transition(13, 4, 1), Transition(13, 4, 1))
-
-    def testfrom_xml(self):
-        element = self.x0.to_xml()
-        x0 = Transition.from_xml(element)
-
-        self.assertEqual(13, x0.z)
-        self.assertEqual('Al Ka1', str(x0))
 
     def testz(self):
         for i in range(len(_SUBSHELLS)):
@@ -125,17 +116,10 @@ class TestTransition(TestCase):
         self.assertTrue(self.x1.exists())
         self.assertFalse(self.x29.exists())
 
-    def testto_xml(self):
-        element = self.x0.to_xml()
-
-        self.assertEqual(13, int(element.get('z')))
-        self.assertEqual(4, int(element.get('src')))
-        self.assertEqual(1, int(element.get('dest')))
-
-class Testtransitionset(TestCase):
+class Testtransitionset(unittest.TestCase):
 
     def setUp(self):
-        TestCase.setUp(self)
+        unittest.TestCase.setUp(self)
 
         t1 = Transition(13, 4, 1)
         t2 = Transition(13, 3, 1)
@@ -143,7 +127,7 @@ class Testtransitionset(TestCase):
         self.set = transitionset(13, u'G\u03b1', 'G1-H(2,3)', [t1, t2, t3])
 
     def tearDown(self):
-        TestCase.tearDown(self)
+        unittest.TestCase.tearDown(self)
 
     def testskeleton(self):
         self.assertEqual(13, self.set.z)
@@ -178,21 +162,6 @@ class Testtransitionset(TestCase):
         self.assertLess(other2, other)
         self.assertGreater(other, other2)
 
-    def testto_xml(self):
-        element = self.set.to_xml()
-
-        self.assertEqual(13, int(element.get('z')))
-        self.assertEqual('G1-H(2,3)', element.get('iupac'))
-        self.assertEqual(u'G\u03b1', element.get('siegbahn'))
-        self.assertEqual(2, len(list(element)))
-
-    def testfrom_xml(self):
-        element = self.set.to_xml()
-        tset = transitionset.from_xml(element)
-
-        self.assertEqual(13, tset.z)
-        self.assertEqual(2, len(tset))
-
     def testmost_probable(self):
         self.assertEqual(Transition(13, 4, 1), self.set.most_probable)
 
@@ -205,13 +174,13 @@ class Testtransitionset(TestCase):
     def testiupac(self):
         self.assertEqual('G1-H(2,3)', self.set.iupac)
 
-class TestModule(TestCase):
+class TestModule(unittest.TestCase):
 
     def setUp(self):
-        TestCase.setUp(self)
+        unittest.TestCase.setUp(self)
 
     def tearDown(self):
-        TestCase.tearDown(self)
+        unittest.TestCase.tearDown(self)
 
     def testskeleton(self):
         self.assertTrue(True)

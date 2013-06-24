@@ -29,7 +29,7 @@ from pyparsing import Word, Group, Optional, OneOrMore, QuotedString, Literal
 # Local modules.
 import element_properties as ep
 from subshell import Subshell
-from relaxation_data import relaxation_data
+import relaxation_data
 
 # Globals and constants variables.
 _ZGETTER = attrgetter('z')
@@ -190,6 +190,7 @@ class _BaseTransition(object):
         return _siegbahn_unicode_to_ascii(self.siegbahn)
 
 class Transition(_BaseTransition):
+
     def __init__(self, z, src=None, dest=None, siegbahn=None):
         """
         Creates a new transition from a source and destination subshells 
@@ -238,10 +239,13 @@ class Transition(_BaseTransition):
         iupac = '-'.join([self._dest.iupac, self._src.iupac])
         _BaseTransition.__init__(self, z, siegbahn, iupac)
 
-        self._energy_eV = relaxation_data.energy_eV(z, (src, dest))
-        self._wavelength_m = (4.13566733e-15 * 299792458) / self._energy_eV
-        self._probability = relaxation_data.probability(z, (src, dest))
         self._exists = relaxation_data.exists(z, (src, dest))
+        self._energy_eV = relaxation_data.energy_eV(z, (src, dest))
+        self._probability = relaxation_data.probability(z, (src, dest))
+        try:
+            self._wavelength_m = (4.13566733e-15 * 299792458) / self._energy_eV
+        except ZeroDivisionError: # Energy == 0.0 if transition does not exist
+            self._wavelength_m = float('inf')
 
     def __repr__(self):
         return '<Transition(%s %s)>' % (self.symbol, self.siegbahn_nogreek)
