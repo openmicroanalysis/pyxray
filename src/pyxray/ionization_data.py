@@ -26,7 +26,6 @@ import csv
 from pkg_resources import resource_stream #@UnresolvedImport
 
 # Local modules.
-from subshell import Subshell
 
 # Globals and constants variables.
 
@@ -63,7 +62,6 @@ class CarlsonIonizationDatabase(_IonizationDatabase):
     The relaxation data should be comma-separated with the following
     columns: atomic number, shell and ionization energy (in eV). 
         
-    If *fileobj* is ``None`` the default relaxation data is loaded.
     The ionization energies are taken from T.A. Carlson, 'Photoelectron and 
     Auger Spectroscopy' (Plenum Press, New York and London, 1975).
     """
@@ -90,7 +88,8 @@ class CarlsonIonizationDatabase(_IonizationDatabase):
     def energy_eV(self, z, subshell):
         if not z in self.data:
             raise ValueError, "No ionization energy for atomic number %i." % z
-        if isinstance(subshell, Subshell):
+
+        if hasattr(subshell, 'index'):
             subshell = subshell.index
 
         try:
@@ -99,7 +98,7 @@ class CarlsonIonizationDatabase(_IonizationDatabase):
             return 0.0
 
     def exists(self, z, subshell):
-        if isinstance(subshell, Subshell):
+        if hasattr(subshell, 'index'):
             subshell = subshell.index
 
         try:
