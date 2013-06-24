@@ -19,6 +19,7 @@ __copyright__ = "Copyright (c) 2011 Philippe T. Pinard"
 __license__ = "GPL v3"
 
 # Standard library modules.
+from abc import ABCMeta, abstractmethod
 from operator import methodcaller, attrgetter
 import string
 from itertools import izip_longest
@@ -140,6 +141,8 @@ _SIEGBAHNS = \
 
 class _BaseTransition(object):
 
+    __metaclass__ = ABCMeta
+
     def __init__(self, z, siegbahn, iupac):
         self._z = z
         self._symbol = ep.symbol(z)
@@ -151,6 +154,26 @@ class _BaseTransition(object):
 
     def __unicode__(self):
         return u"%s %s" % (self.symbol, self.siegbahn)
+
+    @abstractmethod
+    def __cmp__(self, other):
+        raise NotImplementedError
+
+    @abstractmethod
+    def __hash__(self):
+        raise NotImplementedError
+
+    def __gt__(self, other):
+        return NotImplemented # Revert to __cmp__
+
+    def __lt__(self, other):
+        return NotImplemented # Revert to __cmp__
+
+    def __ge__(self, other):
+        return NotImplemented # Revert to __cmp__
+
+    def __le__(self, other):
+        return NotImplemented # Revert to __cmp__
 
     @property
     def z(self):
