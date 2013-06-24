@@ -22,7 +22,7 @@ __license__ = "GPL v3"
 
 # Local modules.
 import element_properties as ep
-from ionization_data import ionization_data
+import ionization_data
 
 # Globals and constants variables.
 _IUPACS = ["K",

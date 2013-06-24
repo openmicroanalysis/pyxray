@@ -19,33 +19,57 @@ __copyright__ = "Copyright (c) 2011 Philippe T. Pinard"
 __license__ = "GPL v3"
 
 # Standard library modules.
+from abc import ABCMeta, abstractmethod
 import csv
 
 # Third party modules.
 from pkg_resources import resource_stream #@UnresolvedImport
 
 # Local modules.
+from subshell import Subshell
 
 # Globals and constants variables.
 
-class IonizationData(object):
+class _IonizationDatabase(object):
 
-    def __init__(self, fileobj=None):
-        """
-        Ionization energies of atomic subshell. 
-        
-        The relaxation data should be comma-separated with the following
-        columns: atomic number, shell and ionization energy (in eV). 
-            
-        If *fileobj* is ``None`` the default relaxation data is loaded.
-        The ionization energies are taken from T.A. Carlson, 'Photoelectron and 
-        Auger Spectroscopy' (Plenum Press, New York and London, 1975).
-        
-        :arg fileobj: file-object containing the ionization energies.
-        """
-        if fileobj is None:
-            fileobj = resource_stream(__name__, 'data/ionization_data.csv')
+    __metaclass__ = ABCMeta
 
+    @abstractmethod
+    def energy_eV(self, z, subshell):
+        """
+        Returns the ionization energy of a subshell in eV.
+        
+        :arg z: atomic number
+        :arg subshell: index of the subshells (1 to 29 inclu.) 
+            or :class:`Subshell` object
+        """
+        raise NotImplementedError
+
+    @abstractmethod
+    def exists(self, z, subshell):
+        """
+        Returns whether the subshell exists.
+        
+        :arg z: atomic number
+        :arg subshell: index of the subshells (1 to 29 inclu.) 
+            or :class:`Subshell` object
+        """
+        raise NotImplementedError
+
+class CarlsonIonizationDatabase(_IonizationDatabase):
+    """
+    Ionization energies of atomic subshell. 
+    
+    The relaxation data should be comma-separated with the following
+    columns: atomic number, shell and ionization energy (in eV). 
+        
+    If *fileobj* is ``None`` the default relaxation data is loaded.
+    The ionization energies are taken from T.A. Carlson, 'Photoelectron and 
+    Auger Spectroscopy' (Plenum Press, New York and London, 1975).
+    """
+
+    def __init__(self):
+        fileobj = resource_stream(__name__, 'data/ionization_data.csv')
         self.data = self._read(fileobj)
 
     def _read(self, fileobj):
@@ -64,14 +88,10 @@ class IonizationData(object):
         return data
 
     def energy_eV(self, z, subshell):
-        """
-        Returns the ionization energy of a subshell in eV.
-        
-        :arg z: atomic number (1 to 99)
-        :arg subshell: index of the subshells (1 to 29 inclu.)
-        """
         if not z in self.data:
             raise ValueError, "No ionization energy for atomic number %i." % z
+        if isinstance(subshell, Subshell):
+            subshell = subshell.index
 
         try:
             return self.data[z][subshell]
@@ -79,16 +99,44 @@ class IonizationData(object):
             return 0.0
 
     def exists(self, z, subshell):
-        """
-        Returns whether the subshell exists.
-        
-        :arg z: atomic number (1 to 99)
-        :arg subshell: index of the subshells (1 to 29 inclu.)
-        """
+        if isinstance(subshell, Subshell):
+            subshell = subshell.index
+
         try:
             self.data[z][subshell]
             return True
         except KeyError:
             return False
 
-ionization_data = IonizationData()
+# Utility functions at module level.
+# Basically delegate everything to the instance object.
+#---------------------------------------------------------------------------
+
+instance = CarlsonIonizationDatabase()
+
+def get_instance():
+    return instance
+
+def set_instance(inst):
+    global instance
+    instance = inst
+
+def energy_eV(z, subshell):
+    """
+    Returns the ionization energy of a subshell in eV.
+    
+    :arg z: atomic number
+    :arg subshell: index of the subshells (1 to 29 inclu.)
+        or :class:`Subshell` object
+    """
+    return instance.energy_eV(z, subshell)
+
+def exists(z, subshell):
+    """
+    Returns whether the subshell exists.
+    
+    :arg z: atomic number
+    :arg subshell: index of the subshells (1 to 29 inclu.)
+        or :class:`Subshell` object
+    """
+    return instance.exists(z, subshell)

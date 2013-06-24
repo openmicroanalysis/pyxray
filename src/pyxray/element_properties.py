@@ -232,7 +232,6 @@ class NISTElementPropertiesDatabase(_ElementPropertiesDatabase):
         288.000000, 293.000000, 292.000000, 294.000000
         ]
 
-#---------------------------------------------------------------------------
 # Utility functions at module level.
 # Basically delegate everything to the instance element properties object.
 #---------------------------------------------------------------------------

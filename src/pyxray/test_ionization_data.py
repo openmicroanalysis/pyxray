@@ -15,30 +15,25 @@ import logging
 # Third party modules.
 
 # Local modules.
-from pymontecarlo.testcase import TestCase
-
-from pymontecarlo.util.ionization_data import ionization_data
+import ionization_data
 
 # Globals and constants variables.
 
-class TestIonizationData(TestCase):
+class TestIonizationData(unittest.TestCase):
 
     def setUp(self):
-        TestCase.setUp(self)
+        unittest.TestCase.setUp(self)
 
     def tearDown(self):
-        TestCase.tearDown(self)
-#
-    def testSkeleton(self):
-        #self.fail("Test if the TestCase is working.")
-        self.assertTrue(True)
-
-    def testReadData(self):
-        self.assertEquals(99, len(ionization_data.data))
+        unittest.TestCase.tearDown(self)
 #
     def testenergy_eV(self):
         # Test Al K.
         self.assertAlmostEquals(1.564e3, ionization_data.energy_eV(13, 1), 4)
+
+    def testexists(self):
+        self.assertTrue(ionization_data.exists(13, 1))
+        self.assertFalse(ionization_data.exists(13, 29))
 
 
 if __name__ == '__main__': #pragma: no cover
