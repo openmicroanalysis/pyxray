@@ -15,27 +15,18 @@ import logging
 # Third party modules.
 
 # Local modules.
-from pymontecarlo.testcase import TestCase
-
-from pymontecarlo.util.relaxation_data import relaxation_data
+import relaxation_data
 
 # Globals and constants variables.
 
-class TestRelaxationData(TestCase):
+class TestRelaxationData(unittest.TestCase):
 
     def setUp(self):
-        TestCase.setUp(self)
+        unittest.TestCase.setUp(self)
 
     def tearDown(self):
-        TestCase.tearDown(self)
-#
-    def testSkeleton(self):
-        #self.fail("Test if the TestCase is working.")
-        self.assertTrue(True)
+        unittest.TestCase.tearDown(self)
 
-    def testReadData(self):
-        self.assertEquals(97, len(relaxation_data.data))
-#
     def testenergy_eV(self):
         # Al Ka1.
         self.assertAlmostEquals(1.48671e3, relaxation_data.energy_eV(13, [4, 1]), 4)

@@ -19,6 +19,7 @@ __copyright__ = "Copyright (c) 2011 Philippe T. Pinard"
 __license__ = "GPL v3"
 
 # Standard library modules.
+from abc import ABCMeta, abstractmethod
 import csv
 
 # Third party modules.
@@ -28,32 +29,81 @@ from pkg_resources import resource_stream #@UnresolvedImport
 
 # Globals and constants variables.
 
-class RelaxationData(object):
+class _RelaxationDatabase(object):
+
+    __metaclass__ = ABCMeta
+
+    @abstractmethod
+    def energy_eV(self, z=None, subshells=None, transition=None):
+        """
+        Returns the energy of a transition in eV.
+        One can either specified the atomic number and subshells or an atomic
+        transition object.
+        
+        :arg z: atomic number
+        :arg subshells: :class:`tuple` of length 2 of the source and 
+            destination subshells id (between 1 and 30) or 
+            two :class:`Subshell` objects
+        :arg transition: atomic transition
+        :type transition: :class:`.Transition`
+        """
+        raise NotImplementedError
+
+    @abstractmethod
+    def probability(self, z=None, subshells=None, transition=None):
+        """
+        Returns the probability of an transition.
+        One can either specified the atomic number and subshells or an atomic
+        transition object.
+        
+        :arg z: atomic number
+        :arg subshells: :class:`tuple` of length 2 of the source and 
+            destination subshells id (between 1 and 30) or 
+            two :class:`Subshell` objects
+        :arg transition: atomic transition
+        :type transition: :class:`.Transition`
+        """
+        raise NotImplementedError
+
+    @abstractmethod
+    def exists(self, z=None, subshells=None, transition=None):
+        """
+        Returns whether the transition exists.
+        One can either specified the atomic number and subshells or an atomic
+        transition object.
+        
+        :arg z: atomic number
+        :arg subshells: :class:`tuple` of length 2 of the source and 
+            destination subshells id (between 1 and 30) or 
+            two :class:`Subshell` objects
+        :arg transition: atomic transition
+        :type transition: :class:`.Transition`
+        """
+        raise NotImplementedError
+
+class PerkinsRelaxationDataMod(_RelaxationDatabase):
+    
+    """
+    Relaxation data for singly-ionised atoms.
+    
+    The relaxation data should be comma-separated with the following
+    columns: atomic number, destination shell, source shell, transition
+    probability and transition energy (in eV). 
+        
+    The relaxation data is taken from PENELOPE 2011, where the transition 
+    probabilities and energies were extracted from the LLNL Evaluated 
+    Atomic Data Library (Perkins et al. 1991). 
+    Some energies values were replaced by more accurate, when available.
+    The energies for Lithium, Beryllium and Boron were taken from the
+    DTSA database.
+    However, no probabilities are available for these elements.
+    """
+
     KEY_PROBABILITY = 'probability'
     KEY_ENERGY = 'energy'
 
     def __init__(self, fileobj=None):
-        """
-        Relaxation data for singly-ionised atoms.
-        
-        The relaxation data should be comma-separated with the following
-        columns: atomic number, destination shell, source shell, transition
-        probability and transition energy (in eV). 
-            
-        If *fileobj* is ``None`` the default relaxation data is loaded.
-        The relaxation data is taken from PENELOPE 2011, where the transition 
-        probabilities and energies were extracted from the LLNL Evaluated 
-        Atomic Data Library (Perkins et al. 1991). 
-        Some energies values were replaced by more accurate, when available.
-        The energies for Lithium, Beryllium and Boron were taken from the
-        DTSA database.
-        However, no probabilities are available for these elements.
-        
-        :arg fileobj: file-object containing the relaxation data.
-        """
-        if fileobj is None:
-            fileobj = resource_stream(__name__, 'data/relaxation_data.csv')
-
+        fileobj = resource_stream(__name__, 'data/relaxation_data.csv')
         self.data = self._read(fileobj)
 
     def _read(self, fileobj):
@@ -84,13 +134,21 @@ class RelaxationData(object):
         if z is None:
             z = transition.z
         if subshells is None:
-            subshells = transition.src.index, transition.dest.index
+            subshells = transition.src, transition.dest
 
         if not z in self.data:
             raise ValueError, "No relaxation data for atomic number %i." % z
+        
+        srcshell = subshells[0]
+        if hasattr(srcshell, 'index'):
+            srcshell = srcshell.index
+
+        destshell = subshells[1]
+        if hasattr(destshell, 'index'):
+            destshell = destshell.index
 
         try:
-            return self.data[z][subshells[0]][subshells[1]][key]
+            return self.data[z][srcshell][destshell][key]
         except KeyError:
             return 0.0
 
@@ -137,12 +195,76 @@ class RelaxationData(object):
         if z is None:
             z = transition.z
         if subshells is None:
-            subshells = transition.src.index, transition.dest.index
+            subshells = transition.src, transition.dest
+
+        srcshell = subshells[0]
+        if hasattr(srcshell, 'index'):
+            srcshell = srcshell.index
+
+        destshell = subshells[1]
+        if hasattr(destshell, 'index'):
+            destshell = destshell.index
 
         try:
-            self.data[z][subshells[0]][subshells[1]]
+            self.data[z][srcshell][destshell]
             return True
         except KeyError:
             return False
 
-relaxation_data = RelaxationData()
+# Utility functions at module level.
+# Basically delegate everything to the instance object.
+#---------------------------------------------------------------------------
+
+instance = PerkinsRelaxationDataMod()
+
+def get_instance():
+    return instance
+
+def set_instance(inst):
+    global instance
+    instance = inst
+
+def energy_eV(z=None, subshells=None, transition=None):
+    """
+    Returns the energy of a transition in eV.
+    One can either specified the atomic number and subshells or an atomic
+    transition object.
+    
+    :arg z: atomic number
+    :arg subshells: :class:`tuple` of length 2 of the source and 
+        destination subshells id (between 1 and 30) or 
+        two :class:`Subshell` objects
+    :arg transition: atomic transition
+    :type transition: :class:`.Transition`
+    """
+    return instance.energy_eV(z, subshells, transition)
+
+def probability(z=None, subshells=None, transition=None):
+    """
+    Returns the probability of an transition.
+    One can either specified the atomic number and subshells or an atomic
+    transition object.
+    
+    :arg z: atomic number
+    :arg subshells: :class:`tuple` of length 2 of the source and 
+        destination subshells id (between 1 and 30) or 
+        two :class:`Subshell` objects
+    :arg transition: atomic transition
+    :type transition: :class:`.Transition`
+    """
+    return instance.probability(z, subshells, transition)
+
+def exists(z=None, subshells=None, transition=None):
+    """
+    Returns whether the transition exists.
+    One can either specified the atomic number and subshells or an atomic
+    transition object.
+    
+    :arg z: atomic number
+    :arg subshells: :class:`tuple` of length 2 of the source and 
+        destination subshells id (between 1 and 30) or 
+        two :class:`Subshell` objects
+    :arg transition: atomic transition
+    :type transition: :class:`.Transition`
+    """
+    return instance.exists(z, subshells, transition)
