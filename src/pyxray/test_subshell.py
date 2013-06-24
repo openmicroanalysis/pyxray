@@ -15,24 +15,22 @@ import logging
 # Third party modules.
 
 # Local modules.
-from pymontecarlo.testcase import TestCase
-
-from pymontecarlo.util.subshell import Subshell
+from subshell import Subshell
 
 # Globals and constants variables.
-from pymontecarlo.util.subshell import _IUPACS, _ORBITALS, _SIEGBAHNS
+from subshell import _IUPACS, _ORBITALS, _SIEGBAHNS
 
-class TestSubshell(TestCase):
+class TestSubshell(unittest.TestCase):
 
     def setUp(self):
-        TestCase.setUp(self)
+        unittest.TestCase.setUp(self)
 
         for i in range(1, 31):
             x = Subshell(13, i)
             setattr(self, 'x%i' % i, x)
 
     def tearDown(self):
-        TestCase.tearDown(self)
+        unittest.TestCase.tearDown(self)
 
     def testindex(self):
         for i in range(1, 31):
