@@ -32,7 +32,7 @@ class TestTransition(unittest.TestCase):
         unittest.TestCase.setUp(self)
 
         for i, shells in enumerate(_SUBSHELLS):
-            x = Transition(13, shells[0], shells[1])
+            x = Transition(13, *shells)
             setattr(self, 'x%i' % i, x)
 
     def tearDown(self):
@@ -116,6 +116,14 @@ class TestTransition(unittest.TestCase):
         self.assertTrue(self.x1.exists())
         self.assertFalse(self.x29.exists())
 
+    def testis_satellite(self):
+        self.assertFalse(self.x0.is_satellite())
+        self.assertTrue(self.x83.is_satellite())
+
+    def testis_diagram_line(self):
+        self.assertTrue(self.x0.is_diagram_line())
+        self.assertFalse(self.x83.is_diagram_line())
+
     def testwidth_eV(self):
         self.assertAlmostEqual(0.424, self.x0.width_eV, 4)
         self.assertAlmostEqual(0.424, self.x1.width_eV, 4)
@@ -195,6 +203,9 @@ class TestModule(unittest.TestCase):
 
         transitions = get_transitions(13, 1e3, 2e3)
         self.assertEqual(4, len(transitions))
+
+        transitions = get_transitions(13, include_satellite=True)
+        self.assertEqual(18, len(transitions))
 
     def testfrom_string(self):
         self.assertEqual(from_string('Al Ka1'), Transition(13, siegbahn='Ka1'))

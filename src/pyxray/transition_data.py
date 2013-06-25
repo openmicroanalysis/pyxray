@@ -41,9 +41,12 @@ class _TransitionDatabase(object):
         transition object.
         
         :arg z: atomic number
-        :arg subshells: :class:`tuple` of length 2 of the source and 
-            destination subshells id (between 1 and 30) or 
-            two :class:`Subshell` objects
+        :arg subshells: :class:`tuple` of length 2 or 3. 
+            The first and second values are respectively the source and 
+            destination subshells id. They can be specified either using an
+            integer between 1 and 30 or a :class:`Subshell` object.
+            The third value is optional. It specifies the satellite index.
+            0 indicates the main diagram line.
         :arg transition: atomic transition
         :type transition: :class:`.Transition`
         """
@@ -57,9 +60,12 @@ class _TransitionDatabase(object):
         transition object.
         
         :arg z: atomic number
-        :arg subshells: :class:`tuple` of length 2 of the source and 
-            destination subshells id (between 1 and 30) or 
-            two :class:`Subshell` objects
+        :arg subshells: :class:`tuple` of length 2 or 3. 
+            The first and second values are respectively the source and 
+            destination subshells id. They can be specified either using an
+            integer between 1 and 30 or a :class:`Subshell` object.
+            The third value is optional. It specifies the satellite index.
+            0 indicates the main diagram line.
         :arg transition: atomic transition
         :type transition: :class:`.Transition`
         """
@@ -73,9 +79,12 @@ class _TransitionDatabase(object):
         transition object.
         
         :arg z: atomic number
-        :arg subshells: :class:`tuple` of length 2 of the source and 
-            destination subshells id (between 1 and 30) or 
-            two :class:`Subshell` objects
+        :arg subshells: :class:`tuple` of length 2 or 3. 
+            The first and second values are respectively the source and 
+            destination subshells id. They can be specified either using an
+            integer between 1 and 30 or a :class:`Subshell` object.
+            The third value is optional. It specifies the satellite index.
+            0 indicates the main diagram line.
         :arg transition: atomic transition
         :type transition: :class:`.Transition`
         """
@@ -137,7 +146,7 @@ class PENELOPETransitionDatabaseMod(_TransitionDatabase):
         if z is None:
             z = transition.z
         if subshells is None:
-            subshells = transition.src, transition.dest
+            subshells = transition.src, transition.dest, transition.satellite
 
         if not z in self.data:
             raise ValueError, "No relaxation data for atomic number %i." % z
@@ -156,49 +165,16 @@ class PENELOPETransitionDatabaseMod(_TransitionDatabase):
             return 0.0
 
     def energy_eV(self, z=None, subshells=None, transition=None):
-        """
-        Returns the energy of a transition in eV.
-        One can either specified the atomic number and subshells or an atomic
-        transition object.
-        
-        :arg z: atomic number (3 to 99)
-        :arg subshells: :class:`tuple` of length 2 of the source and 
-            destination subshells id (between 1 and 30)
-        :arg transition: atomic transition
-        :type transition: :class:`.Transition`
-        """
         return self._get_value(self.KEY_ENERGY, z, subshells, transition)
 
     def probability(self, z=None, subshells=None, transition=None):
-        """
-        Returns the probability of an transition.
-        One can either specified the atomic number and subshells or an atomic
-        transition object.
-        
-        :arg z: atomic number (6 to 99)
-        :arg subshells: :class:`tuple` of length 2 of the source and 
-            destination subshells id (between 1 and 30)
-        :arg transition: atomic transition
-        :type transition: :class:`.Transition`
-        """
         return self._get_value(self.KEY_PROBABILITY, z, subshells, transition)
 
     def exists(self, z=None, subshells=None, transition=None):
-        """
-        Returns whether the transition exists.
-        One can either specified the atomic number and subshells or an atomic
-        transition object.
-        
-        :arg z: atomic number (6 to 99)
-        :arg subshells: :class:`tuple` of length 2 of the source and 
-            destination subshells id (between 1 and 30)
-        :arg transition: atomic transition
-        :type transition: :class:`.Transition`
-        """
         if z is None:
             z = transition.z
         if subshells is None:
-            subshells = transition.src, transition.dest
+            subshells = transition.src, transition.dest, transition.satellite
 
         srcshell = subshells[0]
         if hasattr(srcshell, 'index'):
@@ -207,6 +183,10 @@ class PENELOPETransitionDatabaseMod(_TransitionDatabase):
         destshell = subshells[1]
         if hasattr(destshell, 'index'):
             destshell = destshell.index
+
+        satellite = subshells[2] if len(subshells) == 3 else 0
+        if satellite != 0:
+            return False
 
         try:
             self.data[z][srcshell][destshell]
@@ -234,9 +214,12 @@ def energy_eV(z=None, subshells=None, transition=None):
     transition object.
     
     :arg z: atomic number
-    :arg subshells: :class:`tuple` of length 2 of the source and 
-        destination subshells id (between 1 and 30) or 
-        two :class:`Subshell` objects
+    :arg subshells: :class:`tuple` of length 2 or 3. 
+            The first and second values are respectively the source and 
+            destination subshells id. They can be specified either using an
+            integer between 1 and 30 or a :class:`Subshell` object.
+            The third value is optional. It specifies the satellite index.
+            0 indicates the main diagram line.
     :arg transition: atomic transition
     :type transition: :class:`.Transition`
     """
@@ -249,9 +232,12 @@ def probability(z=None, subshells=None, transition=None):
     transition object.
     
     :arg z: atomic number
-    :arg subshells: :class:`tuple` of length 2 of the source and 
-        destination subshells id (between 1 and 30) or 
-        two :class:`Subshell` objects
+    :arg subshells: :class:`tuple` of length 2 or 3. 
+            The first and second values are respectively the source and 
+            destination subshells id. They can be specified either using an
+            integer between 1 and 30 or a :class:`Subshell` object.
+            The third value is optional. It specifies the satellite index.
+            0 indicates the main diagram line.
     :arg transition: atomic transition
     :type transition: :class:`.Transition`
     """
@@ -264,9 +250,12 @@ def exists(z=None, subshells=None, transition=None):
     transition object.
     
     :arg z: atomic number
-    :arg subshells: :class:`tuple` of length 2 of the source and 
-        destination subshells id (between 1 and 30) or 
-        two :class:`Subshell` objects
+    :arg subshells: :class:`tuple` of length 2 or 3. 
+            The first and second values are respectively the source and 
+            destination subshells id. They can be specified either using an
+            integer between 1 and 30 or a :class:`Subshell` object.
+            The third value is optional. It specifies the satellite index.
+            0 indicates the main diagram line.
     :arg transition: atomic transition
     :type transition: :class:`.Transition`
     """

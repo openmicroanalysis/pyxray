@@ -93,6 +93,7 @@ def _siegbahn_ascii_to_unicode(siegbahn):
     siegbahn = siegbahn.replace('n', u'\u03B7')
     siegbahn = siegbahn.replace('v', u'\u03BD')
     siegbahn = siegbahn.replace('l', u'\u2113')
+    siegbahn = siegbahn.replace("'", u'\u2032')
     return siegbahn
 
 def _siegbahn_unicode_to_ascii(siegbahn):
@@ -106,23 +107,29 @@ def _siegbahn_unicode_to_ascii(siegbahn):
     siegbahn = siegbahn.replace(u'\u03B7', 'n')
     siegbahn = siegbahn.replace(u'\u03BD', 'v')
     siegbahn = siegbahn.replace(u'\u2113', 'l')
+    siegbahn = siegbahn.replace(u'\u2032', "'")
     return siegbahn
 
 """
 Subshells (source -> destination) of all transitions.
 """
 _SUBSHELLS = \
-    [(4, 1) , (3, 1) , (7, 1) , (12, 1), (6, 1) , (14, 1) , (9, 1) ,
-     (11, 4), (12, 4), (18, 4), (19, 4), (24, 4), (9, 4)  , (8, 4) ,
-     (13, 4), (14, 4), (20, 4), (10, 4), (17, 4), (5, 4)  , (7, 4) ,
-     (6, 4) , (15, 4), (6, 3) , (9, 3) , (11, 3), (12, 3) , (14, 3),
-     (18, 3), (19, 3), (25, 3), (8, 3) , (7, 3) , (13, 3) , (10, 3),
-     (20, 3), (17, 3), (5, 3) , (15, 3), (5, 2) , (10, 2) , (13, 2),
-     (17, 2), (20, 2), (8, 2) , (7, 2) , (6, 2) , (9, 2)  , (11, 2),
-     (14, 2), (12, 2), (19, 2), (18, 2), (11, 5), (12, 5) , (8, 6) ,
-     (10, 6), (13, 6), (20, 6), (8, 7) , (9, 7) , (10, 7) , (13, 7),
-     (17, 7), (20, 7), (21, 7), (14, 7), (12, 8), (18, 8) , (15, 8),
-     (11, 8), (19, 9), (16, 9), (15, 9), (12, 9), (15, 13), (15, 14)]
+    [(4, 1, 0) , (3, 1, 0) , (7, 1, 0) , (12, 1, 0), (6, 1, 0) , (14, 1, 0) , (9, 1, 0) ,
+     (11, 4, 0), (12, 4, 0), (18, 4, 0), (19, 4, 0), (24, 4, 0), (9, 4, 0)  , (8, 4, 0) ,
+     (13, 4, 0), (14, 4, 0), (20, 4, 0), (10, 4, 0), (17, 4, 0), (5, 4, 0)  , (7, 4, 0) ,
+     (6, 4, 0) , (15, 4, 0), (6, 3, 0) , (9, 3, 0) , (11, 3, 0), (12, 3, 0) , (14, 3, 0),
+     (18, 3, 0), (19, 3, 0), (25, 3, 0), (8, 3, 0) , (7, 3, 0) , (13, 3, 0) , (10, 3, 0),
+     (20, 3, 0), (17, 3, 0), (5, 3, 0) , (15, 3, 0), (5, 2, 0) , (10, 2, 0) , (13, 2, 0),
+     (17, 2, 0), (20, 2, 0), (8, 2, 0) , (7, 2, 0) , (6, 2, 0) , (9, 2, 0)  , (11, 2, 0),
+     (14, 2, 0), (12, 2, 0), (19, 2, 0), (18, 2, 0), (11, 5, 0), (12, 5, 0) , (8, 6, 0) ,
+     (10, 6, 0), (13, 6, 0), (20, 6, 0), (8, 7, 0) , (9, 7, 0) , (10, 7, 0) , (13, 7, 0),
+     (17, 7, 0), (20, 7, 0), (21, 7, 0), (14, 7, 0), (12, 8, 0), (18, 8, 0) , (15, 8, 0),
+     (11, 8, 0), (19, 9, 0), (16, 9, 0), (15, 9, 0), (12, 9, 0), (15, 13, 0), (15, 14, 0)]
+
+# Append for satellites
+_SUBSHELLS += \
+    [(4, 1, 1), (4, 1, 2), (4, 1, 3), (4, 1, 4), (4, 1, 5), (4, 1, 6),
+     (3, 1, 1)]
 
 _SIEGBAHNS = \
     [u"K\u03B11", u"K\u03B12", u"K\u03B21", u"K\u03B22", u"K\u03B23",
@@ -138,6 +145,11 @@ _SIEGBAHNS = \
      "M3M4", "M3M5", "M3N1", "M3N4", "M3O1", "M3O4", "M3O5",
      u"M\u03B3", "M4N3", "M4O2", u"M\u03B2", u"M\u03B62", "M5O3",
      u"M\u03B11", u"M\u03B12", u"M\u03B61", "N4N6", "N5N6"]
+
+# Append for satellites
+_SIEGBAHNS += \
+    [u"SK\u03B1\u2032", u"SK\u03B1\u2032\u2032", u"SK\u03B13", u"SK\u03B14",
+     u"SK\u03B15", u"SK\u03B16", u"SK\u03B2\u2032"]
 
 class _BaseTransition(object):
 
@@ -214,7 +226,7 @@ class _BaseTransition(object):
 
 class Transition(_BaseTransition):
 
-    def __init__(self, z, src=None, dest=None, siegbahn=None):
+    def __init__(self, z, src=None, dest=None, satellite=0, siegbahn=None):
         """
         Creates a new transition from a source and destination subshells 
         or from its Siegbahn symbol::
@@ -225,6 +237,7 @@ class Transition(_BaseTransition):
         :arg z: atomic number (from 3 to 99 inclusively)
         :arg src: source subshell index between 1 (K) and 30 (outer) or subshell object
         :arg dest: destination subshell index between 1 (K) and 30 (outer) or subshell object
+        :arg satellite: index representing the satellite, 0 for main line
         :arg siegbahn: Siegbahn symbol
         """
         if src is not None and dest is not None:
@@ -236,9 +249,10 @@ class Transition(_BaseTransition):
             if hasattr(dest, 'index'): dest = dest.index
 
             try:
-                index = _SUBSHELLS.index((src, dest))
+                index = _SUBSHELLS.index((src, dest, satellite))
             except ValueError:
-                raise ValueError, "Unknown transition (%s -> %s)" % (src, dest)
+                raise ValueError, "Unknown transition (%i -> %i, %i)" % \
+                        (src, dest, satellite)
         elif siegbahn is not None:
             siegbahn = _siegbahn_ascii_to_unicode(siegbahn)
 
@@ -250,21 +264,23 @@ class Transition(_BaseTransition):
             except ValueError:
                 raise ValueError, "Unknown transition (%s)" % siegbahn
         else:
-            raise ValueError, "Specify shells or siegbahn"
+            raise ValueError, "Specify shells or Siegbahn"
 
         self._index = index
-        src, dest = _SUBSHELLS[index]
+        src, dest, satellite = _SUBSHELLS[index]
 
         self._src = Subshell(z, src)
         self._dest = Subshell(z, dest)
+        self._satellite = satellite
 
         siegbahn = unicode(_SIEGBAHNS[index])
         iupac = '-'.join([self._dest.iupac, self._src.iupac])
         _BaseTransition.__init__(self, z, siegbahn, iupac)
 
-        self._exists = transition_data.exists(z, (src, dest))
-        self._energy_eV = transition_data.energy_eV(z, (src, dest))
-        self._probability = transition_data.probability(z, (src, dest))
+        subshells = (src, dest, satellite)
+        self._exists = transition_data.exists(z, subshells)
+        self._energy_eV = transition_data.energy_eV(z, subshells)
+        self._probability = transition_data.probability(z, subshells)
 
         try:
             self._wavelength_m = (4.13566733e-15 * 299792458) / self._energy_eV
@@ -297,6 +313,18 @@ class Transition(_BaseTransition):
         """
         return self._exists
 
+    def is_diagram_line(self):
+        """
+        Whether this transition is a diagram line (main line).
+        """
+        return self._satellite == 0
+
+    def is_satellite(self):
+        """
+        Whether this transition is a satellite line / non-diagram line.
+        """
+        return self._satellite != 0
+
     @property
     def src(self):
         """
@@ -310,6 +338,13 @@ class Transition(_BaseTransition):
         Destination shell of this transition.
         """
         return self._dest
+
+    @property
+    def satellite(self):
+        """
+        Index of the satellite. 0 if this transition is the main diagram line.
+        """
+        return self._satellite
 
     @property
     def energy_eV(self):
@@ -404,7 +439,7 @@ class transitionset(frozenset, _BaseTransition):
     def most_probable(self):
         return self._most_probable
 
-def get_transitions(z, energylow_eV=0.0, energyhigh_eV=1e6):
+def get_transitions(z, energylow_eV=0.0, energyhigh_eV=1e6, include_satellite=False):
     """
     Returns all the X-ray transitions for the specified atomic number if
     the energy of these transitions is between the specified energy limits.
@@ -416,15 +451,18 @@ def get_transitions(z, energylow_eV=0.0, energyhigh_eV=1e6):
     """
     transitions = []
 
-    for subshells in _SUBSHELLS:
-        if not transition_data.exists(z, subshells):
+    for src, dest, satellite in _SUBSHELLS:
+        if not include_satellite and satellite != 0:
             continue
 
-        energy = transition_data.energy_eV(z, subshells)
+        if not transition_data.exists(z, (src, dest)):
+            continue
+
+        energy = transition_data.energy_eV(z, (src, dest))
         if energy < energylow_eV or energy > energyhigh_eV:
             continue
 
-        transitions.append(Transition(z, *subshells))
+        transitions.append(Transition(z, src, dest, satellite))
 
     return sorted(transitions)
 
@@ -466,7 +504,7 @@ def from_string(s):
     else:
         raise ValueError, "Cannot parse transition string: %s" % s
 
-def _group(z, siegbahn, iupac):
+def _group(z, siegbahn, iupac, include_satellite=False):
     transitions = []
 
     for ssiegbahn in _SIEGBAHNS:
@@ -474,21 +512,24 @@ def _group(z, siegbahn, iupac):
             transitions.append(Transition(z, siegbahn=ssiegbahn))
 
     transitions = filter(methodcaller('exists'), transitions)
+    if not include_satellite:
+        transitions = filter(methodcaller('is_diagram_line'), transitions)
 
     if not transitions:
         raise ValueError, 'No transition for %s %s' % (ep.symbol(z), iupac)
 
     return transitionset(z, siegbahn, iupac, transitions)
 
-def _shell(z, dest):
+def _shell(z, dest, include_satellite=False):
     subshell = Subshell(z, dest)
     siegbahn = subshell.siegbahn
     iupac = subshell.iupac
 
     transitions = []
 
-    for src, ddest in _SUBSHELLS:
+    for src, ddest, satellite in _SUBSHELLS:
         if ddest != dest: continue
+        if satellite != 0 and not include_satellite: continue
         transitions.append(Transition(z, src, dest))
 
     transitions = filter(methodcaller('exists'), transitions)
