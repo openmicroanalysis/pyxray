@@ -81,7 +81,7 @@ class _RelaxationDatabase(object):
         """
         raise NotImplementedError
 
-class PerkinsRelaxationDataMod(_RelaxationDatabase):
+class PENELOPERelaxationDataMod(_RelaxationDatabase):
     
     """
     Relaxation data for singly-ionised atoms.
@@ -94,6 +94,9 @@ class PerkinsRelaxationDataMod(_RelaxationDatabase):
     probabilities and energies were extracted from the LLNL Evaluated 
     Atomic Data Library (Perkins et al. 1991). 
     Some energies values were replaced by more accurate, when available.
+    Energies of x rays from K- and L-shell transitions were taken from 
+    Deslattes et al. (2004). 
+    The energies of characteristic M lines are from Bearden's (1967) review.
     The energies for Lithium, Beryllium and Boron were taken from the
     DTSA database.
     However, no probabilities are available for these elements.
@@ -215,7 +218,7 @@ class PerkinsRelaxationDataMod(_RelaxationDatabase):
 # Basically delegate everything to the instance object.
 #---------------------------------------------------------------------------
 
-instance = PerkinsRelaxationDataMod()
+instance = PENELOPERelaxationDataMod()
 
 def get_instance():
     return instance
