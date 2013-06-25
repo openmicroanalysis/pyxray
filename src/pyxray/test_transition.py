@@ -116,6 +116,10 @@ class TestTransition(unittest.TestCase):
         self.assertTrue(self.x1.exists())
         self.assertFalse(self.x29.exists())
 
+    def testwidth_eV(self):
+        self.assertAlmostEqual(0.424, self.x0.width_eV, 4)
+        self.assertAlmostEqual(0.424, self.x1.width_eV, 4)
+
 class Testtransitionset(unittest.TestCase):
 
     def setUp(self):

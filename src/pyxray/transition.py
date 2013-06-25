@@ -265,10 +265,13 @@ class Transition(_BaseTransition):
         self._exists = transition_data.exists(z, (src, dest))
         self._energy_eV = transition_data.energy_eV(z, (src, dest))
         self._probability = transition_data.probability(z, (src, dest))
+
         try:
             self._wavelength_m = (4.13566733e-15 * 299792458) / self._energy_eV
         except ZeroDivisionError: # Energy == 0.0 if transition does not exist
             self._wavelength_m = float('inf')
+
+        self._width_eV = self._src.width_eV + self._dest.width_eV
 
     def __repr__(self):
         return '<Transition(%s %s)>' % (self.symbol, self.siegbahn_nogreek)
@@ -287,6 +290,12 @@ class Transition(_BaseTransition):
 
     def __hash__(self):
         return hash(('Transition', self._z, self._index))
+
+    def exists(self):
+        """
+        Whether this transition exists.
+        """
+        return self._exists
 
     @property
     def src(self):
@@ -323,11 +332,12 @@ class Transition(_BaseTransition):
         """
         return self._probability
 
-    def exists(self):
+    @property
+    def width_eV(self):
         """
-        Whether this transition exists.
+        Natural width of this transition in eV.
         """
-        return self._exists
+        return self._width_eV
 
 class transitionset(frozenset, _BaseTransition):
 
