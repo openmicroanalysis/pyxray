@@ -29,7 +29,7 @@ from pkg_resources import resource_stream #@UnresolvedImport
 
 # Globals and constants variables.
 
-class _RelaxationDatabase(object):
+class _TransitionDatabase(object):
 
     __metaclass__ = ABCMeta
 
@@ -81,7 +81,7 @@ class _RelaxationDatabase(object):
         """
         raise NotImplementedError
 
-class PENELOPERelaxationDataMod(_RelaxationDatabase):
+class PENELOPETransitionDatabaseMod(_TransitionDatabase):
     
     """
     Relaxation data for singly-ionised atoms.
@@ -106,7 +106,7 @@ class PENELOPERelaxationDataMod(_RelaxationDatabase):
     KEY_ENERGY = 'energy'
 
     def __init__(self, fileobj=None):
-        fileobj = resource_stream(__name__, 'data/relaxation_data.csv')
+        fileobj = resource_stream(__name__, 'data/penelope_mod_transition_data.csv')
         self.data = self._read(fileobj)
 
     def _read(self, fileobj):
@@ -218,7 +218,7 @@ class PENELOPERelaxationDataMod(_RelaxationDatabase):
 # Basically delegate everything to the instance object.
 #---------------------------------------------------------------------------
 
-instance = PENELOPERelaxationDataMod()
+instance = PENELOPETransitionDatabaseMod()
 
 def get_instance():
     return instance

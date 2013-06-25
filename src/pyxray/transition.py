@@ -30,7 +30,7 @@ from pyparsing import Word, Group, Optional, OneOrMore, QuotedString, Literal
 # Local modules.
 import element_properties as ep
 from subshell import Subshell
-import relaxation_data
+import transition_data
 
 # Globals and constants variables.
 _ZGETTER = attrgetter('z')
@@ -262,9 +262,9 @@ class Transition(_BaseTransition):
         iupac = '-'.join([self._dest.iupac, self._src.iupac])
         _BaseTransition.__init__(self, z, siegbahn, iupac)
 
-        self._exists = relaxation_data.exists(z, (src, dest))
-        self._energy_eV = relaxation_data.energy_eV(z, (src, dest))
-        self._probability = relaxation_data.probability(z, (src, dest))
+        self._exists = transition_data.exists(z, (src, dest))
+        self._energy_eV = transition_data.energy_eV(z, (src, dest))
+        self._probability = transition_data.probability(z, (src, dest))
         try:
             self._wavelength_m = (4.13566733e-15 * 299792458) / self._energy_eV
         except ZeroDivisionError: # Energy == 0.0 if transition does not exist
@@ -407,10 +407,10 @@ def get_transitions(z, energylow_eV=0.0, energyhigh_eV=1e6):
     transitions = []
 
     for subshells in _SUBSHELLS:
-        if not relaxation_data.exists(z, subshells):
+        if not transition_data.exists(z, subshells):
             continue
 
-        energy = relaxation_data.energy_eV(z, subshells)
+        energy = transition_data.energy_eV(z, subshells)
         if energy < energylow_eV or energy > energyhigh_eV:
             continue
 
