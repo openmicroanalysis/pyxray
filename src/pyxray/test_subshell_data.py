@@ -15,7 +15,7 @@ import logging
 # Third party modules.
 
 # Local modules.
-import ionization_data
+import subshell_data
 
 # Globals and constants variables.
 
@@ -29,11 +29,15 @@ class TestIonizationData(unittest.TestCase):
 #
     def testenergy_eV(self):
         # Test Al K.
-        self.assertAlmostEquals(1.564e3, ionization_data.energy_eV(13, 1), 4)
+        self.assertAlmostEquals(1.564e3, subshell_data.energy_eV(13, 1), 4)
 
     def testexists(self):
-        self.assertTrue(ionization_data.exists(13, 1))
-        self.assertFalse(ionization_data.exists(13, 29))
+        self.assertTrue(subshell_data.exists(13, 1))
+        self.assertFalse(subshell_data.exists(13, 29))
+
+    def testwidth_eV(self):
+        self.assertAlmostEqual(0.42, subshell_data.width_eV(13, 1), 4)
+        self.assertRaises(ValueError, subshell_data.width_eV, 6, 1)
 
 
 if __name__ == '__main__': #pragma: no cover

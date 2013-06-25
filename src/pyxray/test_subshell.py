@@ -94,6 +94,10 @@ class TestSubshell(unittest.TestCase):
         self.assertTrue(self.x1.exists())
         self.assertFalse(self.x29.exists())
 
+    def testwidth_eV(self):
+        self.assertAlmostEqual(0.42, self.x1.width_eV, 4)
+        self.assertAlmostEqual(0.0, self.x6.width_eV, 4)
+
 if __name__ == '__main__': #pragma: no cover
     logging.getLogger().setLevel(logging.DEBUG)
     unittest.main()

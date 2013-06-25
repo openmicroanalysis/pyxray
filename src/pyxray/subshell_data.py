@@ -1,13 +1,13 @@
 #!/usr/bin/env python
 """
 ================================================================================
-:mod:`ionization_data` -- Ionization energies of atomic subshell
+:mod:`subshell_data` -- Data about atomic subshell
 ================================================================================
 
-.. module:: ionization_data
-   :synopsis: Ionization energies of atomic subshell
+.. module:: subshell_data
+   :synopsis: Data about atomic subshell
 
-.. inheritance-diagram:: pyxray.ionization_data
+.. inheritance-diagram:: pyxray.subshell_data
 
 """
 
@@ -29,14 +29,15 @@ from pkg_resources import resource_stream #@UnresolvedImport
 
 # Globals and constants variables.
 
-class _IonizationDatabase(object):
+class _SubshellDatabase(object):
 
     __metaclass__ = ABCMeta
 
     @abstractmethod
     def energy_eV(self, z, subshell):
         """
-        Returns the ionization energy of a subshell in eV.
+        Returns the ionization energy of a subshell in eV. 
+        If no ionization energy is defined for a subshell, infinity is returned.
         
         :arg z: atomic number
         :arg subshell: index of the subshells (1 to 29 inclu.) 
@@ -55,19 +56,26 @@ class _IonizationDatabase(object):
         """
         raise NotImplementedError
 
-class CarlsonIonizationDatabase(_IonizationDatabase):
-    """
-    Ionization energies of atomic subshell. 
-    
-    The relaxation data should be comma-separated with the following
-    columns: atomic number, shell and ionization energy (in eV). 
+    @abstractmethod
+    def width_eV(self, z, subshell):
+        """
+        Returns the natural width of a subshell in eV.
         
+        :arg z: atomic number
+        :arg subshell: index of the subshells (1 to 29 inclu.) 
+            or :class:`Subshell` object
+        """
+        raise NotImplementedError
+
+class CarlsonSubshellDatabase(_SubshellDatabase):
+    """
     The ionization energies are taken from T.A. Carlson, 'Photoelectron and 
     Auger Spectroscopy' (Plenum Press, New York and London, 1975).
+    No width is provided.
     """
 
     def __init__(self):
-        fileobj = resource_stream(__name__, 'data/ionization_data.csv')
+        fileobj = resource_stream(__name__, 'data/carlson_subshell_ionization_data.csv')
         self.data = self._read(fileobj)
 
     def _read(self, fileobj):
@@ -95,7 +103,7 @@ class CarlsonIonizationDatabase(_IonizationDatabase):
         try:
             return self.data[z][subshell]
         except KeyError:
-            return 0.0
+            return float('inf')
 
     def exists(self, z, subshell):
         if hasattr(subshell, 'index'):
@@ -107,11 +115,72 @@ class CarlsonIonizationDatabase(_IonizationDatabase):
         except KeyError:
             return False
 
+    def width_eV(self, z, subshell):
+        return 0.0
+
+class KrauseOlivierSubshellDatabase(_SubshellDatabase):
+    """
+    Natural widths of K- and L-subshells are taken from Krause, M.O. and
+    Olivier, J.H., J. Phys. Chem. Ref. Data. 8, 1979.
+    """
+
+    def __init__(self):
+        fileobj = resource_stream(__name__, 'data/krause_subshell_width_data.csv')
+        self.data = self._read(fileobj)
+
+    def _read(self, fileobj):
+        data = {}
+        reader = csv.reader(fileobj)
+        reader.next() # skip header
+
+        for row in reader:
+            z = int(row[0])
+            subshell = int(row[1])
+            width_eV = float(row[2])
+
+            data.setdefault(z, {})
+            data[z].setdefault(subshell, width_eV)
+
+        return data
+    
+    def energy_eV(self, z, subshell):
+        raise ValueError, "No ionization energy for atomic number %i." % z
+    
+    def exists(self, z, subshell):
+        return False
+
+    def width_eV(self, z, subshell):
+        if not z in self.data:
+            raise ValueError, "No width for atomic number %i." % z
+
+        if hasattr(subshell, 'index'):
+            subshell = subshell.index
+
+        try:
+            return self.data[z][subshell]
+        except KeyError:
+            return 0.0
+
 # Utility functions at module level.
 # Basically delegate everything to the instance object.
 #---------------------------------------------------------------------------
 
-instance = CarlsonIonizationDatabase()
+class SuperDatabase(_SubshellDatabase):
+
+    def __init__(self):
+        self.carlson = CarlsonSubshellDatabase()
+        self.krause = KrauseOlivierSubshellDatabase()
+
+    def energy_eV(self, z, subshell):
+        return self.carlson.energy_eV(z, subshell)
+    
+    def exists(self, z, subshell):
+        return self.carlson.exists(z, subshell)
+    
+    def width_eV(self, z, subshell):
+        return self.krause.width_eV(z, subshell)
+
+instance = SuperDatabase()
 
 def get_instance():
     return instance
@@ -139,3 +208,13 @@ def exists(z, subshell):
         or :class:`Subshell` object
     """
     return instance.exists(z, subshell)
+
+def width_eV(z, subshell):
+    """
+    Returns the natural width of a subshell in eV.
+    
+    :arg z: atomic number
+    :arg subshell: index of the subshells (1 to 29 inclu.) 
+        or :class:`Subshell` object
+    """
+    return instance.width_eV(z, subshell)

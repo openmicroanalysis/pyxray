@@ -22,7 +22,7 @@ __license__ = "GPL v3"
 
 # Local modules.
 import element_properties as ep
-import ionization_data
+import subshell_data
 
 # Globals and constants variables.
 _IUPACS = ["K",
@@ -98,14 +98,19 @@ class Subshell(object):
         self._iupac = _IUPACS[index - 1]
         self._siegbahn = _SIEGBAHNS[index - 1]
 
-        if index != 30:
-            self._family = self._iupac[0].upper()
-            self._ionization_energy_eV = ionization_data.energy_eV(z, index)
-            self._exists = ionization_data.exists(z, index)
-        else:
-            self._family = None
+        self._family = self._iupac[0].upper() if index != 30 else None
+
+        try:
+            self._ionization_energy_eV = subshell_data.energy_eV(z, index)
+        except ValueError:
             self._ionization_energy_eV = float('inf')
-            self._exists = False
+
+        self._exists = subshell_data.exists(z, index)
+
+        try:
+            self._width_eV = subshell_data.width_eV(z, index)
+        except ValueError:
+            self._width_eV = 0.0
 
     def __repr__(self):
         return '<Subshell(%s %s)>' % (self._symbol, self._siegbahn)
@@ -128,6 +133,12 @@ class Subshell(object):
             return c
 
         return cmp(self._index, other._index)
+
+    def exists(self):
+        """
+        Whether this subshell exists.
+        """
+        return self._exists
 
     @property
     def z(self):
@@ -182,8 +193,10 @@ class Subshell(object):
         """
         return self._ionization_energy_eV
 
-    def exists(self):
+    @property
+    def width_eV(self):
         """
-        Whether this subshell exists.
+        Natural width of this subshell in eV.
         """
-        return self._exists
+        return self._width_eV
+
