@@ -33,6 +33,33 @@ class _TransitionDatabase(object):
 
     __metaclass__ = ABCMeta
 
+    def _get_z_subshells(self, z=None, subshells=None, transition=None):
+        """
+        Parses the arguments and returns:
+        
+            * z
+            * index of source subshell
+            * index of destination subshell
+            * index of satellite
+        """
+        if z is None:
+            z = transition.z
+
+        if subshells is None:
+            subshells = transition.src, transition.dest, transition.satellite
+
+        src = subshells[0]
+        if hasattr(src, 'index'):
+            src = src.index
+
+        dest = subshells[1]
+        if hasattr(dest, 'index'):
+            dest = dest.index
+
+        satellite = subshells[2] if len(subshells) == 3 else 0
+
+        return z, src, dest, satellite
+
     @abstractmethod
     def energy_eV(self, z=None, subshells=None, transition=None):
         """
@@ -127,26 +154,13 @@ class _BaseTransitionDatabase(_TransitionDatabase):
                 data[z][src][dest][satellite][self.KEY_PROBABILITY] = probability
 
         return data
-
+    
     def _get_datum(self, z=None, subshells=None, transition=None):
-        if z is None:
-            z = transition.z
+        z, src, dest, satellite = \
+            self._get_z_subshells(z, subshells, transition)
 
         if not z in self.data:
             raise ValueError, "No relaxation data for atomic number %i." % z
-
-        if subshells is None:
-            subshells = transition.src, transition.dest, transition.satellite
-
-        src = subshells[0]
-        if hasattr(src, 'index'):
-            src = src.index
-
-        dest = subshells[1]
-        if hasattr(dest, 'index'):
-            dest = dest.index
-
-        satellite = subshells[2] if len(subshells) == 3 else 0
 
         return self.data[z][src][dest][satellite]
 
@@ -170,7 +184,6 @@ class _BaseTransitionDatabase(_TransitionDatabase):
             return False
 
 class PENELOPETransitionDatabaseMod(_BaseTransitionDatabase):
-    
     """
     Relaxation data for singly-ionised atoms.
     
@@ -194,11 +207,62 @@ class PENELOPETransitionDatabaseMod(_BaseTransitionDatabase):
         fileobj = resource_stream(__name__, 'data/penelope_mod_transition_data.csv')
         _BaseTransitionDatabase.__init__(self, fileobj)
 
+class JEOLTransitionDatabase(_BaseTransitionDatabase):
+    """
+    Transition database from JEOL.
+    File extracted from the database provided with the JEOL JXA-8530F.
+    """
+
+    def __init__(self):
+        fileobj = resource_stream(__name__, 'data/jeol_transition_data.csv')
+        _BaseTransitionDatabase.__init__(self, fileobj)
+
+class SuperDatabase(_TransitionDatabase):
+
+    def __init__(self):
+        self.penelope = PENELOPETransitionDatabaseMod()
+        self.jeol = JEOLTransitionDatabase()
+
+    def energy_eV(self, z=None, subshells=None, transition=None):
+        energy = self.penelope.energy_eV(z, subshells, transition)
+        if energy > 0.0:
+            return energy
+        return self.jeol.energy_eV(z, subshells, transition)
+
+    def probability(self, z=None, subshells=None, transition=None):
+        probability = self.penelope.probability(z, subshells, transition)
+        if probability > 0.0:
+            return probability
+
+        factor = self.jeol.probability(z, subshells, transition)
+        
+        # Convert JEOL probability using other line from PENELOPE
+        z, _, dest, _ = self._get_z_subshells(z, subshells, transition)
+        if dest == 1: # K
+            maxsubshells = (4, 1, 0)
+        elif dest in [2, 3, 4]:
+            maxsubshells = (9, 4, 0)
+        elif dest in [5, 6, 7, 8, 9]:
+            maxsubshells = (16, 9, 0)
+        maxprobability = self.penelope.probability(z, maxsubshells)
+        maxfactor = self.jeol.probability(z, maxsubshells)
+
+        return factor * maxprobability / maxfactor
+
+    def exists(self, z=None, subshells=None, transition=None):
+        if self.penelope.exists(z, subshells, transition):
+            return True
+
+        if self.jeol.exists(z, subshells, transition):
+            return True
+
+        return False
+
 # Utility functions at module level.
 # Basically delegate everything to the instance object.
 #---------------------------------------------------------------------------
 
-instance = PENELOPETransitionDatabaseMod()
+instance = SuperDatabase()
 
 def get_instance():
     return instance

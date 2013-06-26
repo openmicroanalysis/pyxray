@@ -34,12 +34,19 @@ class TestRelaxationData(unittest.TestCase):
         # Li Ka1
         self.assertAlmostEquals(52.0, transition_data.energy_eV(3, [4, 1]), 4)
 
+        # Al SKa3
+        self.assertAlmostEquals(1496.1829, transition_data.energy_eV(13, [4, 1, 3]), 4)
+
     def testprobability(self):
         # Al Ka1.
         self.assertAlmostEquals(2.45528e-2, transition_data.probability(13, [4, 1]), 6)
 
         # Li Ka1
         self.assertAlmostEquals(1.06e-4, transition_data.probability(3, [4, 1]), 6)
+
+        # Al SKa3
+        expected = 8.0 * 2.45528e-2 / 100.0
+        self.assertAlmostEquals(expected, transition_data.probability(13, [4, 1, 3]), 4)
 
 if __name__ == '__main__': #pragma: no cover
     logging.getLogger().setLevel(logging.DEBUG)
