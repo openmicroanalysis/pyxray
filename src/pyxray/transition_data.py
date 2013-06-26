@@ -90,7 +90,86 @@ class _TransitionDatabase(object):
         """
         raise NotImplementedError
 
-class PENELOPETransitionDatabaseMod(_TransitionDatabase):
+class _BaseTransitionDatabase(_TransitionDatabase):
+
+    KEY_Z = 'z'
+    KEY_SUBSHELL_SRC = 'src'
+    KEY_SUBSHELL_DEST = 'dest'
+    KEY_SUBSHELL_SATELLITE = 'satellite'
+    KEY_PROBABILITY = 'probability'
+    KEY_ENERGY = 'energy_eV'
+
+    def __init__(self, fileobj):
+        self.data = self._read(fileobj)
+
+    def _read(self, fileobj):
+        data = {}
+        reader = csv.DictReader(fileobj)
+
+        for rowdict in reader:
+            z = int(rowdict[self.KEY_Z])
+
+            src = int(rowdict[self.KEY_SUBSHELL_SRC])
+            dest = int(rowdict[self.KEY_SUBSHELL_DEST])
+            satellite = int(rowdict.get(self.KEY_SUBSHELL_SATELLITE, 0))
+
+            probability = float(rowdict[self.KEY_PROBABILITY])
+            energy_eV = float(rowdict[self.KEY_ENERGY])
+
+            data.setdefault(z, {})
+            data[z].setdefault(src, {})
+            data[z][src].setdefault(dest, {})
+            data[z][src][dest].setdefault(satellite, {})
+
+            data[z][src][dest][satellite][self.KEY_ENERGY] = energy_eV
+
+            if probability >= 0:
+                data[z][src][dest][satellite][self.KEY_PROBABILITY] = probability
+
+        return data
+
+    def _get_datum(self, z=None, subshells=None, transition=None):
+        if z is None:
+            z = transition.z
+
+        if not z in self.data:
+            raise ValueError, "No relaxation data for atomic number %i." % z
+
+        if subshells is None:
+            subshells = transition.src, transition.dest, transition.satellite
+
+        src = subshells[0]
+        if hasattr(src, 'index'):
+            src = src.index
+
+        dest = subshells[1]
+        if hasattr(dest, 'index'):
+            dest = dest.index
+
+        satellite = subshells[2] if len(subshells) == 3 else 0
+
+        return self.data[z][src][dest][satellite]
+
+    def _get_value(self, key, z=None, subshells=None, transition=None):
+        try:
+            return self._get_datum(z, subshells, transition)[key]
+        except KeyError:
+            return 0.0
+
+    def energy_eV(self, z=None, subshells=None, transition=None):
+        return self._get_value(self.KEY_ENERGY, z, subshells, transition)
+
+    def probability(self, z=None, subshells=None, transition=None):
+        return self._get_value(self.KEY_PROBABILITY, z, subshells, transition)
+
+    def exists(self, z=None, subshells=None, transition=None):
+        try:
+            self._get_datum(z, subshells, transition)
+            return True
+        except KeyError:
+            return False
+
+class PENELOPETransitionDatabaseMod(_BaseTransitionDatabase):
     
     """
     Relaxation data for singly-ionised atoms.
@@ -111,88 +190,9 @@ class PENELOPETransitionDatabaseMod(_TransitionDatabase):
     However, no probabilities are available for these elements.
     """
 
-    KEY_PROBABILITY = 'probability'
-    KEY_ENERGY = 'energy'
-
-    def __init__(self, fileobj=None):
+    def __init__(self):
         fileobj = resource_stream(__name__, 'data/penelope_mod_transition_data.csv')
-        self.data = self._read(fileobj)
-
-    def _read(self, fileobj):
-        data = {}
-        reader = csv.reader(fileobj)
-        reader.next() # skip header
-
-        for row in reader:
-            z = int(row[0])
-            subshell_dest = int(row[1])
-            subshell_src = int(row[2])
-
-            probability = float(row[3])
-            energy_eV = float(row[4])
-
-            data.setdefault(z, {})
-            data[z].setdefault(subshell_src, {})
-            data[z][subshell_src].setdefault(subshell_dest, {})
-
-            data[z][subshell_src][subshell_dest][self.KEY_ENERGY] = energy_eV
-
-            if probability >= 0:
-                data[z][subshell_src][subshell_dest][self.KEY_PROBABILITY] = probability
-
-        return data
-
-    def _get_value(self, key, z=None, subshells=None, transition=None):
-        if z is None:
-            z = transition.z
-        if subshells is None:
-            subshells = transition.src, transition.dest, transition.satellite
-
-        if not z in self.data:
-            raise ValueError, "No relaxation data for atomic number %i." % z
-        
-        srcshell = subshells[0]
-        if hasattr(srcshell, 'index'):
-            srcshell = srcshell.index
-
-        destshell = subshells[1]
-        if hasattr(destshell, 'index'):
-            destshell = destshell.index
-
-        try:
-            return self.data[z][srcshell][destshell][key]
-        except KeyError:
-            return 0.0
-
-    def energy_eV(self, z=None, subshells=None, transition=None):
-        return self._get_value(self.KEY_ENERGY, z, subshells, transition)
-
-    def probability(self, z=None, subshells=None, transition=None):
-        return self._get_value(self.KEY_PROBABILITY, z, subshells, transition)
-
-    def exists(self, z=None, subshells=None, transition=None):
-        if z is None:
-            z = transition.z
-        if subshells is None:
-            subshells = transition.src, transition.dest, transition.satellite
-
-        srcshell = subshells[0]
-        if hasattr(srcshell, 'index'):
-            srcshell = srcshell.index
-
-        destshell = subshells[1]
-        if hasattr(destshell, 'index'):
-            destshell = destshell.index
-
-        satellite = subshells[2] if len(subshells) == 3 else 0
-        if satellite != 0:
-            return False
-
-        try:
-            self.data[z][srcshell][destshell]
-            return True
-        except KeyError:
-            return False
+        _BaseTransitionDatabase.__init__(self, fileobj)
 
 # Utility functions at module level.
 # Basically delegate everything to the instance object.
