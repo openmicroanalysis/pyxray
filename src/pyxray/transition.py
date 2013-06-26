@@ -129,7 +129,7 @@ _SUBSHELLS = \
 # Append for satellites
 _SUBSHELLS += \
     [(4, 1, 1), (4, 1, 2), (4, 1, 3), (4, 1, 4), (4, 1, 5), (4, 1, 6),
-     (3, 1, 1)]
+     (7, 1, 1)]
 
 _SIEGBAHNS = \
     [u"K\u03B11", u"K\u03B12", u"K\u03B21", u"K\u03B22", u"K\u03B23",
