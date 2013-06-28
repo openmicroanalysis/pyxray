@@ -247,7 +247,10 @@ class SuperDatabase(_TransitionDatabase):
         maxprobability = self.penelope.probability(z, maxsubshells)
         maxfactor = self.jeol.probability(z, maxsubshells)
 
-        return factor * maxprobability / maxfactor
+        try:
+            return factor * maxprobability / maxfactor
+        except ZeroDivisionError:
+            return 0.0
 
     def exists(self, z=None, subshells=None, transition=None):
         if self.penelope.exists(z, subshells, transition):
