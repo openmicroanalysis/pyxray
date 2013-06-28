@@ -10,6 +10,7 @@ __license__ = "GPL v3"
 # Standard library modules.
 import unittest
 import logging
+import pickle
 
 # Third party modules.
 
@@ -127,6 +128,11 @@ class TestTransition(unittest.TestCase):
     def testwidth_eV(self):
         self.assertAlmostEqual(0.424, self.x0.width_eV, 4)
         self.assertAlmostEqual(0.424, self.x1.width_eV, 4)
+
+    def testpickle(self):
+        s = pickle.dumps(self.x0)
+        x0 = pickle.loads(s)
+        self.assertEquals(x0, self.x0)
 
 class Testtransitionset(unittest.TestCase):
 

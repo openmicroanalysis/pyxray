@@ -307,6 +307,17 @@ class Transition(_BaseTransition):
     def __hash__(self):
         return hash(('Transition', self._z, self._index))
 
+    def __getstate__(self):
+        # Only pickle the required information to create a transition
+        return {'z': self.z,
+                'src': self.src.index,
+                'dest': self.dest.index,
+                'satellite': self.satellite}
+
+    def __reduce__(self):
+        return (self.__class__,
+                (self.z, self.src, self.dest, self.satellite))
+
     def exists(self):
         """
         Whether this transition exists.
