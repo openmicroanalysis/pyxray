@@ -244,6 +244,8 @@ class SuperDatabase(_TransitionDatabase):
             maxsubshells = (9, 4, 0)
         elif dest in [5, 6, 7, 8, 9]:
             maxsubshells = (16, 9, 0)
+        else:
+            return 0.0
         maxprobability = self.penelope.probability(z, maxsubshells)
         maxfactor = self.jeol.probability(z, maxsubshells)
 
