@@ -15,10 +15,10 @@ import logging
 # Third party modules.
 
 # Local modules.
-from subshell import Subshell
+from pyxray.subshell import Subshell
 
 # Globals and constants variables.
-from subshell import _IUPACS, _ORBITALS, _SIEGBAHNS
+from pyxray.subshell import _IUPACS, _ORBITALS, _SIEGBAHNS
 
 class TestSubshell(unittest.TestCase):
 
@@ -97,6 +97,19 @@ class TestSubshell(unittest.TestCase):
     def testwidth_eV(self):
         self.assertAlmostEqual(0.42, self.x1.width_eV, 4)
         self.assertAlmostEqual(0.0, self.x6.width_eV, 4)
+
+    def testsort(self):
+        subshells = [Subshell(29, 5), Subshell(29, 1), Subshell(29, 3)]
+        subshells.sort()
+        self.assertEqual(Subshell(29, 1), subshells[0])
+        self.assertEqual(Subshell(29, 3), subshells[1])
+        self.assertEqual(Subshell(29, 5), subshells[2])
+
+        subshells = [Subshell(13, 5), Subshell(29, 1), Subshell(29, 3)]
+        subshells.sort()
+        self.assertEqual(Subshell(13, 5), subshells[0])
+        self.assertEqual(Subshell(29, 1), subshells[1])
+        self.assertEqual(Subshell(29, 3), subshells[2])
 
 if __name__ == '__main__': #pragma: no cover
     logging.getLogger().setLevel(logging.DEBUG)

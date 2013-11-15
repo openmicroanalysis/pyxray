@@ -11,6 +11,8 @@ __license__ = "GPL v3"
 
 # Third party modules.
 from setuptools import setup
+import setuptools
+print(setuptools.__version__)
 
 # Local modules.
 
@@ -37,9 +39,8 @@ setup(name="pyxray",
       packages=packages,
       package_data={'pyxray': ['data/*']},
 
-      setup_requires=['nose>=1.0'],
-      install_requires=['pyparsing >=1.5.2, <2.0'],
+      install_requires=['pyparsing'],
 
-      test_suite='nose.collector',
+      test_suite='pyxray.tests.test_all',
 )
 

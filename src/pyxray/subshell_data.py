@@ -19,11 +19,16 @@ __copyright__ = "Copyright (c) 2011 Philippe T. Pinard"
 __license__ = "GPL v3"
 
 # Standard library modules.
-from abc import ABCMeta, abstractmethod
+import os
 import csv
+import pkgutil
+from abc import ABCMeta, abstractmethod
+try:
+    from io import StringIO
+except ImportError:
+    import StringIO
 
 # Third party modules.
-from pkg_resources import resource_stream #@UnresolvedImport
 
 # Local modules.
 
@@ -75,13 +80,14 @@ class CarlsonSubshellDatabase(_SubshellDatabase):
     """
 
     def __init__(self):
-        fileobj = resource_stream(__name__, 'data/carlson_subshell_ionization_data.csv')
+        resource = os.path.join('data', 'carlson_subshell_ionization_data.csv')
+        fileobj = StringIO(pkgutil.get_data('pyxray', resource).decode('ascii'))
         self.data = self._read(fileobj)
 
     def _read(self, fileobj):
         data = {}
         reader = csv.reader(fileobj)
-        reader.next() # skip header
+        next(reader) # skip header
 
         for row in reader:
             z = int(row[0])
@@ -95,7 +101,7 @@ class CarlsonSubshellDatabase(_SubshellDatabase):
 
     def energy_eV(self, z, subshell):
         if not z in self.data:
-            raise ValueError, "No ionization energy for atomic number %i." % z
+            raise ValueError("No ionization energy for atomic number %i." % z)
 
         if hasattr(subshell, 'index'):
             subshell = subshell.index
@@ -125,13 +131,14 @@ class KrauseOlivierSubshellDatabase(_SubshellDatabase):
     """
 
     def __init__(self):
-        fileobj = resource_stream(__name__, 'data/krause_subshell_width_data.csv')
+        resource = os.path.join('data', 'krause_subshell_width_data.csv')
+        fileobj = StringIO(pkgutil.get_data('pyxray', resource).decode('ascii'))
         self.data = self._read(fileobj)
 
     def _read(self, fileobj):
         data = {}
         reader = csv.reader(fileobj)
-        reader.next() # skip header
+        next(reader) # skip header
 
         for row in reader:
             z = int(row[0])
@@ -144,14 +151,14 @@ class KrauseOlivierSubshellDatabase(_SubshellDatabase):
         return data
     
     def energy_eV(self, z, subshell):
-        raise ValueError, "No ionization energy for atomic number %i." % z
+        raise ValueError("No ionization energy for atomic number %i." % z)
     
     def exists(self, z, subshell):
         return False
 
     def width_eV(self, z, subshell):
         if not z in self.data:
-            raise ValueError, "No width for atomic number %i." % z
+            raise ValueError("No width for atomic number %i." % z)
 
         if hasattr(subshell, 'index'):
             subshell = subshell.index

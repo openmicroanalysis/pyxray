@@ -117,14 +117,14 @@ class _ElementPropertiesDatabase(object):
             try:
                 return self.SYMBOLS.index(symbol.capitalize()) + 1
             except ValueError:
-                raise ValueError, "Unknown symbol: %s" % symbol
+                raise ValueError("Unknown symbol: %s" % symbol)
         elif name is not None:
             try:
                 return self.NAMES_EN.index(name.capitalize()) + 1
             except ValueError:
-                raise ValueError, "Unknown name: %s" % name
+                raise ValueError("Unknown name: %s" % name)
         else:
-            raise ValueError, "Please specify a symbol or name"
+            raise ValueError("Please specify a symbol or name")
         
     @abstractmethod
     def mass_density_kg_m3(self, z):
@@ -189,23 +189,23 @@ class SargentWelchElementPropertiesDatabase(_ElementPropertiesDatabase):
 
     def mass_density_kg_m3(self, z):
         if z == 85 or z == 87:
-            raise ValueError, "No mass density for atomic number: %i." % z
+            raise ValueError("No mass density for atomic number: %i." % z)
         if z < 0 or z > 96:
-            raise ValueError, "No mass density for atomic number: %i." % z
+            raise ValueError("No mass density for atomic number: %i." % z)
 
         try:
             return self.DENSITIES[z - 1] * 1000.0
         except IndexError:
-            return ValueError, "No mass density for atomic number: %i." % z
+            return ValueError("No mass density for atomic number: %i." % z)
     
     def atomic_mass_kg_mol(self, z):
         if z < 0 or z > 96:
-            raise ValueError, "No mass density for atomic number: %i." % z
+            raise ValueError("No mass density for atomic number: %i." % z)
 
         try:
             return self.ATOMIC_MASSES[z - 1] / 1000.0
         except IndexError:
-            return ValueError, "No atomic mass for atomic number: %i." % z
+            return ValueError("No atomic mass for atomic number: %i." % z)
 
 class NISTElementPropertiesDatabase(_ElementPropertiesDatabase):
 

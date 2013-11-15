@@ -19,25 +19,31 @@ __copyright__ = "Copyright (c) 2011 Philippe T. Pinard"
 __license__ = "GPL v3"
 
 # Standard library modules.
+import sys
 from abc import ABCMeta, abstractmethod
 from operator import methodcaller, attrgetter
 import string
-from itertools import izip_longest
+from functools import total_ordering
+from collections import Set
+try:
+    from itertools import zip_longest
+except ImportError:
+    from itertools import izip_longest as zip_longest
 
 # Third party modules.
 from pyparsing import Word, Group, Optional, OneOrMore, QuotedString, Literal
 
 # Local modules.
-import element_properties as ep
-from subshell import Subshell
-import transition_data
+import pyxray.element_properties as ep
+from pyxray.subshell import Subshell
+import pyxray.transition_data as transition_data
 
 # Globals and constants variables.
 _ZGETTER = attrgetter('z')
 
-_level = Optional(QuotedString("(", endQuoteChar=")") | Word(string.digits))
-_shell = Group(Word(string.ascii_uppercase) + _level)
-_iupac_pattern = _shell + Literal('-') + OneOrMore(_shell)
+_level_pattern = Optional(QuotedString("(", endQuoteChar=")") | Word(string.digits))
+_shell_pattern = Group(Word(string.ascii_uppercase) + _level_pattern)
+_iupac_pattern = _shell_pattern + Literal('-') + OneOrMore(_shell_pattern)
 
 def iupac2latex(iupac):
     """
@@ -45,7 +51,7 @@ def iupac2latex(iupac):
     
     :arg iupac: string of an IUPAC symbol, transition or transitionset 
     """
-    if not isinstance(iupac, basestring):
+    if isinstance(iupac, Transition):
         iupac = getattr(iupac, 'iupac')
 
     s = ''
@@ -63,7 +69,7 @@ def siegbahn2latex(siegbahn):
     
     :arg siegbahn: string of a Siegbahn symbol, transition or transitionset 
     """
-    if not isinstance(siegbahn, basestring):
+    if isinstance(siegbahn, Transition):
         siegbahn = getattr(siegbahn, 'siegbahn')
 
     s = ''
@@ -151,6 +157,7 @@ _SIEGBAHNS += \
     [u"SK\u03B1\u2032", u"SK\u03B1\u2032\u2032", u"SK\u03B13", u"SK\u03B14",
      u"SK\u03B15", u"SK\u03B16", u"SK\u03B2\u2032"]
 
+@total_ordering
 class _BaseTransition(object):
 
     __metaclass__ = ABCMeta
@@ -161,31 +168,25 @@ class _BaseTransition(object):
         self._siegbahn = siegbahn
         self._iupac = iupac
 
-    def __str__(self):
-        return "%s %s" % (self.symbol, self.siegbahn_nogreek)
-
+    if sys.version_info > (3, 0):
+        __str__ = lambda x: x.__unicode__()
+    else: # Python 2
+        __str__ = lambda x: unicode(x).encode('utf-8') #@UndefinedVariable
+        
     def __unicode__(self):
-        return u"%s %s" % (self.symbol, self.siegbahn)
-
-    @abstractmethod
-    def __cmp__(self, other):
-        raise NotImplementedError
+        return "%s %s" % (self.symbol, self.siegbahn)
 
     @abstractmethod
     def __hash__(self):
         raise NotImplementedError
-
-    def __gt__(self, other):
-        return NotImplemented # Revert to __cmp__
-
+    
+    @abstractmethod
+    def __eq__(self, other):
+        raise NotImplementedError
+    
+    @abstractmethod
     def __lt__(self, other):
-        return NotImplemented # Revert to __cmp__
-
-    def __ge__(self, other):
-        return NotImplemented # Revert to __cmp__
-
-    def __le__(self, other):
-        return NotImplemented # Revert to __cmp__
+        raise NotImplementedError
 
     @property
     def z(self):
@@ -242,8 +243,8 @@ class Transition(_BaseTransition):
         """
         if src is not None and dest is not None:
             if src < dest:
-                raise ValueError, "The source subshell (%s) must be greater " + \
-                        "than the destination subshell (%s)" % (src, dest)
+                raise ValueError("The source subshell (%s) must be greater " + \
+                        "than the destination subshell (%s)" % (src, dest))
 
             if hasattr(src, 'index'): src = src.index
             if hasattr(dest, 'index'): dest = dest.index
@@ -251,8 +252,8 @@ class Transition(_BaseTransition):
             try:
                 index = _SUBSHELLS.index((src, dest, satellite))
             except ValueError:
-                raise ValueError, "Unknown transition (%i -> %i, %i)" % \
-                        (src, dest, satellite)
+                raise ValueError("Unknown transition (%i -> %i, %i)" % \
+                        (src, dest, satellite))
         elif siegbahn is not None:
             siegbahn = _siegbahn_ascii_to_unicode(siegbahn)
 
@@ -262,9 +263,9 @@ class Transition(_BaseTransition):
             try:
                 index = _SIEGBAHNS.index(siegbahn)
             except ValueError:
-                raise ValueError, "Unknown transition (%s)" % siegbahn
+                raise ValueError("Unknown transition (%s)" % siegbahn)
         else:
-            raise ValueError, "Specify shells or Siegbahn"
+            raise ValueError("Specify shells or Siegbahn")
 
         self._index = index
         src, dest, satellite = _SUBSHELLS[index]
@@ -273,7 +274,7 @@ class Transition(_BaseTransition):
         self._dest = Subshell(z, dest)
         self._satellite = satellite
 
-        siegbahn = unicode(_SIEGBAHNS[index])
+        siegbahn = _SIEGBAHNS[index]
         iupac = '-'.join([self._dest.iupac, self._src.iupac])
         _BaseTransition.__init__(self, z, siegbahn, iupac)
 
@@ -293,16 +294,17 @@ class Transition(_BaseTransition):
         return '<Transition(%s %s)>' % (self.symbol, self.siegbahn_nogreek)
 
     def __eq__(self, other):
-        return self._index == other._index and self._z == other._z
+        return (self._z, self._index) == (other._z, other._index)
+    
+    def __lt__(self, other):
+        return self._z < other._z or self._index > other._index
 
-    def __ne__(self, other):
-        return self._index != other._index or self._z != other._z
-
-    def __cmp__(self, other):
-        c = cmp(self._z, other._z)
-        if c != 0:
-            return c
-        return -1 * cmp(self._index, other._index)
+    if sys.version_info < (3, 0): 
+        def __cmp__(self, other):
+            c = cmp(self._z, other._z)
+            if c != 0:
+                return c
+            return -1 * cmp(self._index, other._index)
 
     def __hash__(self):
         return hash(('Transition', self._z, self._index))
@@ -385,12 +387,15 @@ class Transition(_BaseTransition):
         """
         return self._width_eV
 
-class transitionset(frozenset, _BaseTransition):
-
-    def __new__(cls, z, siegbahn, iupac, transitions):
-        # Required
-        # See http://stackoverflow.com/questions/4850370/inheriting-behaviours-for-set-and-frozenset-seem-to-differ
-        return frozenset.__new__(cls, transitions)
+class transitionset(Set, _BaseTransition):
+    
+    @classmethod
+    def _from_iterable(cls, it):
+        transitions = list(it)
+        zs = list(set(map(_ZGETTER, transitions)))
+        if len(zs) != 1:
+            raise ValueError("All transitions in a set must have the same atomic number")
+        return cls(zs[0], "", "", transitions)
 
     def __init__(self, z, siegbahn, iupac, transitions):
         """
@@ -398,53 +403,71 @@ class transitionset(frozenset, _BaseTransition):
         The atomic number must be the same for all transitions. 
         
         :arg z: atomic number of all transitions
-        :arg name: name of the set (e.g. ``Ka``)
-        :arg transitions: transitions in the set
-        :arg name_unicode: name of the set in unicode
+        :arg siegbahn: Siegbahn symbol of the set
+        :arg iupac: IUPAC symbol of the set
+        :arg transitions: transitions of the set
         """
         if not transitions:
-            raise ValueError, 'A transitionset must contain at least one transition'
+            raise ValueError('A transitionset must contain at least one transition')
 
         # Common z
-        zs = map(_ZGETTER, transitions)
-        if len(set(zs)) != 1:
-            raise ValueError, "All transitions in a set must have the same atomic number"
+        zs = set(map(_ZGETTER, transitions))
+        if len(zs) != 1:
+            raise ValueError("All transitions in a set must have the same atomic number")
 
-        frozenset.__init__(transitions)
         _BaseTransition.__init__(self, z, siegbahn, iupac)
+        self._transitions = frozenset(transitions)
 
         self._most_probable = \
             sorted(self, key=attrgetter('probability'), reverse=True)[0]
 
     def __repr__(self):
-        return '<transitionset(%s: %s)>' % (str(self), ', '.join(map(str, sorted(self))))
+        s = ', '.join(map(attrgetter('siegbahn_nogreek'), sorted(self)))
+        return '<transitionset(%s %s: %s)>' % (self.symbol, self.siegbahn_nogreek, s)
 
-    def __cmp__(self, other):
-        c = cmp(self._z, other._z)
-        if c != 0:
-            return c
+    def __len__(self):
+        return len(self._transitions)
+
+    def __iter__(self):
+        return iter(self._transitions)
+
+    def __contains__(self, other):
+        return other in self._transitions
+
+    def __eq__(self, other):
+        indexes = sorted(map(attrgetter('_index'), self))
+        other_indexes = sorted(map(attrgetter('_index'), other))
+        return self._z == other._z and indexes == other_indexes
+
+    def __lt__(self, other):
+        if self._z < other._z:
+            return True
 
         indexes = sorted(map(attrgetter('_index'), self))
         other_indexes = sorted(map(attrgetter('_index'), other))
+        fillvalue = len(_SUBSHELLS)
         for index, other_index in \
-                izip_longest(indexes, other_indexes, fillvalue=79):
-            c = cmp(index, other_index)
+                zip_longest(indexes, other_indexes, fillvalue=fillvalue):
+            if index > other_index:
+                return True
+
+        return False
+
+    if sys.version_info < (3, 0): 
+        def __cmp__(self, other):
+            c = cmp(self._z, other._z)
             if c != 0:
-                return -1 * c
-
-        return 0
-
-    def __gt__(self, other):
-        return NotImplemented # Revert to __cmp__
-
-    def __lt__(self, other):
-        return NotImplemented # Revert to __cmp__
-
-    def __ge__(self, other):
-        return NotImplemented # Revert to __cmp__
-
-    def __le__(self, other):
-        return NotImplemented # Revert to __cmp__
+                return c
+    
+            indexes = sorted(map(attrgetter('_index'), self))
+            other_indexes = sorted(map(attrgetter('_index'), other))
+            for index, other_index in \
+                    izip_longest(indexes, other_indexes, fillvalue=79):
+                c = cmp(index, other_index)
+                if c != 0:
+                    return -1 * c
+    
+            return 0
 
     @property
     def most_probable(self):
@@ -493,8 +516,8 @@ def from_string(s):
     """
     words = s.split(" ")
     if len(words) != 2:
-        raise ValueError, "The transition string must have 2 words: " + \
-            "1. the symbol of the element and 2. the transition notation"
+        raise ValueError("The transition string must have 2 words: " + \
+            "1. the symbol of the element and 2. the transition notation")
 
     z = ep.atomic_number(symbol=words[0])
     notation = words[1]
@@ -513,7 +536,7 @@ def from_string(s):
     elif notation in _TRANSITIONSETS: # transitionset from Family, group or shell
         return _TRANSITIONSETS[notation](z)
     else:
-        raise ValueError, "Cannot parse transition string: %s" % s
+        raise ValueError("Cannot parse transition string: %s" % s)
 
 def _group(z, siegbahn, iupac, include_satellite=False):
     transitions = []
@@ -527,9 +550,9 @@ def _group(z, siegbahn, iupac, include_satellite=False):
         transitions = filter(methodcaller('is_diagram_line'), transitions)
 
     if not transitions:
-        raise ValueError, 'No transition for %s %s' % (ep.symbol(z), iupac)
+        raise ValueError('No transition for %s %s' % (ep.symbol(z), iupac))
 
-    return transitionset(z, siegbahn, iupac, transitions)
+    return transitionset(z, siegbahn, iupac, list(transitions))
 
 def _shell(z, dest, include_satellite=False):
     subshell = Subshell(z, dest)
@@ -545,9 +568,9 @@ def _shell(z, dest, include_satellite=False):
 
     transitions = filter(methodcaller('exists'), transitions)
     if not transitions:
-        raise ValueError, 'No transition for %s %s' % (ep.symbol(z), iupac)
+        raise ValueError('No transition for %s %s' % (ep.symbol(z), iupac))
 
-    return transitionset(z, siegbahn, iupac, transitions)
+    return transitionset(z, siegbahn, iupac, list(transitions))
 
 def K_family(z):
     """

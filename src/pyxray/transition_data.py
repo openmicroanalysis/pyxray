@@ -19,11 +19,16 @@ __copyright__ = "Copyright (c) 2011 Philippe T. Pinard"
 __license__ = "GPL v3"
 
 # Standard library modules.
-from abc import ABCMeta, abstractmethod
+import os
 import csv
+import pkgutil
+from abc import ABCMeta, abstractmethod
+try:
+    from io import StringIO
+except ImportError:
+    import StringIO
 
 # Third party modules.
-from pkg_resources import resource_stream #@UnresolvedImport
 
 # Local modules.
 
@@ -160,7 +165,7 @@ class _BaseTransitionDatabase(_TransitionDatabase):
             self._get_z_subshells(z, subshells, transition)
 
         if not z in self.data:
-            raise ValueError, "No relaxation data for atomic number %i." % z
+            raise ValueError("No relaxation data for atomic number %i." % z)
 
         return self.data[z][src][dest][satellite]
 
@@ -204,7 +209,8 @@ class PENELOPETransitionDatabaseMod(_BaseTransitionDatabase):
     """
 
     def __init__(self):
-        fileobj = resource_stream(__name__, 'data/penelope_mod_transition_data.csv')
+        resource = os.path.join('data', 'penelope_mod_transition_data.csv')
+        fileobj = StringIO(pkgutil.get_data('pyxray', resource).decode('ascii'))
         _BaseTransitionDatabase.__init__(self, fileobj)
 
 class JEOLTransitionDatabase(_BaseTransitionDatabase):
@@ -214,7 +220,8 @@ class JEOLTransitionDatabase(_BaseTransitionDatabase):
     """
 
     def __init__(self):
-        fileobj = resource_stream(__name__, 'data/jeol_transition_data.csv')
+        resource = os.path.join('data', 'jeol_transition_data.csv')
+        fileobj = StringIO(pkgutil.get_data('pyxray', resource).decode('ascii'))
         _BaseTransitionDatabase.__init__(self, fileobj)
 
 class SuperDatabase(_TransitionDatabase):

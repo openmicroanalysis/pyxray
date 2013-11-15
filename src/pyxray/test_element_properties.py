@@ -15,7 +15,7 @@ import logging
 # Third party modules.
 
 # Local modules.
-import element_properties as ep
+import pyxray.element_properties as ep
 
 # Globals and constants variables.
 
@@ -38,12 +38,12 @@ class Test_ElementPropertiesDatabase(unittest.TestCase):
         unittest.TestCase.tearDown(self)
 
     def testsymbol(self):
-        self.assertEquals('H', ep.symbol(1))
-        self.assertEquals('Uuo', ep.symbol(118))
+        self.assertEqual('H', ep.symbol(1))
+        self.assertEqual('Uuo', ep.symbol(118))
 
     def testname(self):
-        self.assertEquals('Hydrogen', ep.name(1))
-        self.assertEquals('Ununoctium', ep.name(118))
+        self.assertEqual('Hydrogen', ep.name(1))
+        self.assertEqual('Ununoctium', ep.name(118))
 
     def testatomic_number(self):
         self.assertEqual(1, ep.atomic_number(symbol='H'))
@@ -74,10 +74,10 @@ class TestSargentWelchElementPropertiesDatabase(unittest.TestCase):
         self.assertRaises(ValueError, self.ep.atomic_mass_kg_mol, 118)
 
     def testsymbol(self):
-        self.assertEquals('Al', ep.symbol(13))
+        self.assertEqual('Al', ep.symbol(13))
 
     def testname(self):
-        self.assertEquals('Aluminium', ep.name(13))
+        self.assertEqual('Aluminium', ep.name(13))
 
     def testatomic_number(self):
         self.assertEqual(13, ep.atomic_number(symbol='Al'))
@@ -98,10 +98,10 @@ class TestModule(unittest.TestCase):
         self.assertAlmostEqual(51.996000, ep.atomic_mass_kg_mol(24) * 1000.0)
 
     def testsymbol(self):
-        self.assertEquals('Al', ep.symbol(13))
+        self.assertEqual('Al', ep.symbol(13))
 
     def testname(self):
-        self.assertEquals('Aluminium', ep.name(13))
+        self.assertEqual('Aluminium', ep.name(13))
 
     def testatomic_number(self):
         self.assertEqual(13, ep.atomic_number(symbol='Al'))

@@ -15,7 +15,7 @@ import logging
 # Third party modules.
 
 # Local modules.
-import subshell_data
+import pyxray.subshell_data as subshell_data
 
 # Globals and constants variables.
 
@@ -29,7 +29,7 @@ class TestIonizationData(unittest.TestCase):
 #
     def testenergy_eV(self):
         # Test Al K.
-        self.assertAlmostEquals(1.564e3, subshell_data.energy_eV(13, 1), 4)
+        self.assertAlmostEqual(1.564e3, subshell_data.energy_eV(13, 1), 4)
 
     def testexists(self):
         self.assertTrue(subshell_data.exists(13, 1))

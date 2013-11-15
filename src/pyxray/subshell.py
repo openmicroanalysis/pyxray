@@ -17,12 +17,13 @@ __copyright__ = "Copyright (c) 2011 Philippe T. Pinard"
 __license__ = "GPL v3"
 
 # Standard library modules.
+from functools import total_ordering
 
 # Third party modules.
 
 # Local modules.
-import element_properties as ep
-import subshell_data
+import pyxray.element_properties as ep
+import pyxray.subshell_data as subshell_data
 
 # Globals and constants variables.
 _IUPACS = ["K",
@@ -49,6 +50,7 @@ _ORBITALS = ["1s1/2",
              "6s1/2", "6p1/2", "6p3/2", "6d3/2", "6d5/2",
              "7s1/2", ""]
 
+@total_ordering
 class Subshell(object):
     def __init__(self, z, index=None, orbital=None, iupac=None, siegbahn=None):
         """
@@ -71,27 +73,27 @@ class Subshell(object):
 
         if index is not None:
             if index < 1 or index > 30:
-                raise ValueError, "Id (%s) must be between [1, 30]." % index
+                raise ValueError("Id (%s) must be between [1, 30]." % index)
         elif orbital is not None:
             try:
                 index = _ORBITALS.index(orbital.lower()) + 1
             except ValueError:
-                raise ValueError, "Unknown orbital (%s). Possible orbitals: %s" % \
-                        (orbital, _ORBITALS)
+                raise ValueError("Unknown orbital (%s). Possible orbitals: %s" % \
+                        (orbital, _ORBITALS))
         elif iupac is not None:
             try:
                 index = _IUPACS.index(iupac.upper()) + 1
             except ValueError:
-                raise ValueError, "Unknown IUPAC (%s). Possible IUPAC: %s" % \
-                        (iupac, _IUPACS)
+                raise ValueError("Unknown IUPAC (%s). Possible IUPAC: %s" % \
+                        (iupac, _IUPACS))
         elif siegbahn is not None:
             try:
                 index = _SIEGBAHNS.index(siegbahn.upper()) + 1
             except ValueError:
-                raise ValueError, "Unknown Siegbahn (%s). Possible Siegbahn: %s" % \
-                        (siegbahn, _SIEGBAHNS)
+                raise ValueError("Unknown Siegbahn (%s). Possible Siegbahn: %s" % \
+                        (siegbahn, _SIEGBAHNS))
         else:
-            raise ValueError, "You must specify an index, orbital, IUPAC or Siegbahn"
+            raise ValueError("You must specify an index, orbital, IUPAC or Siegbahn")
 
         self._index = index
         self._orbtial = _ORBITALS[index - 1]
@@ -122,17 +124,10 @@ class Subshell(object):
         return hash(("Subshell", self._z, self._index))
 
     def __eq__(self, other):
-        return self._index == other._index and self._z == other._z
+        return (self._z, self._index) == (other._z, other._index)
 
-    def __ne__(self, other):
-        return self._index != other._index or self._z != other._z
-
-    def __cmp__(self, other):
-        c = cmp(self._z, other._z)
-        if c != 0:
-            return c
-
-        return cmp(self._index, other._index)
+    def __lt__(self, other):
+        return (self._z, self._index) < (other._z, other._index)
 
     def exists(self):
         """

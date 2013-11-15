@@ -11,20 +11,21 @@ __license__ = "GPL v3"
 import unittest
 import logging
 import pickle
+import sys
 
 # Third party modules.
 
 # Local modules.
-from transition import \
+from pyxray.transition import \
     (Transition, get_transitions, transitionset, from_string,
      K_family, L_family, M_family, N_family,
      Ka, Kb, La, Lb, Lg, Ma, Mb, Mg,
      LI, LII, LIII, MI, MII, MIII, MIV, MV,
      iupac2latex, siegbahn2latex, _siegbahn_unicode_to_ascii)
-from subshell import Subshell
+from pyxray.subshell import Subshell
 
 # Globals and constants variables.
-from transition import _SUBSHELLS, _SIEGBAHNS
+from pyxray.transition import _SUBSHELLS, _SIEGBAHNS
 
 
 class TestTransition(unittest.TestCase):
@@ -45,25 +46,24 @@ class TestTransition(unittest.TestCase):
     def test__init__subshells(self):
         x = Transition(13, Subshell(13, 4), Subshell(13, 1))
         self.assertEqual(13, x.z)
-        self.assertEqual("Al Ka1", str(x))
+        self.assertEqual(0, x._index)
 
     def test__init__siegbahn(self):
-        x = Transition(13, siegbahn="La1")
+        x = Transition(13, siegbahn="Ka1")
         self.assertEqual(13, x.z)
-        self.assertEqual("Al La1", str(x))
+        self.assertEqual(0, x._index)
 
     def test__str__(self):
-        for i, siegbahn in enumerate(_SIEGBAHNS):
-            siegbahn = _siegbahn_unicode_to_ascii(siegbahn)
-            x = getattr(self, "x%i" % i)
-            self.assertEqual("Al " + siegbahn, str(x))
+        if sys.version_info > (3, 0):
+            for i, siegbahn in enumerate(_SIEGBAHNS):
+                x = getattr(self, "x%i" % i)
+                self.assertEqual("Al " + siegbahn, str(x))
+        else:
+            for i, siegbahn in enumerate(_SIEGBAHNS):
+                x = getattr(self, "x%i" % i)
+                self.assertEqual("Al " + siegbahn, unicode(x)) #@UndefinedVariable
 
-    def test__unicode__(self):
-        for i, siegbahn in enumerate(_SIEGBAHNS):
-            x = getattr(self, "x%i" % i)
-            self.assertEqual("Al " + siegbahn, unicode(x))
-
-    def test__cmp__(self):
+    def test__lt__(self):
         self.assertGreater(Transition(13, 4, 1), Transition(6, 4, 1))
         self.assertGreater(Transition(13, 4, 1), Transition(13, 9, 4))
         self.assertEqual(Transition(13, 4, 1), Transition(13, 4, 1))
@@ -132,7 +132,7 @@ class TestTransition(unittest.TestCase):
     def testpickle(self):
         s = pickle.dumps(self.x0)
         x0 = pickle.loads(s)
-        self.assertEquals(x0, self.x0)
+        self.assertEqual(x0, self.x0)
 
 class Testtransitionset(unittest.TestCase):
 
@@ -142,7 +142,7 @@ class Testtransitionset(unittest.TestCase):
         t1 = Transition(13, 4, 1)
         t2 = Transition(13, 3, 1)
         t3 = Transition(13, 3, 1)
-        self.set = transitionset(13, u'G\u03b1', 'G1-H(2,3)', [t1, t2, t3])
+        self.set = transitionset(13, 'G\u03b1', 'G1-H(2,3)', [t1, t2, t3])
 
     def tearDown(self):
         unittest.TestCase.tearDown(self)
@@ -154,29 +154,29 @@ class Testtransitionset(unittest.TestCase):
     def test__init__(self):
         t1 = Transition(13, 4, 1)
         t2 = Transition(14, 3, 1)
-        self.assertRaises(ValueError, transitionset, 13, u'G\u03b1', 'G1-H(2,3)', [t1, t2])
+        self.assertRaises(ValueError, transitionset, 13, 'G\u03b1', 'G1-H(2,3)', [t1, t2])
 
     def test__repr__(self):
-        self.assertEqual('<transitionset(Al Ga: Al Ka2, Al Ka1)>', repr(self.set))
+        self.assertEqual('<transitionset(Al Ga: Ka2, Ka1)>', repr(self.set))
 
     def test__str__(self):
-        self.assertEqual('Al Ga', str(self.set))
-
-    def test__unicode__(self):
-        self.assertEqual(u'Al G\u03b1', unicode(self.set))
+        if sys.version_info > (3, 0):
+            self.assertEqual('Al G\u03b1', str(self.set))
+        else:
+            self.assertEqual('Al G\u03b1', unicode(self.set)) #@UndefinedVariable
 
     def test__contains__(self):
         self.assertTrue(Transition(13, 4, 1) in self.set)
         self.assertFalse(Transition(13, 7, 1) in self.set)
 
-    def test__cmp__(self):
-        other = transitionset(6, u'G\u03b1', 'G1-H(2,3)', [Transition(6, 4, 1)])
+    def test__lt__(self):
+        other = transitionset(6, 'G\u03b1', 'G1-H(2,3)', [Transition(6, 4, 1)])
         self.assertGreater(self.set, other)
 
-        other = transitionset(13, u'G\u03b1', 'G1-H(2,3)', [Transition(13, 4, 1), Transition(13, 3, 1)])
-        self.assertEquals(self.set, other)
+        other = transitionset(13, 'G\u03b1', 'G1-H(2,3)', [Transition(13, 4, 1), Transition(13, 3, 1)])
+        self.assertEqual(self.set, other)
 
-        other2 = transitionset(13, u'G\u03b1', 'G1-H(2,3)', [Transition(13, 4, 1)])
+        other2 = transitionset(13, 'G\u03b1', 'G1-H(2,3)', [Transition(13, 4, 1)])
         self.assertLess(other2, other)
         self.assertGreater(other, other2)
 
@@ -184,10 +184,10 @@ class Testtransitionset(unittest.TestCase):
         self.assertEqual(Transition(13, 4, 1), self.set.most_probable)
 
     def testsiegbahn(self):
-        self.assertEqual(u'G\u03b1', self.set.siegbahn)
+        self.assertEqual('G\u03b1', self.set.siegbahn)
 
     def testsiegbahn_nogreek(self):
-        self.assertEqual(u'Ga', self.set.siegbahn_nogreek)
+        self.assertEqual('Ga', self.set.siegbahn_nogreek)
 
     def testiupac(self):
         self.assertEqual('G1-H(2,3)', self.set.iupac)
@@ -199,9 +199,6 @@ class TestModule(unittest.TestCase):
 
     def tearDown(self):
         unittest.TestCase.tearDown(self)
-
-    def testskeleton(self):
-        self.assertTrue(True)
 
     def testget_transitions(self):
         transitions = get_transitions(13)
@@ -282,11 +279,11 @@ class TestModule(unittest.TestCase):
 
     def testshell(self):
         # L
-        transitions = set() | LI(79) | LII(79) | LIII(79)
+        transitions = LI(79) | LII(79) | LIII(79)
         self.assertEqual(L_family(79), transitions)
 
         # M
-        transitions = set() | MI(79) | MII(79) | MIII(79) | MIV(79) | MV(79)
+        transitions = MI(79) | MII(79) | MIII(79) | MIV(79) | MV(79)
         self.assertEqual(M_family(79), transitions)
 
     def testsiegbahn2latex(self):

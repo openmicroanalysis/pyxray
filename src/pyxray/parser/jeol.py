@@ -96,7 +96,7 @@ def extract(infile, outfile):
 
         writer.writerow([z] + subshells + [probability, energy])
 
-    print 'Not read transition(s): %s' % ', '.join(notread)
+    print('Not read transition(s): %s' % ', '.join(notread))
 
 if __name__ == '__main__':
     infile = open('lambda.asc', 'r')
