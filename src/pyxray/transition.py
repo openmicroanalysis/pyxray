@@ -427,6 +427,9 @@ class transitionset(Set, _BaseTransition):
 
     def __len__(self):
         return len(self._transitions)
+    
+    def __hash__(self):
+        return hash(tuple(self))
 
     def __iter__(self):
         return iter(self._transitions)
