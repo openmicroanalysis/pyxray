@@ -72,7 +72,7 @@ class EADLParser(object):
 
     def extract(self, infile, outfile, fieldnames, parser_func):
         writer = csv.DictWriter(outfile, fieldnames, extrasaction='ignore')
-        
+
         group_separator = self._get_group_separator()
         for key, group in itertools.groupby(infile, group_separator):
             if key: continue
@@ -94,11 +94,11 @@ class EADLParser(object):
     def extract_subshell_binding_energy(self, infile, outfile):
         fieldnames = [ATOMIC_NUMBER, PRIMARY_SUBSHELL, BINDING_ENERGY]
         self.extract(infile, outfile, fieldnames, self._parse_subshell_binding_energy)
-        
+
     def extract_subshell_width(self, infile, outfile):
         fieldnames = [ATOMIC_NUMBER, PRIMARY_SUBSHELL, RADIATIVE_WIDTH]
         self.extract(infile, outfile, fieldnames, self._parse_subshell_radiative_width)
-        
+
     def extract_radiative_transition(self, infile, outfile):
         fieldnames = [ATOMIC_NUMBER, PRIMARY_SUBSHELL, SECONDARY_SUBSHELL,
                       RADIATIVE_PROBABILITY, RADIATIVE_ENERGY]
@@ -147,7 +147,7 @@ class EADLParser(object):
             outrows.append({PRIMARY_SUBSHELL: subshell, BINDING_ENERGY: energy})
 
         return outrows
-    
+
     def _parse_subshell_radiative_width(self, header, inrows):
         if header[REACTION_DESCRIPTOR] != 91 or \
                 header[REACTION_PROPERTY] != 921:
@@ -165,7 +165,7 @@ class EADLParser(object):
             outrows.append({PRIMARY_SUBSHELL: subshell, RADIATIVE_WIDTH: width})
 
         return outrows
-    
+
     def _parse_radiative_transition(self, header, inrows):
         if header[REACTION_DESCRIPTOR] != 92 or \
                 header[REACTION_PROPERTY] != 931 or \
@@ -195,7 +195,7 @@ class EADLParser(object):
                             RADIATIVE_ENERGY: energy})
 
         return outrows
-    
+
 if __name__ == '__main__':
     parser = EADLParser()
 

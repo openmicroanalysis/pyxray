@@ -48,8 +48,8 @@ _iupac_pattern = _shell_pattern + Literal('-') + OneOrMore(_shell_pattern)
 def iupac2latex(iupac):
     """
     Formats IUPAC symbol for LaTeX.
-    
-    :arg iupac: string of an IUPAC symbol, transition or transitionset 
+
+    :arg iupac: string of an IUPAC symbol, transition or transitionset
     """
     if isinstance(iupac, Transition):
         iupac = getattr(iupac, 'iupac')
@@ -66,8 +66,8 @@ def iupac2latex(iupac):
 def siegbahn2latex(siegbahn):
     """
     Formats Siegbahn symbol for LaTeX.
-    
-    :arg siegbahn: string of a Siegbahn symbol, transition or transitionset 
+
+    :arg siegbahn: string of a Siegbahn symbol, transition or transitionset
     """
     if isinstance(siegbahn, Transition):
         siegbahn = getattr(siegbahn, 'siegbahn')
@@ -171,19 +171,19 @@ class _BaseTransition(object):
     if sys.version_info > (3, 0):
         __str__ = lambda x: x.__unicode__()
     else: # Python 2
-        __str__ = lambda x: unicode(x).encode('utf-8') #@UndefinedVariable
-        
+        __str__ = lambda x: "%s %s" % (x.symbol, x.siegbahn_nogreek)
+
     def __unicode__(self):
         return "%s %s" % (self.symbol, self.siegbahn)
 
     @abstractmethod
     def __hash__(self):
         raise NotImplementedError
-    
+
     @abstractmethod
     def __eq__(self, other):
         raise NotImplementedError
-    
+
     @abstractmethod
     def __lt__(self, other):
         raise NotImplementedError
@@ -229,12 +229,12 @@ class Transition(_BaseTransition):
 
     def __init__(self, z, src=None, dest=None, satellite=0, siegbahn=None):
         """
-        Creates a new transition from a source and destination subshells 
+        Creates a new transition from a source and destination subshells
         or from its Siegbahn symbol::
-        
+
            t = Transition(29, 4, 1)
            t = Transition(29, siegbahn='Ka1')
-           
+
         :arg z: atomic number (from 3 to 99 inclusively)
         :arg src: source subshell index between 1 (K) and 30 (outer) or subshell object
         :arg dest: destination subshell index between 1 (K) and 30 (outer) or subshell object
@@ -295,16 +295,16 @@ class Transition(_BaseTransition):
 
     def __eq__(self, other):
         return (self._z, self._index) == (other._z, other._index)
-    
+
     def __lt__(self, other):
         return self._z < other._z or self._index > other._index
 
-    if sys.version_info < (3, 0): 
+    if sys.version_info < (3, 0):
         def __cmp__(self, other):
-            c = cmp(self._z, other._z)
+            c = cmp(self._z, other._z) # @UndefinedVariable
             if c != 0:
                 return c
-            return -1 * cmp(self._index, other._index)
+            return -1 * cmp(self._index, other._index) # @UndefinedVariable
 
     def __hash__(self):
         return hash(('Transition', self._z, self._index))
@@ -388,7 +388,7 @@ class Transition(_BaseTransition):
         return self._width_eV
 
 class transitionset(Set, _BaseTransition):
-    
+
     @classmethod
     def _from_iterable(cls, it):
         transitions = list(it)
@@ -400,8 +400,8 @@ class transitionset(Set, _BaseTransition):
     def __init__(self, z, siegbahn, iupac, transitions):
         """
         Creates a frozen set (immutable) of transitions.
-        The atomic number must be the same for all transitions. 
-        
+        The atomic number must be the same for all transitions.
+
         :arg z: atomic number of all transitions
         :arg siegbahn: Siegbahn symbol of the set
         :arg iupac: IUPAC symbol of the set
@@ -427,7 +427,7 @@ class transitionset(Set, _BaseTransition):
 
     def __len__(self):
         return len(self._transitions)
-    
+
     def __hash__(self):
         return hash(tuple(self))
 
@@ -456,20 +456,20 @@ class transitionset(Set, _BaseTransition):
 
         return False
 
-    if sys.version_info < (3, 0): 
+    if sys.version_info < (3, 0):
         def __cmp__(self, other):
-            c = cmp(self._z, other._z)
+            c = cmp(self._z, other._z) # @UndefinedVariable
             if c != 0:
                 return c
-    
+
             indexes = sorted(map(attrgetter('_index'), self))
             other_indexes = sorted(map(attrgetter('_index'), other))
             for index, other_index in \
-                    izip_longest(indexes, other_indexes, fillvalue=79):
-                c = cmp(index, other_index)
+                    zip_longest(indexes, other_indexes, fillvalue=79):
+                c = cmp(index, other_index) # @UndefinedVariable
                 if c != 0:
                     return -1 * c
-    
+
             return 0
 
     @property
@@ -481,7 +481,7 @@ def get_transitions(z, energylow_eV=0.0, energyhigh_eV=1e6, include_satellite=Fa
     Returns all the X-ray transitions for the specified atomic number if
     the energy of these transitions is between the specified energy limits.
     The energy limits are inclusive.
-    
+
     :arg z: atomic number (3 to 99)
     :arg energylow_eV: lower energy limit in eV (default: 0 eV)
     :arg energyhigh_eV: upper energy limit in eV (default: 1 MeV)
@@ -506,15 +506,15 @@ def get_transitions(z, energylow_eV=0.0, energyhigh_eV=1e6, include_satellite=Fa
 def from_string(s):
     """
     Returns a :class:`Transition` or :class:`transitionset` from the given
-    string. 
+    string.
     The first word must be the symbol of the element followed by either the
-    Siegbahn (e.g. ``Al Ka1``) or IUPAC (``Al K-L3``) notation of the 
+    Siegbahn (e.g. ``Al Ka1``) or IUPAC (``Al K-L3``) notation of the
     transition.
-    The second word can also represent transition family (e.g. ``Al K``) or 
+    The second word can also represent transition family (e.g. ``Al K``) or
     shell (``Al LIII``).
-    
+
     :arg s: string representing the transition
-    
+
     :return: transition or set of transitions
     """
     words = s.split(" ")

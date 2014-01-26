@@ -41,7 +41,7 @@ class _TransitionDatabase(object):
     def _get_z_subshells(self, z=None, subshells=None, transition=None):
         """
         Parses the arguments and returns:
-        
+
             * z
             * index of source subshell
             * index of destination subshell
@@ -71,10 +71,10 @@ class _TransitionDatabase(object):
         Returns the energy of a transition in eV.
         One can either specified the atomic number and subshells or an atomic
         transition object.
-        
+
         :arg z: atomic number
-        :arg subshells: :class:`tuple` of length 2 or 3. 
-            The first and second values are respectively the source and 
+        :arg subshells: :class:`tuple` of length 2 or 3.
+            The first and second values are respectively the source and
             destination subshells id. They can be specified either using an
             integer between 1 and 30 or a :class:`Subshell` object.
             The third value is optional. It specifies the satellite index.
@@ -90,10 +90,10 @@ class _TransitionDatabase(object):
         Returns the probability of an transition.
         One can either specified the atomic number and subshells or an atomic
         transition object.
-        
+
         :arg z: atomic number
-        :arg subshells: :class:`tuple` of length 2 or 3. 
-            The first and second values are respectively the source and 
+        :arg subshells: :class:`tuple` of length 2 or 3.
+            The first and second values are respectively the source and
             destination subshells id. They can be specified either using an
             integer between 1 and 30 or a :class:`Subshell` object.
             The third value is optional. It specifies the satellite index.
@@ -109,10 +109,10 @@ class _TransitionDatabase(object):
         Returns whether the transition exists.
         One can either specified the atomic number and subshells or an atomic
         transition object.
-        
+
         :arg z: atomic number
-        :arg subshells: :class:`tuple` of length 2 or 3. 
-            The first and second values are respectively the source and 
+        :arg subshells: :class:`tuple` of length 2 or 3.
+            The first and second values are respectively the source and
             destination subshells id. They can be specified either using an
             integer between 1 and 30 or a :class:`Subshell` object.
             The third value is optional. It specifies the satellite index.
@@ -159,7 +159,7 @@ class _BaseTransitionDatabase(_TransitionDatabase):
                 data[z][src][dest][satellite][self.KEY_PROBABILITY] = probability
 
         return data
-    
+
     def _get_datum(self, z=None, subshells=None, transition=None):
         z, src, dest, satellite = \
             self._get_z_subshells(z, subshells, transition)
@@ -191,17 +191,17 @@ class _BaseTransitionDatabase(_TransitionDatabase):
 class PENELOPETransitionDatabaseMod(_BaseTransitionDatabase):
     """
     Relaxation data for singly-ionised atoms.
-    
+
     The relaxation data should be comma-separated with the following
     columns: atomic number, destination shell, source shell, transition
-    probability and transition energy (in eV). 
-        
-    The relaxation data is taken from PENELOPE 2011, where the transition 
-    probabilities and energies were extracted from the LLNL Evaluated 
-    Atomic Data Library (Perkins et al. 1991). 
+    probability and transition energy (in eV).
+
+    The relaxation data is taken from PENELOPE 2011, where the transition
+    probabilities and energies were extracted from the LLNL Evaluated
+    Atomic Data Library (Perkins et al. 1991).
     Some energies values were replaced by more accurate, when available.
-    Energies of x rays from K- and L-shell transitions were taken from 
-    Deslattes et al. (2004). 
+    Energies of x rays from K- and L-shell transitions were taken from
+    Deslattes et al. (2004).
     The energies of characteristic M lines are from Bearden's (1967) review.
     The energies for Lithium, Beryllium and Boron were taken from the
     DTSA database.
@@ -242,7 +242,7 @@ class SuperDatabase(_TransitionDatabase):
             return probability
 
         factor = self.jeol.probability(z, subshells, transition)
-        
+
         # Convert JEOL probability using other line from PENELOPE
         z, _, dest, _ = self._get_z_subshells(z, subshells, transition)
         if dest == 1: # K
@@ -288,10 +288,10 @@ def energy_eV(z=None, subshells=None, transition=None):
     Returns the energy of a transition in eV.
     One can either specified the atomic number and subshells or an atomic
     transition object.
-    
+
     :arg z: atomic number
-    :arg subshells: :class:`tuple` of length 2 or 3. 
-            The first and second values are respectively the source and 
+    :arg subshells: :class:`tuple` of length 2 or 3.
+            The first and second values are respectively the source and
             destination subshells id. They can be specified either using an
             integer between 1 and 30 or a :class:`Subshell` object.
             The third value is optional. It specifies the satellite index.
@@ -306,10 +306,10 @@ def probability(z=None, subshells=None, transition=None):
     Returns the probability of an transition.
     One can either specified the atomic number and subshells or an atomic
     transition object.
-    
+
     :arg z: atomic number
-    :arg subshells: :class:`tuple` of length 2 or 3. 
-            The first and second values are respectively the source and 
+    :arg subshells: :class:`tuple` of length 2 or 3.
+            The first and second values are respectively the source and
             destination subshells id. They can be specified either using an
             integer between 1 and 30 or a :class:`Subshell` object.
             The third value is optional. It specifies the satellite index.
@@ -324,10 +324,10 @@ def exists(z=None, subshells=None, transition=None):
     Returns whether the transition exists.
     One can either specified the atomic number and subshells or an atomic
     transition object.
-    
+
     :arg z: atomic number
-    :arg subshells: :class:`tuple` of length 2 or 3. 
-            The first and second values are respectively the source and 
+    :arg subshells: :class:`tuple` of length 2 or 3.
+            The first and second values are respectively the source and
             destination subshells id. They can be specified either using an
             integer between 1 and 30 or a :class:`Subshell` object.
             The third value is optional. It specifies the satellite index.

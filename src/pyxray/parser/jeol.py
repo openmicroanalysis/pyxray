@@ -36,20 +36,20 @@ _TRANSITION_LOOKUP = {
     'KB5': (9, 1, 0), 'SKB+': (7, 1, 1),
 
     'LA1': (9, 4, 0), 'LA2': (8, 4, 0),
-    
-    'LL': (5, 4, 0), 'LN': (5, 3, 0), 
+
+    'LL': (5, 4, 0), 'LN': (5, 3, 0),
 
     'LB1': (8, 3, 0), 'LB2': (14, 4, 0), 'LB3': (7, 2, 0), 'LB4': (6, 2, 0),
     'LB5': (20, 4, 0), 'LB6': (10, 4, 0), 'LB7': (17, 4, 0), 'LB15': (13, 4, 0),
-    
+
     'LG1': (13, 3, 0), 'LG2': (11, 2, 0), 'LG3': (12, 2, 0),
-    
+
     'MA': (16, 9, 0), 'MA1': (16, 9, 0), 'MA2': (15, 9, 0),
 
     'MB': (15, 8, 0),
 
     'MZ': (12, 9, 0), 'MZ1': (12, 9, 0), 'MZ2': (11, 8, 0),
-    
+
     'MG': (14, 7, 0),
 
     'M2-M4': (8, 6, 0), 'M2-N1': (10, 6, 0), 'M2-N4': (13, 6, 0),
@@ -61,7 +61,7 @@ _TRANSITION_LOOKUP = {
 
 def extract(infile, outfile):
     writer = csv.writer(outfile)
-    
+
     # Header
     writer.writerow(['z', 'src', 'dest', 'satellite',
                      'probability', 'transition energy (in eV)'])

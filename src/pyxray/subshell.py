@@ -55,10 +55,10 @@ class Subshell(object):
     def __init__(self, z, index=None, orbital=None, iupac=None, siegbahn=None):
         """
         Creates an atomic subshell::
-        
+
             s = SubShell(29, 1) # K
             s = SubShell(29, siegbahn='K')
-        
+
         :arg z: atomic number (from 1 to 99 inclusively)
         :arg index: index of the subshell between 1 (K) and 30 (outer)
         :arg orbital: orbital of the subshell (e.g. ``1s1/2``)
@@ -175,9 +175,9 @@ class Subshell(object):
     @property
     def family(self):
         """
-        Family of this subshell. 
+        Family of this subshell.
         Either K, L, M, N, O, P, Q.
-        The family of the outer subshell is ``None``. 
+        The family of the outer subshell is ``None``.
         """
         return self._family
 

@@ -41,11 +41,11 @@ class _SubshellDatabase(object):
     @abstractmethod
     def energy_eV(self, z, subshell):
         """
-        Returns the ionization energy of a subshell in eV. 
+        Returns the ionization energy of a subshell in eV.
         If no ionization energy is defined for a subshell, infinity is returned.
-        
+
         :arg z: atomic number
-        :arg subshell: index of the subshells (1 to 29 inclu.) 
+        :arg subshell: index of the subshells (1 to 29 inclu.)
             or :class:`Subshell` object
         """
         raise NotImplementedError
@@ -54,9 +54,9 @@ class _SubshellDatabase(object):
     def exists(self, z, subshell):
         """
         Returns whether the subshell exists.
-        
+
         :arg z: atomic number
-        :arg subshell: index of the subshells (1 to 29 inclu.) 
+        :arg subshell: index of the subshells (1 to 29 inclu.)
             or :class:`Subshell` object
         """
         raise NotImplementedError
@@ -65,16 +65,16 @@ class _SubshellDatabase(object):
     def width_eV(self, z, subshell):
         """
         Returns the natural width of a subshell in eV.
-        
+
         :arg z: atomic number
-        :arg subshell: index of the subshells (1 to 29 inclu.) 
+        :arg subshell: index of the subshells (1 to 29 inclu.)
             or :class:`Subshell` object
         """
         raise NotImplementedError
 
 class CarlsonSubshellDatabase(_SubshellDatabase):
     """
-    The ionization energies are taken from T.A. Carlson, 'Photoelectron and 
+    The ionization energies are taken from T.A. Carlson, 'Photoelectron and
     Auger Spectroscopy' (Plenum Press, New York and London, 1975).
     No width is provided.
     """
@@ -149,10 +149,10 @@ class KrauseOlivierSubshellDatabase(_SubshellDatabase):
             data[z].setdefault(subshell, width_eV)
 
         return data
-    
+
     def energy_eV(self, z, subshell):
         raise ValueError("No ionization energy for atomic number %i." % z)
-    
+
     def exists(self, z, subshell):
         return False
 
@@ -180,10 +180,10 @@ class SuperDatabase(_SubshellDatabase):
 
     def energy_eV(self, z, subshell):
         return self.carlson.energy_eV(z, subshell)
-    
+
     def exists(self, z, subshell):
         return self.carlson.exists(z, subshell)
-    
+
     def width_eV(self, z, subshell):
         return self.krause.width_eV(z, subshell)
 
@@ -199,7 +199,7 @@ def set_instance(inst):
 def energy_eV(z, subshell):
     """
     Returns the ionization energy of a subshell in eV.
-    
+
     :arg z: atomic number
     :arg subshell: index of the subshells (1 to 29 inclu.)
         or :class:`Subshell` object
@@ -209,7 +209,7 @@ def energy_eV(z, subshell):
 def exists(z, subshell):
     """
     Returns whether the subshell exists.
-    
+
     :arg z: atomic number
     :arg subshell: index of the subshells (1 to 29 inclu.)
         or :class:`Subshell` object
@@ -219,9 +219,9 @@ def exists(z, subshell):
 def width_eV(z, subshell):
     """
     Returns the natural width of a subshell in eV.
-    
+
     :arg z: atomic number
-    :arg subshell: index of the subshells (1 to 29 inclu.) 
+    :arg subshell: index of the subshells (1 to 29 inclu.)
         or :class:`Subshell` object
     """
     return instance.width_eV(z, subshell)

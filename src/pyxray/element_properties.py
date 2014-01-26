@@ -83,7 +83,7 @@ class _ElementPropertiesDatabase(object):
     def symbol(self, z):
         """
         Returns the element's symbol.
-        
+
         :arg z: atomic number
         """
         try:
@@ -94,7 +94,7 @@ class _ElementPropertiesDatabase(object):
     def name(self, z):
         """
         Returns the element's name (in English).
-        
+
         :arg z: atomic number
         """
         try:
@@ -109,7 +109,7 @@ class _ElementPropertiesDatabase(object):
         Either the symbol or the name must be specified.
         The symbol has precedence on the name if both are defined.
         This function is case insensitive.
-        
+
         :arg symbol: symbol of the element (e.g. ``C``)
         :arg name: name of the element (e.g. ``carbon``)
         """
@@ -125,21 +125,21 @@ class _ElementPropertiesDatabase(object):
                 raise ValueError("Unknown name: %s" % name)
         else:
             raise ValueError("Please specify a symbol or name")
-        
+
     @abstractmethod
     def mass_density_kg_m3(self, z):
         """
         Returns the mass density (in kg/m3).
-        
+
         :arg z: atomic number
         """
         raise NotImplementedError
-    
+
     @abstractmethod
     def atomic_mass_kg_mol(self, z):
         """
         Returns the atomic mass (in kg/mol).
-        
+
         :arg z: atomic number
         """
         raise NotImplementedError
@@ -147,7 +147,7 @@ class _ElementPropertiesDatabase(object):
 class SargentWelchElementPropertiesDatabase(_ElementPropertiesDatabase):
 
     """
-    Density and atomic mass values from Periodic Table of Elements, 
+    Density and atomic mass values from Periodic Table of Elements,
     Sargent-Welch scientifique Canada Ltd.
     """
 
@@ -197,7 +197,7 @@ class SargentWelchElementPropertiesDatabase(_ElementPropertiesDatabase):
             return self.DENSITIES[z - 1] * 1000.0
         except IndexError:
             return ValueError("No mass density for atomic number: %i." % z)
-    
+
     def atomic_mass_kg_mol(self, z):
         if z < 0 or z > 96:
             raise ValueError("No mass density for atomic number: %i." % z)
@@ -248,7 +248,7 @@ def set_instance(inst):
 def symbol(z):
     """
     Returns the element's symbol.
-    
+
     :arg z: atomic number
     """
     return instance.symbol(z)
@@ -256,7 +256,7 @@ def symbol(z):
 def name(z):
     """
     Returns the element's name (in English).
-    
+
     :arg z: atomic number
     """
     return instance.name(z)
@@ -268,7 +268,7 @@ def atomic_number(symbol=None, name=None):
     Either the symbol or the name must be specified.
     The symbol has precedence on the name if both are defined.
     This function is case insensitive.
-    
+
     :arg symbol: symbol of the element (e.g. ``C``)
     :arg name: name of the element (e.g. ``carbon``)
     """
@@ -277,7 +277,7 @@ def atomic_number(symbol=None, name=None):
 def mass_density_kg_m3(z):
     """
     Returns the mass density (in kg/m3).
-    
+
     :arg z: atomic number (1-96)
     """
     return instance.mass_density_kg_m3(z)
@@ -285,7 +285,7 @@ def mass_density_kg_m3(z):
 def atomic_mass_kg_mol(z):
     """
     Returns the atomic mass (in kg/mol).
-    
+
     :arg z: atomic number
     """
     return instance.atomic_mass_kg_mol(z)
