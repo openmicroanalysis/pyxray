@@ -214,6 +214,7 @@ class TestModule(unittest.TestCase):
         self.assertEqual(from_string('Al Ka1'), Transition(13, siegbahn='Ka1'))
         self.assertEqual(from_string('Al K-L3'), Transition(13, siegbahn='Ka1'))
         self.assertEqual(from_string('Al Ka'), Ka(13))
+        self.assertEqual(from_string('Al K-L(2,3)'), Ka(13))
         self.assertEqual(from_string('Al K'), K_family(13))
 
         self.assertRaises(ValueError, from_string, 'Al K a1')

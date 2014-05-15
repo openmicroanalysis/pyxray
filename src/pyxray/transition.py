@@ -533,11 +533,11 @@ def from_string(s):
 
     if notation in _SIEGBAHNS: # Transition with Siegbahn notation
         return Transition(z, siegbahn=notation)
+    elif notation in _TRANSITIONSETS: # transitionset from Family, group or shell
+        return _TRANSITIONSETS[notation](z)
     elif '-' in notation: # Transition with IUPAC notation
         dest, src = notation.split('-')
         return Transition(z, src=Subshell(z, iupac=src), dest=Subshell(z, iupac=dest))
-    elif notation in _TRANSITIONSETS: # transitionset from Family, group or shell
-        return _TRANSITIONSETS[notation](z)
     else:
         raise ValueError("Cannot parse transition string: %s" % s)
 
@@ -700,4 +700,7 @@ _TRANSITIONSETS = {'K': K_family, 'L': L_family, 'M': M_family,
                    u'L\u03b1': La, u'L\u03b2': Lb, u'L\u03b3': Lg,
                    u'M\u03b1': Ma, u'M\u03b2': Mb, u'M\u03b3': Mg,
                    'LI': LI, 'LII': LII, 'LIII': LIII,
-                   'MI': MI, 'MII': MII, 'MIII': MIII, 'MIV': MIV, 'MV': MV}
+                   'MI': MI, 'MII': MII, 'MIII': MIII, 'MIV': MIV, 'MV': MV,
+                   'K-L(2,3)': Ka, 'K-M(2-5)N(2-5)': Kb,
+                   'L3-M(4,5)': La, 'L(1-3)-M(2-5)N(1,4-7)O(1,4-5)': Lb, 'L(1,2)-N(1-6)O(1-3)': Lg,
+                   'M5-N(6,7)': Ma, 'M4-N6': Mb, 'M3-N5': Mg}
