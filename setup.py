@@ -11,14 +11,10 @@ __license__ = "GPL v3"
 
 # Third party modules.
 from setuptools import setup
-import setuptools
-print(setuptools.__version__)
 
 # Local modules.
 
 # Globals and constants variables.
-
-packages = ['pyxray']
 
 setup(name="pyxray",
       version='0.1',
@@ -36,7 +32,7 @@ setup(name="pyxray",
                    'Topic :: Scientific/Engineering',
                    'Topic :: Scientific/Engineering :: Physics'],
 
-      packages=packages,
+      packages=['pyxray'],
       package_data={'pyxray': ['data/*']},
 
       install_requires=['pyparsing'],
