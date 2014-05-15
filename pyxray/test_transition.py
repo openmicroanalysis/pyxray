@@ -142,7 +142,7 @@ class Testtransitionset(unittest.TestCase):
         t1 = Transition(13, 4, 1)
         t2 = Transition(13, 3, 1)
         t3 = Transition(13, 3, 1)
-        self.set = transitionset(13, 'G\u03b1', 'G1-H(2,3)', [t1, t2, t3])
+        self.set = transitionset(13, u'G\u03b1', 'G1-H(2,3)', [t1, t2, t3])
 
     def tearDown(self):
         unittest.TestCase.tearDown(self)
@@ -154,29 +154,29 @@ class Testtransitionset(unittest.TestCase):
     def test__init__(self):
         t1 = Transition(13, 4, 1)
         t2 = Transition(14, 3, 1)
-        self.assertRaises(ValueError, transitionset, 13, 'G\u03b1', 'G1-H(2,3)', [t1, t2])
+        self.assertRaises(ValueError, transitionset, 13, u'G\u03b1', 'G1-H(2,3)', [t1, t2])
 
     def test__repr__(self):
         self.assertEqual('<transitionset(Al Ga: Ka2, Ka1)>', repr(self.set))
 
     def test__str__(self):
         if sys.version_info > (3, 0):
-            self.assertEqual('Al G\u03b1', str(self.set))
+            self.assertEqual(u'Al G\u03b1', str(self.set))
         else:
-            self.assertEqual('Al G\u03b1', unicode(self.set)) #@UndefinedVariable
+            self.assertEqual(u'Al G\u03b1', unicode(self.set)) #@UndefinedVariable
 
     def test__contains__(self):
         self.assertTrue(Transition(13, 4, 1) in self.set)
         self.assertFalse(Transition(13, 7, 1) in self.set)
 
     def test__lt__(self):
-        other = transitionset(6, 'G\u03b1', 'G1-H(2,3)', [Transition(6, 4, 1)])
+        other = transitionset(6, u'G\u03b1', 'G1-H(2,3)', [Transition(6, 4, 1)])
         self.assertGreater(self.set, other)
 
-        other = transitionset(13, 'G\u03b1', 'G1-H(2,3)', [Transition(13, 4, 1), Transition(13, 3, 1)])
+        other = transitionset(13, u'G\u03b1', 'G1-H(2,3)', [Transition(13, 4, 1), Transition(13, 3, 1)])
         self.assertEqual(self.set, other)
 
-        other2 = transitionset(13, 'G\u03b1', 'G1-H(2,3)', [Transition(13, 4, 1)])
+        other2 = transitionset(13, u'G\u03b1', 'G1-H(2,3)', [Transition(13, 4, 1)])
         self.assertLess(other2, other)
         self.assertGreater(other, other2)
 
@@ -184,7 +184,7 @@ class Testtransitionset(unittest.TestCase):
         self.assertEqual(Transition(13, 4, 1), self.set.most_probable)
 
     def testsiegbahn(self):
-        self.assertEqual('G\u03b1', self.set.siegbahn)
+        self.assertEqual(u'G\u03b1', self.set.siegbahn)
 
     def testsiegbahn_nogreek(self):
         self.assertEqual('Ga', self.set.siegbahn_nogreek)
