@@ -294,6 +294,8 @@ class Transition(_BaseTransition):
         return '<Transition(%s %s)>' % (self.symbol, self.siegbahn_nogreek)
 
     def __eq__(self, other):
+        if not isinstance(other, self.__class__):
+            return False
         return (self._z, self._index) == (other._z, other._index)
 
     def __lt__(self, other):
@@ -438,6 +440,8 @@ class transitionset(Set, _BaseTransition):
         return other in self._transitions
 
     def __eq__(self, other):
+        if not isinstance(other, self.__class__):
+            return False
         indexes = sorted(map(attrgetter('_index'), self))
         other_indexes = sorted(map(attrgetter('_index'), other))
         return self._z == other._z and indexes == other_indexes
