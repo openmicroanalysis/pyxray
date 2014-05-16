@@ -35,6 +35,8 @@ setup(name="pyxray",
       packages=['pyxray'],
       package_data={'pyxray': ['data/*']},
 
+      zip_safe=True,
+
       install_requires=['pyparsing'],
 
       test_suite='pyxray.tests.test_all',
