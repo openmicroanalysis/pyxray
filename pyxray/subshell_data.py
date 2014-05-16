@@ -21,7 +21,6 @@ __license__ = "GPL v3"
 # Standard library modules.
 import os
 import csv
-import pkgutil
 from abc import ABCMeta, abstractmethod
 try:
     from io import StringIO
@@ -29,6 +28,7 @@ except ImportError:
     import StringIO
 
 # Third party modules.
+import pkg_resources
 
 # Local modules.
 
@@ -81,7 +81,8 @@ class CarlsonSubshellDatabase(_SubshellDatabase):
 
     def __init__(self):
         resource = os.path.join('data', 'carlson_subshell_ionization_data.csv')
-        fileobj = StringIO(pkgutil.get_data('pyxray', resource).decode('ascii'))
+        fileobj = pkg_resources.resource_stream('pyxray', resource) #@UndefinedVariable
+        fileobj = StringIO(fileobj.read().decode('ascii'))
         self.data = self._read(fileobj)
 
     def _read(self, fileobj):
@@ -132,7 +133,8 @@ class KrauseOlivierSubshellDatabase(_SubshellDatabase):
 
     def __init__(self):
         resource = os.path.join('data', 'krause_subshell_width_data.csv')
-        fileobj = StringIO(pkgutil.get_data('pyxray', resource).decode('ascii'))
+        fileobj = pkg_resources.resource_stream('pyxray', resource) #@UndefinedVariable
+        fileobj = StringIO(fileobj.read().decode('ascii'))
         self.data = self._read(fileobj)
 
     def _read(self, fileobj):
