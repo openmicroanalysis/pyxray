@@ -1,4 +1,8 @@
 syntax: glob
 
-pyxray.egg-info/*
-src/build/*
+*.egg-info
+
+syntax: regexp
+^dist
+^build
+
