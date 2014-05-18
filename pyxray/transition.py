@@ -25,10 +25,6 @@ from operator import methodcaller, attrgetter
 import string
 from functools import total_ordering
 from collections import Set
-try:
-    from itertools import zip_longest
-except ImportError:
-    from itertools import izip_longest as zip_longest
 
 # Third party modules.
 from pyparsing import Word, Group, Optional, OneOrMore, QuotedString, Literal
@@ -267,7 +263,6 @@ class Transition(_BaseTransition):
         else:
             raise ValueError("Specify shells or Siegbahn")
 
-        self._index = index
         src, dest, satellite = _SUBSHELLS[index]
 
         self._src = Subshell(z, src)
@@ -294,22 +289,29 @@ class Transition(_BaseTransition):
         return '<Transition(%s %s)>' % (self.symbol, self.siegbahn_nogreek)
 
     def __eq__(self, other):
-        if not isinstance(other, self.__class__):
-            return False
-        return (self._z, self._index) == (other._z, other._index)
+        if type(other) is self.__class__:
+            return (self.z, self.src, self.dest, self.satellite) == \
+                    (other.z, other.src, other.dest, other.satellite)
+        elif type(other) is transitionset:
+            if len(other) > 1:
+                return False
+            return self == next(iter(other))
+        else:
+            return NotImplemented
 
     def __lt__(self, other):
-        return self._z < other._z or self._index > other._index
-
-    if sys.version_info < (3, 0):
-        def __cmp__(self, other):
-            c = cmp(self._z, other._z) # @UndefinedVariable
-            if c != 0:
-                return c
-            return -1 * cmp(self._index, other._index) # @UndefinedVariable
+        if type(other) is self.__class__:
+            return (self.z, self.src, self.dest, self.satellite) < \
+                    (other.z, other.src, other.dest, other.satellite)
+        elif type(other) is transitionset:
+            if len(other) > 1:
+                return True
+            return self < next(iter(other))
+        else:
+            return NotImplemented
 
     def __hash__(self):
-        return hash(('Transition', self._z, self._index))
+        return hash((self.__class__, self.z, self.src, self.dest, self.satellite))
 
     def __getstate__(self):
         # Only pickle the required information to create a transition
@@ -431,7 +433,7 @@ class transitionset(Set, _BaseTransition):
         return len(self._transitions)
 
     def __hash__(self):
-        return hash(tuple(self))
+        return hash((self.__class__,) + tuple(sorted(self)))
 
     def __iter__(self):
         return iter(self._transitions)
@@ -440,41 +442,26 @@ class transitionset(Set, _BaseTransition):
         return other in self._transitions
 
     def __eq__(self, other):
-        if not isinstance(other, self.__class__):
-            return False
-        indexes = sorted(map(attrgetter('_index'), self))
-        other_indexes = sorted(map(attrgetter('_index'), other))
-        return self._z == other._z and indexes == other_indexes
+        if type(other) is  self.__class__:
+            if len(self) != len(other):
+                return False
+            return tuple(sorted(self)) == tuple(sorted(other))
+        elif type(other) is Transition:
+            if len(self) > 1:
+                return False
+            return next(iter(self)) == other
+        else:
+            return NotImplemented
 
     def __lt__(self, other):
-        if self._z < other._z:
-            return True
-
-        indexes = sorted(map(attrgetter('_index'), self))
-        other_indexes = sorted(map(attrgetter('_index'), other))
-        fillvalue = len(_SUBSHELLS)
-        for index, other_index in \
-                zip_longest(indexes, other_indexes, fillvalue=fillvalue):
-            if index > other_index:
-                return True
-
-        return False
-
-    if sys.version_info < (3, 0):
-        def __cmp__(self, other):
-            c = cmp(self._z, other._z) # @UndefinedVariable
-            if c != 0:
-                return c
-
-            indexes = sorted(map(attrgetter('_index'), self))
-            other_indexes = sorted(map(attrgetter('_index'), other))
-            for index, other_index in \
-                    zip_longest(indexes, other_indexes, fillvalue=79):
-                c = cmp(index, other_index) # @UndefinedVariable
-                if c != 0:
-                    return -1 * c
-
-            return 0
+        if type(other) is self.__class__:
+            return tuple(sorted(self)) < tuple(sorted(other))
+        elif type(other) is Transition:
+            if len(self) > 1:
+                return False
+            return next(iter(self)) < other
+        else:
+            return NotImplemented
 
     @property
     def most_probable(self):

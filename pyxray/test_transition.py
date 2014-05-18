@@ -27,7 +27,6 @@ from pyxray.subshell import Subshell
 # Globals and constants variables.
 from pyxray.transition import _SUBSHELLS, _SIEGBAHNS
 
-
 class TestTransition(unittest.TestCase):
 
     def setUp(self):
@@ -46,12 +45,10 @@ class TestTransition(unittest.TestCase):
     def test__init__subshells(self):
         x = Transition(13, Subshell(13, 4), Subshell(13, 1))
         self.assertEqual(13, x.z)
-        self.assertEqual(0, x._index)
 
     def test__init__siegbahn(self):
         x = Transition(13, siegbahn="Ka1")
         self.assertEqual(13, x.z)
-        self.assertEqual(0, x._index)
 
     def test__str__(self):
         if sys.version_info > (3, 0):
@@ -63,10 +60,22 @@ class TestTransition(unittest.TestCase):
                 x = getattr(self, "x%i" % i)
                 self.assertEqual("Al " + siegbahn, unicode(x)) #@UndefinedVariable
 
+    def test__eq__(self):
+        t = Transition(13, 4, 1)
+        self.assertEqual(Transition(13, 4, 1), t)
+        self.assertNotEqual(1, t)
+
+        s = transitionset(13, '', '', [Transition(13, 4, 1)])
+        self.assertEqual(t, s)
+
     def test__lt__(self):
         self.assertGreater(Transition(13, 4, 1), Transition(6, 4, 1))
-        self.assertGreater(Transition(13, 4, 1), Transition(13, 9, 4))
-        self.assertEqual(Transition(13, 4, 1), Transition(13, 4, 1))
+        self.assertGreater(Transition(13, 4, 1), Transition(13, 3, 1))
+        self.assertLess(Transition(13, 4, 1), Transition(13, 9, 4))
+
+    def test__hash__(self):
+        self.assertEqual(hash(Transition(13, 4, 1)), hash(Transition(13, siegbahn='Ka1')))
+        self.assertNotEqual(hash(Transition(13, 4, 1)), hash(Transition(6, 4, 1)))
 
     def testz(self):
         for i in range(len(_SUBSHELLS)):
@@ -169,6 +178,10 @@ class Testtransitionset(unittest.TestCase):
         self.assertTrue(Transition(13, 4, 1) in self.set)
         self.assertFalse(Transition(13, 7, 1) in self.set)
 
+    def test__eq__(self):
+        other = transitionset(13, u'G\u03b1', 'G1-H(2,3)', [Transition(13, 4, 1), Transition(13, 3, 1)])
+        self.assertEqual(self.set, other)
+
     def test__lt__(self):
         other = transitionset(6, u'G\u03b1', 'G1-H(2,3)', [Transition(6, 4, 1)])
         self.assertGreater(self.set, other)
@@ -177,8 +190,15 @@ class Testtransitionset(unittest.TestCase):
         self.assertEqual(self.set, other)
 
         other2 = transitionset(13, u'G\u03b1', 'G1-H(2,3)', [Transition(13, 4, 1)])
-        self.assertLess(other2, other)
-        self.assertGreater(other, other2)
+        self.assertGreater(other2, other)
+        self.assertLess(other, other2)
+
+    def test__hash__(self):
+        other = transitionset(13, u'G\u03b1', 'G1-H(2,3)', [Transition(13, 4, 1), Transition(13, 3, 1)])
+        self.assertEqual(hash(other), hash(self.set))
+
+        other = transitionset(13, u'G\u03b1', 'G1-H(2,3)', [Transition(13, 4, 1)])
+        self.assertNotEqual(hash(other), hash(self.set))
 
     def testmost_probable(self):
         self.assertEqual(Transition(13, 4, 1), self.set.most_probable)

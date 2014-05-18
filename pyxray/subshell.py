@@ -115,19 +115,19 @@ class Subshell(object):
             self._width_eV = 0.0
 
     def __repr__(self):
-        return '<Subshell(%s %s)>' % (self._symbol, self._siegbahn)
+        return '<Subshell(%s %s)>' % (self.symbol, self.siegbahn)
 
     def __str__(self):
-        return "%s %s" % (self._symbol, self._siegbahn)
+        return "%s %s" % (self.symbol, self.siegbahn)
 
     def __hash__(self):
-        return hash(("Subshell", self._z, self._index))
+        return hash((self.__class__, self.z, self.index))
 
     def __eq__(self, other):
-        return (self._z, self._index) == (other._z, other._index)
+        return (self.z, self.index) == (other.z, other.index)
 
     def __lt__(self, other):
-        return (self._z, self._index) < (other._z, other._index)
+        return (self.z, self.index) < (other.z, other.index)
 
     def exists(self):
         """
