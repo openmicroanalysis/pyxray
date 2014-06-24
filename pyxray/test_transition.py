@@ -308,15 +308,15 @@ class TestModule(unittest.TestCase):
         self.assertEqual(M_family(79), transitions)
 
     def testsiegbahn2latex(self):
-        self.assertEqual(r"K$\alpha_{1}$", siegbahn2latex(Transition(13, siegbahn='Ka1')))
-        self.assertEqual(r"K$\beta_{1}$", siegbahn2latex(Transition(13, siegbahn='Kb1')))
-        self.assertEqual(r"L$\gamma_{1}$", siegbahn2latex(Transition(13, siegbahn='Lg1')))
-        self.assertEqual(r"M$\zeta_{1}$", siegbahn2latex(Transition(13, siegbahn='Mz1')))
+        self.assertEqual(r"Al K$\alpha_{1}$", siegbahn2latex(Transition(13, siegbahn='Ka1')))
+        self.assertEqual(r"Al K$\beta_{1}$", siegbahn2latex(Transition(13, siegbahn='Kb1')))
+        self.assertEqual(r"Al L$\gamma_{1}$", siegbahn2latex(Transition(13, siegbahn='Lg1')))
+        self.assertEqual(r"Al M$\zeta_{1}$", siegbahn2latex(Transition(13, siegbahn='Mz1')))
 
     def testiupac2latex(self):
-        self.assertEqual(r"K-L$_{3}$", iupac2latex(Transition(13, siegbahn='Ka1')))
-        self.assertEqual(r"K-M$_{3}$", iupac2latex(Transition(13, siegbahn='Kb1')))
-        self.assertEqual(r"L$_{2}$-N$_{4}$", iupac2latex(Transition(13, siegbahn='Lg1')))
+        self.assertEqual(r"Al K-L$_{3}$", iupac2latex(Transition(13, siegbahn='Ka1')))
+        self.assertEqual(r"Al K-M$_{3}$", iupac2latex(Transition(13, siegbahn='Kb1')))
+        self.assertEqual(r"Al L$_{2}$-N$_{4}$", iupac2latex(Transition(13, siegbahn='Lg1')))
         self.assertEqual(r"M$_{4,5}$-N$_{2,3}$", iupac2latex('M(4,5)-N(2,3)'))
         self.assertEqual('G$_{1}$-H$_{2,3}$', iupac2latex('G1-H(2,3)'))
 

@@ -47,10 +47,11 @@ def iupac2latex(iupac):
 
     :arg iupac: string of an IUPAC symbol, transition or transitionset
     """
+    s = ''
     if isinstance(iupac, Transition):
+        s = iupac.symbol + ' '
         iupac = getattr(iupac, 'iupac')
 
-    s = ''
     for parts in _iupac_pattern.parseString(iupac):
         if len(parts) == 2:
             s += '%s$_{%s}$' % tuple(parts)
@@ -66,7 +67,7 @@ def siegbahn2latex(siegbahn):
     :arg siegbahn: string of a Siegbahn symbol, transition or transitionset
     """
     if isinstance(siegbahn, Transition):
-        siegbahn = getattr(siegbahn, 'siegbahn')
+        siegbahn = siegbahn.symbol + " " + getattr(siegbahn, 'siegbahn')
 
     s = ''
     for c in siegbahn:
