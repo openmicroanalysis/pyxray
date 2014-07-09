@@ -138,11 +138,18 @@ class Subshell(object):
     @property
     def z(self):
         """
-        Atomic number of this transition.
+        Atomic number of this subshell.
         """
         return self._z
 
     atomicnumber = z
+    
+    @property
+    def symbol(self):
+        """
+        Element symbol of this subshell.
+        """
+        return self._symbol
 
     @property
     def index(self):
