@@ -33,6 +33,7 @@ from pyparsing import Word, Group, Optional, OneOrMore, QuotedString, Literal
 import pyxray.element_properties as ep
 from pyxray.subshell import Subshell
 import pyxray.transition_data as transition_data
+from pyxray.util import energy_to_wavelength_m
 
 # Globals and constants variables.
 _ZGETTER = attrgetter('z')
@@ -280,7 +281,7 @@ class Transition(_BaseTransition):
         self._probability = transition_data.probability(z, subshells)
 
         try:
-            self._wavelength_m = (4.13566733e-15 * 299792458) / self._energy_eV
+            self._wavelength_m = energy_to_wavelength_m(self._energy_eV)
         except ZeroDivisionError: # Energy == 0.0 if transition does not exist
             self._wavelength_m = float('inf')
 
