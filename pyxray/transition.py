@@ -49,7 +49,7 @@ def iupac2latex(iupac):
     :arg iupac: string of an IUPAC symbol, transition or transitionset
     """
     s = ''
-    if isinstance(iupac, Transition):
+    if isinstance(iupac, _BaseTransition):
         s = iupac.symbol + ' '
         iupac = getattr(iupac, 'iupac')
 
@@ -67,7 +67,7 @@ def siegbahn2latex(siegbahn):
 
     :arg siegbahn: string of a Siegbahn symbol, transition or transitionset
     """
-    if isinstance(siegbahn, Transition):
+    if isinstance(siegbahn, _BaseTransition):
         siegbahn = siegbahn.symbol + " " + getattr(siegbahn, 'siegbahn')
 
     s = ''
@@ -287,6 +287,11 @@ class Transition(_BaseTransition):
 
         self._width_eV = self._src.width_eV + self._dest.width_eV
 
+        try:
+            self._width_m = energy_to_wavelength_m(self._width_eV)
+        except ZeroDivisionError:
+            self._width_m = float('inf')
+
     def __repr__(self):
         return '<Transition(%s %s)>' % (self.symbol, self.siegbahn_nogreek)
 
@@ -392,6 +397,13 @@ class Transition(_BaseTransition):
         Natural width of this transition in eV.
         """
         return self._width_eV
+
+    @property
+    def width_m(self):
+        """
+        Natural width of this transition in meters.
+        """
+        return self._width_m
 
 class transitionset(Set, _BaseTransition):
 
