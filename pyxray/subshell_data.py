@@ -82,8 +82,10 @@ class CarlsonSubshellDatabase(_SubshellDatabase):
     def __init__(self):
         resource = os.path.join('data', 'carlson_subshell_ionization_data.csv')
         fileobj = pkg_resources.resource_stream('pyxray', resource) #@UndefinedVariable
-        fileobj = StringIO(fileobj.read().decode('ascii'))
-        self.data = self._read(fileobj)
+        buffer = StringIO(fileobj.read().decode('ascii'))
+        self.data = self._read(buffer)
+        fileobj.close()
+        buffer.close()
 
     def _read(self, fileobj):
         data = {}
@@ -134,8 +136,10 @@ class KrauseOlivierSubshellDatabase(_SubshellDatabase):
     def __init__(self):
         resource = os.path.join('data', 'krause_subshell_width_data.csv')
         fileobj = pkg_resources.resource_stream('pyxray', resource) #@UndefinedVariable
-        fileobj = StringIO(fileobj.read().decode('ascii'))
-        self.data = self._read(fileobj)
+        buffer = StringIO(fileobj.read().decode('ascii'))
+        self.data = self._read(buffer)
+        fileobj.close()
+        buffer.close()
 
     def _read(self, fileobj):
         data = {}

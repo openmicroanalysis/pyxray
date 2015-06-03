@@ -211,8 +211,10 @@ class PENELOPETransitionDatabaseMod(_BaseTransitionDatabase):
     def __init__(self):
         resource = os.path.join('data', 'penelope_mod_transition_data.csv')
         fileobj = pkg_resources.resource_stream('pyxray', resource) #@UndefinedVariable
-        fileobj = StringIO(fileobj.read().decode('ascii'))
-        _BaseTransitionDatabase.__init__(self, fileobj)
+        buffer = StringIO(fileobj.read().decode('ascii'))
+        _BaseTransitionDatabase.__init__(self, buffer)
+        fileobj.close()
+        buffer.close()
 
 class JEOLTransitionDatabase(_BaseTransitionDatabase):
     """
@@ -223,8 +225,10 @@ class JEOLTransitionDatabase(_BaseTransitionDatabase):
     def __init__(self):
         resource = os.path.join('data', 'jeol_transition_data.csv')
         fileobj = pkg_resources.resource_stream('pyxray', resource) #@UndefinedVariable
-        fileobj = StringIO(fileobj.read().decode('ascii'))
-        _BaseTransitionDatabase.__init__(self, fileobj)
+        buffer = StringIO(fileobj.read().decode('ascii'))
+        _BaseTransitionDatabase.__init__(self, buffer)
+        fileobj.close()
+        buffer.close()
 
 class SuperDatabase(_TransitionDatabase):
 
