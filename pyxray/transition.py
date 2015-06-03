@@ -652,6 +652,12 @@ def Mg(z):
     """
     return _group(z, u'M\u03b3', 'M3-N5')
 
+def Mz(z):
+    """
+    Returns all transitions from the Mz group.
+    """
+    return _group(z, u'M\u03b6', 'M(4-5)-N(2-3)')
+
 def LI(z):
     """
     Returns all transitions ending on the L\ :sub:`I` shell.
