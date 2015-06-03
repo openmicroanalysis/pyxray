@@ -477,6 +477,14 @@ class transitionset(Set, _BaseTransition):
         else:
             return NotImplemented
 
+    def __gt__(self, other):
+        if self < other:
+            return False
+        elif self == other:
+            return False
+        else:
+            return True
+
     @property
     def most_probable(self):
         return self._most_probable
