@@ -1,12 +1,5 @@
 #!/usr/bin/env python
 
-# Script information for the file.
-__author__ = "Philippe T. Pinard"
-__email__ = "philippe.pinard@gmail.com"
-__version__ = "0.1"
-__copyright__ = "Copyright (c) 2013 Philippe T. Pinard"
-__license__ = "GPL v3"
-
 # Standard library modules.
 
 # Third party modules.
@@ -22,10 +15,10 @@ setup(name="pyxray",
       description="Definitions and properties of x-ray transitions",
       author="Hendrix Demers and Philippe T. Pinard",
       author_email="hendrix.demers@mail.mcgill.ca and philippe.pinard@gmail.com",
-      license="GPL v3",
+      license="MIT",
       classifiers=['Development Status :: 4 - Beta',
                    'Intended Audience :: End Users/Desktop',
-                   'License :: OSI Approved :: GNU General Public License (GPL)',
+                   'License :: OSI Approved :: MIT License',
                    'Natural Language :: English',
                    'Programming Language :: Python',
                    'Operating System :: OS Independent',
@@ -34,8 +27,6 @@ setup(name="pyxray",
 
       packages=['pyxray'],
       package_data={'pyxray': ['data/*']},
-
-      zip_safe=True,
 
       install_requires=['pyparsing'],
 

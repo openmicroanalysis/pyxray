@@ -1,20 +1,6 @@
-#!/usr/bin/env python
 """
-================================================================================
-:mod:`element_properties` -- Various properties of atoms
-================================================================================
-
-.. module:: element_properties
-   :synopsis: Various properties of atoms
-
+Various properties of atoms
 """
-
-# Script information for the file.
-__author__ = "Hendrix Demers"
-__email__ = "hendrix.demers@mail.mcgill.ca"
-__version__ = "0.1"
-__copyright__ = "Copyright (c) 2007 Hendrix Demers"
-__license__ = "GPL v3"
 
 # Standard library modules.
 from abc import ABCMeta, abstractmethod
