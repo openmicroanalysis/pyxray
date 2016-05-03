@@ -31,7 +31,7 @@ setup(name="pyxray",
 
       install_requires=['pyparsing'],
 
-      test_suite='pyxray.tests.test_all',
+      test_suite='nose.collector',
 
       cmdclass=versioneer.get_cmdclass(),
 )
