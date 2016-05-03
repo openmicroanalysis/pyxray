@@ -1,0 +1,33 @@
+sudo: false
+language: python
+cache:
+  directories:
+  - $HOME/.pip-cache/
+matrix:
+  include:
+  - python: '2.7'
+    env: DEPLOY=no
+    os: linux
+  - python: '3.5'
+    env: DEPLOY=yes
+    os: linux
+install:
+- pip install --cache-dir $HOME/.pip-cache --upgrade pip codecov
+- pip install --cache-dir $HOME/.pip-cache --upgrade -r requirements.txt
+- python setup.py develop
+script:
+- nosetests
+after_success: codecov
+notifications:
+  email: false
+deploy:
+  matrix:
+  - provider: pypi
+    user: philippe.pinard
+    password:
+      secure: jCXqbp8nksBPGhOiATf0mFjW3k2qYGothjl53h4J1NQWXBeNRR4QJlgTDA/ax2dXfRZ11RPsVp0T1mvJvkvue4BryENe4UpPZeRntee7LvSTIVg8ks54BMcAxI8vBbVWl4RHmUsSWZkMtHsoll/Xd44/g7UewnFDCrY1ppmS6C//HaSF6+WpqhNb0F9XwXjPapxol5AhyOl4XKJw345AJ/SXs5aIATAjY8FhQFMRu2Dnq2BfYpT9KsR71gggiJBR0i5akpuTmcmJpbG0NdiG17PD7gxVVNWI5ONhgEMt+Agojqf9lzVz42SyzVvSlHnwE1GTgJHrq7llCP1hPMlVI5heTs7fybrKsmyS+dDzsotZkA57FyzqbHVuh3vuIpU1MJnjtg64TPSR049HBR4vY3RRF27uImylCGoGg3zkP2R/xg77Id5JI4l/sYNKwRA+MDqocaV7RTRd2UUmcjlc3xDy1X1rf+cA8BI98e/ijN9Sa9w9mYs0KfqDMcyvkAm/Dr7VDMLVZYncHQMnlyy1KpDwh24gQzBrh13S31rQsyrR+fW+/ixO5S05gSkYszgiX2qxTWgFFOnQvHmrj4rbfQ1eMTJGwl/5uHr5Asc6kSnjv53aohkiZnR8bxWHkO0tlKgVxWXAZ/dymVvlZinumz+I5k0qoWyKtn0bxQLY8G8=
+    distributions: sdist bdist_wheel
+    on:
+      tags: true
+      repo: ppinard/pyxray
+      condition: $DEPLOY = yes
