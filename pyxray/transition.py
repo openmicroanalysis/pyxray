@@ -572,131 +572,131 @@ def _shell(z, dest, include_satellite=False):
 
     return transitionset(z, siegbahn, iupac, list(transitions))
 
-def K_family(z):
+def K_family(z, include_satellite=False):
     """
     Returns all transitions from the K family.
     """
-    return _group(z, 'K', 'K')
+    return _group(z, 'K', 'K', include_satellite)
 
-def L_family(z):
+def L_family(z, include_satellite=False):
     """
     Returns all transitions from the L family.
     """
-    return _group(z, 'L', 'L')
+    return _group(z, 'L', 'L', include_satellite)
 
-def M_family(z):
+def M_family(z, include_satellite=False):
     """
     Returns all transitions from the M family.
     """
-    return _group(z, 'M', 'M')
+    return _group(z, 'M', 'M', include_satellite)
 
-def N_family(z):
+def N_family(z, include_satellite=False):
     """
     Returns all transitions from the N family.
     """
-    return _group(z, 'N', 'N')
+    return _group(z, 'N', 'N', include_satellite)
 
-def Ka(z):
+def Ka(z, include_satellite=False):
     """
     Returns all transitions from the Ka group.
     """
-    return _group(z, u'K\u03b1', 'K-L(2,3)')
+    return _group(z, u'K\u03b1', 'K-L(2,3)', include_satellite)
 
-def Kb(z):
+def Kb(z, include_satellite=False):
     """
     Returns all transitions from the Kb group.
     """
-    return _group(z, u'K\u03b2', 'K-M(2-5)N(2-5)')
+    return _group(z, u'K\u03b2', 'K-M(2-5)N(2-5)', include_satellite)
 
-def La(z):
+def La(z, include_satellite=False):
     """
     Returns all transitions from the La group.
     """
-    return _group(z, u'L\u03b1', 'L3-M(4,5)')
+    return _group(z, u'L\u03b1', 'L3-M(4,5)', include_satellite)
 
-def Lb(z):
+def Lb(z, include_satellite=False):
     """
     Returns all transitions from the Lb group.
     """
-    return _group(z, u'L\u03b2', 'L(1-3)-M(2-5)N(1,4-7)O(1,4-5)')
+    return _group(z, u'L\u03b2', 'L(1-3)-M(2-5)N(1,4-7)O(1,4-5)', include_satellite)
 
-def Lg(z):
+def Lg(z, include_satellite=False):
     """
     Returns all transitions from the Lg group.
     """
-    return _group(z, u'L\u03b3', 'L(1,2)-N(1-6)O(1-3)')
+    return _group(z, u'L\u03b3', 'L(1,2)-N(1-6)O(1-3)', include_satellite)
 
-def Ma(z):
+def Ma(z, include_satellite=False):
     """
     Returns all transitions from the Ma group.
     """
-    return _group(z, u'M\u03b1', 'M5-N(6,7)')
+    return _group(z, u'M\u03b1', 'M5-N(6,7)', include_satellite)
 
-def Mb(z):
+def Mb(z, include_satellite=False):
     """
     Returns all transitions from the Mb group.
     """
-    return _group(z, u'M\u03b2', 'M4-N6')
+    return _group(z, u'M\u03b2', 'M4-N6', include_satellite)
 
-def Mg(z):
+def Mg(z, include_satellite=False):
     """
     Returns all transitions from the Mg group.
     """
-    return _group(z, u'M\u03b3', 'M3-N5')
+    return _group(z, u'M\u03b3', 'M3-N5', include_satellite)
 
-def Mz(z):
+def Mz(z, include_satellite=False):
     """
     Returns all transitions from the Mz group.
     """
-    return _group(z, u'M\u03b6', 'M(4-5)-N(2-3)')
+    return _group(z, u'M\u03b6', 'M(4-5)-N(2-3)', include_satellite)
 
-def LI(z):
+def LI(z, include_satellite=False):
     """
     Returns all transitions ending on the L\ :sub:`I` shell.
     """
-    return _shell(z, 2)
+    return _shell(z, 2, include_satellite)
 
-def LII(z):
+def LII(z, include_satellite=False):
     """
     Returns all transitions ending on the L\ :sub:`II` shell.
     """
-    return _shell(z, 3)
+    return _shell(z, 3, include_satellite)
 
-def LIII(z):
+def LIII(z, include_satellite=False):
     """
     Returns all transitions ending on the L\ :sub:`III` shell.
     """
-    return _shell(z, 4)
+    return _shell(z, 4, include_satellite)
 
-def MI(z):
+def MI(z, include_satellite=False):
     """
     Returns all transitions ending on the M\ :sub:`I` shell.
     """
-    return _shell(z, 5)
+    return _shell(z, 5, include_satellite)
 
-def MII(z):
+def MII(z, include_satellite=False):
     """
     Returns all transitions ending on the M\ :sub:`II` shell.
     """
-    return _shell(z, 6)
+    return _shell(z, 6, include_satellite)
 
-def MIII(z):
+def MIII(z, include_satellite=False):
     """
     Returns all transitions ending on the M\ :sub:`III` shell.
     """
-    return _shell(z, 7)
+    return _shell(z, 7, include_satellite)
 
-def MIV(z):
+def MIV(z, include_satellite=False):
     """
     Returns all transitions ending on the M\ :sub:`IV` shell.
     """
-    return _shell(z, 8)
+    return _shell(z, 8, include_satellite)
 
-def MV(z):
+def MV(z, include_satellite=False):
     """
     Returns all transitions ending on the M\ :sub:`V` shell.
     """
-    return _shell(z, 9)
+    return _shell(z, 9, include_satellite)
 
 _TRANSITIONSETS = {'K': K_family, 'L': L_family, 'M': M_family,
                    u'K\u03b1': Ka, u'K\u03b2': Kb,
