@@ -62,14 +62,14 @@ class ElementSymbolProperty(ElementPropertyMixin, ReferenceMixin, Base):
 
     __tablename__ = 'element_symbol'
 
-    symbol = Column(String(3), nullable=False)
+    symbol = Column(String(3, collation='NOCASE'), nullable=False)
 
 class ElementNameProperty(ElementPropertyMixin, ReferenceMixin, Base):
 
     __tablename__ = 'element_name'
 
-    name = Column(Unicode(256), nullable=False)
-    language_code = Column(String(2), nullable=False)
+    name = Column(Unicode(256, collation='NOCASE'), nullable=False)
+    language_code = Column(String(2, collation='NOCASE'), nullable=False)
 
 class ElementAtomicWeightProperty(ElementPropertyMixin, ReferenceMixin, Base):
 
