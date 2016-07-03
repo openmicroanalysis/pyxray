@@ -11,7 +11,7 @@ from sqlalchemy import create_engine
 # Local modules.
 from pyxray.sql.element_data import SqlEngineElementDatabase
 from pyxray.sql.model import \
-    (Base, Reference, ElementSymbolProperty, ElementNameProperty,
+    (Base, Reference, Element, ElementNameProperty,
      ElementAtomicWeightProperty, ElementMassDensityProperty)
 from pyxray.sql.util import session_scope
 
@@ -22,27 +22,38 @@ def create_mock_database():
 
     Base.metadata.create_all(engine)
 
+    elements = {}
+    data = [(26, 'Fe'), (8, 'O')]
+    with session_scope(engine) as session:
+        for z, symbol in data:
+            e = Element(z=z, symbol=symbol)
+            elements[z] = e
+            session.add(e)
+        session.commit()
+
     ref1 = Reference(bibtexkey='ref1')
     ref2 = Reference(bibtexkey='ref2')
-    data = [(26, 'Fe', 'Iron', 'Eisen', 55.845, 7874.0, ref1),
-            (26, 'Fe', 'Iron', 'Eisen', 58.0, 9000.0, ref2),
-            (8, 'O', 'Oxygen', 'Sauerstoff', 15.9994, 1.429, ref1)]
+    data = [(26, 'Iron', 'Eisen', 55.845, 7874.0, ref1),
+            (26, 'Iron', 'Eisen', 58.0, 9000.0, ref2),
+            (8, 'Oxygen', 'Sauerstoff', 15.9994, 1.429, ref1)]
 
     with session_scope(engine) as session:
-        for z, symbol, name_en, name_de, aw, rho, ref in data:
-            p = ElementSymbolProperty(z=z, symbol=symbol, reference=ref)
+        for z, name_en, name_de, aw, rho, ref in data:
+            e = elements[z]
+
+            p = ElementNameProperty(element=e, language_code='en',
+                                    name=name_en, reference=ref)
             session.add(p)
 
-            p = ElementNameProperty(z=z, language_code='en', name=name_en, reference=ref)
+            p = ElementNameProperty(element=e, language_code='de',
+                                    name=name_de, reference=ref)
             session.add(p)
 
-            p = ElementNameProperty(z=z, language_code='de', name=name_de, reference=ref)
+            p = ElementAtomicWeightProperty(element=e, value=aw, reference=ref)
             session.add(p)
 
-            p = ElementAtomicWeightProperty(z=z, value=aw, reference=ref)
-            session.add(p)
-
-            p = ElementMassDensityProperty(z=z, value=rho, reference=ref)
+            p = ElementMassDensityProperty(element=e, value_kg_per_m3=rho,
+                                           reference=ref)
             session.add(p)
 
         session.commit()
@@ -62,27 +73,19 @@ class TestSqlEngineElementDatabase(unittest.TestCase):
 
     def testsymbol(self):
         self.assertEqual('Fe', self.db.symbol(26))
-        self.assertEqual('Fe', self.db.symbol(26, reference='ref1'))
-        self.assertEqual('Fe', self.db.symbol(26, reference='ref2'))
 
         self.assertEqual('O', self.db.symbol(8))
-        self.assertEqual('O', self.db.symbol(8, reference='ref1'))
 
         self.assertRaises(ValueError, self.db.symbol, 1)
-        self.assertRaises(ValueError, self.db.symbol, 8, reference='ref2')
 
     def testatomic_number(self):
         self.assertEqual(26, self.db.atomic_number('Fe'))
         self.assertEqual(26, self.db.atomic_number('fe'))
-        self.assertEqual(26, self.db.atomic_number('Fe', reference='ref1'))
-        self.assertEqual(26, self.db.atomic_number('Fe', reference='ref2'))
 
         self.assertEqual(8, self.db.atomic_number('O'))
         self.assertEqual(8, self.db.atomic_number('o'))
-        self.assertEqual(8, self.db.atomic_number('O', reference='ref1'))
 
         self.assertRaises(ValueError, self.db.atomic_number, 'H')
-        self.assertRaises(ValueError, self.db.atomic_number, 'O', reference='ref2')
 
     def testname(self):
         self.assertEqual('Iron', self.db.name(26))

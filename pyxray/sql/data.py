@@ -6,14 +6,26 @@ Base SQL database.
 from collections import OrderedDict
 
 # Third party modules.
-from pyxray.sql.model import Reference
-from pyxray.sql.util import session_scope
+from sqlalchemy.orm.exc import NoResultFound
 
 # Local modules.
+from pyxray.sql.model import Reference
+from pyxray.sql.util import session_scope
 
 # Globals and constants variables.
 
 class _SqlEngineDatabaseMixin(object):
+
+    def _get_noref(self, queried_columns, filters, exception):
+        with session_scope(self.engine) as session:
+            q = session.query(*queried_columns)
+            for f in filters:
+                q = q.filter(f)
+
+            try:
+                return q.one()
+            except NoResultFound:
+                raise exception
 
     def _get(self, queried_columns, filters, exception, reference=None):
         """

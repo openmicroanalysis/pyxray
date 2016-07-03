@@ -37,26 +37,21 @@ class _ElementDatabase(_Database):
             raise ValueError('Unknown object: {0}'.format(zeq))
 
     @abc.abstractmethod
-    def symbol(self, z, reference=None):
+    def symbol(self, z):
         """
         Returns the element's symbol.
 
         :arg z: atomic number
-        :arg reference: key of the reference to use to retrieve this value.
-            If ``None``, the reference is selected from the reference priority
-            (see :attr:`reference_priority`) or from the first listed reference
-            in the database.
         """
         raise NotImplementedError
 
     @abc.abstractmethod
-    def atomic_number(self, symbol, reference=None):
+    def atomic_number(self, symbol):
         """
         Returns the atomic number for the specified symbol.
         This function is case insensitive.
 
         :arg symbol: symbol of the element (e.g. ``C``), case-insensitive
-        :arg reference: key of the reference to use to retrieve this value
         """
         raise NotImplementedError
 
@@ -67,7 +62,10 @@ class _ElementDatabase(_Database):
 
         :arg symbol: symbol of the element (e.g. ``C``)
         :arg language: language to be returned (e.g. ``en``)
-        :arg reference: key of the reference to use to retrieve this value
+        :arg reference: key of the reference to use to retrieve this value.
+            If ``None``, the reference is selected from the reference priority
+            (see :attr:`reference_priority`) or from the first listed reference
+            in the database.
         """
         raise NotImplementedError
 
@@ -80,7 +78,10 @@ class _ElementDatabase(_Database):
 
         :arg zeq: atomic number equivalent, accepts atomic number, symbol,
             object with :attr:`z` or :attr:`atomic_number`
-        :arg reference: key of the reference to use to retrieve this value
+        :arg reference: key of the reference to use to retrieve this value.
+            If ``None``, the reference is selected from the reference priority
+            (see :attr:`reference_priority`) or from the first listed reference
+            in the database.
         """
         raise NotImplementedError
 
@@ -91,7 +92,10 @@ class _ElementDatabase(_Database):
 
         :arg zeq: atomic number equivalent, accepts atomic number, symbol,
             object with :attr:`z` or :attr:`atomic_number`
-        :arg reference: key of the reference to use to retrieve this value
+        :arg reference: key of the reference to use to retrieve this value.
+            If ``None``, the reference is selected from the reference priority
+            (see :attr:`reference_priority`) or from the first listed reference
+            in the database.
         """
         raise NotImplementedError
 
@@ -101,7 +105,10 @@ class _ElementDatabase(_Database):
 
         :arg zeq: atomic number equivalent, accepts atomic number, symbol,
             object with :attr:`z` or :attr:`atomic_number`
-        :arg reference: key of the reference to use to retrieve this value
+        :arg reference: key of the reference to use to retrieve this value.
+            If ``None``, the reference is selected from the reference priority
+            (see :attr:`reference_priority`) or from the first listed reference
+            in the database.
         """
         return self.mass_density_kg_per_m3(zeq, reference) / 1e3
 
