@@ -14,6 +14,10 @@ from sqlalchemy.orm import relationship
 Base = declarative_base()
 
 class Reference(Base):
+    """
+    Table to store references. 
+    The columns are based on BibTeX.
+    """
 
     __tablename__ = 'refs'
 
@@ -44,6 +48,9 @@ class Reference(Base):
         return '<Reference(%s)>' % self.bibtexkey
 
 class ReferenceMixin(object):
+    """
+    A mixin for models that require a reference.
+    """
 
     @declared_attr
     def reference_id(cls): #@NoSelf
@@ -54,17 +61,26 @@ class ReferenceMixin(object):
         return relationship('Reference')
 
 class ElementPropertyMixin(object):
+    """
+    A mixin for models representing an element property.
+    """
 
     id = Column(Integer, primary_key=True)
     z = Column(Integer, nullable=False)
 
 class ElementSymbolProperty(ElementPropertyMixin, ReferenceMixin, Base):
+    """
+    Table to store the symbol of each element.
+    """
 
     __tablename__ = 'element_symbol'
 
     symbol = Column(String(3, collation='NOCASE'), nullable=False)
 
 class ElementNameProperty(ElementPropertyMixin, ReferenceMixin, Base):
+    """
+    Table to store the name of each element in different languages.
+    """
 
     __tablename__ = 'element_name'
 
@@ -72,12 +88,18 @@ class ElementNameProperty(ElementPropertyMixin, ReferenceMixin, Base):
     language_code = Column(String(2, collation='NOCASE'), nullable=False)
 
 class ElementAtomicWeightProperty(ElementPropertyMixin, ReferenceMixin, Base):
+    """
+    Table to store the atomic weight of each element.
+    """
 
     __tablename__ = 'element_atomic_weight'
 
     value = Column(Float, nullable=False)
 
 class ElementMassDensityProperty(ElementPropertyMixin, ReferenceMixin, Base):
+    """
+    Table to store the mass density of each element.
+    """
 
     __tablename__ = 'element_mass_density'
 

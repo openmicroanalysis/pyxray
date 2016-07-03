@@ -22,6 +22,16 @@ from pyxray.sql.util import session_scope
 # Globals and constants variables.
 
 def setup_table(engine, model_class, purge=False):
+    """
+    Setups a table defined by the *model_class*.
+    If *purge*, the existing table in the database is dropped if it exists.
+    If *purge* is ``False`` and the table already exists in the database, the
+    function returns ``False``, indicating that nothing should be done.
+    Otherwise, a new table is created.
+    
+    :return: :class:`True` if the table should be populated, ``False`` otherwise
+    :rtype: :class:`bool`
+    """
     table = model_class.__table__
 
     if purge:
@@ -30,10 +40,17 @@ def setup_table(engine, model_class, purge=False):
     if table.exists(engine):
         return False
 
-    table.create(engine, checkfirst=True)
+    table.create(engine)
     return True
 
 def require_reference(session, bibtexkey, **kwargs):
+    """
+    Creates a reference with the specified *bibtexkey* and keyword-arguments if
+    one does not already exists.
+    In the latter case, the existing reference is returned.
+    
+    :rtype: :class:`Reference <pyxray.sql.model.Reference>`
+    """
     try:
         return session.query(Reference).\
                     filter(Reference.bibtexkey == bibtexkey).one()
@@ -110,6 +127,11 @@ NAMES_EN = [
     ]
 
 def _find_wikipedia_names(name_en):
+    """
+    Finds all Wikipedia pages referring to the specified name in English and 
+    returns a dictionary where the keys are the language code and the values
+    are the titles of the corresponding pages.
+    """
     url = 'https://en.wikipedia.org/w/api.php'
     data = {'action': 'query',
             'titles': name_en,
