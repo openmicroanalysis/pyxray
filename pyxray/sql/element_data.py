@@ -6,72 +6,45 @@
 
 # Local modules.
 from pyxray.meta.element_data import _ElementDatabase
+from pyxray.sql.data import _SqlEngineDatabase
 from pyxray.sql.model import \
-    (Reference, ElementSymbolProperty, ElementNameProperty)
-from pyxray.sql.util import session_scope
+    (ElementSymbolProperty, ElementNameProperty)
 
 # Globals and constants variables.
 
-class SqlEngineElementDatabase(_ElementDatabase):
+class SqlEngineElementDatabase(_ElementDatabase, _SqlEngineDatabase):
 
     def __init__(self, engine):
-        self.engine = engine
+        super().__init__(engine)
 
-    def _get_property(self, zeq, reference, clasz, attr, name):
+    def symbol(self, z, reference=None):
+        queried_columns = [ElementSymbolProperty.symbol]
+        filters = [ElementSymbolProperty.z == z]
+        exception = ValueError('Unknown symbol for z={0} and '
+                               'reference="{1}"'.format(z, reference))
+        return self._get(queried_columns, filters, exception, reference)[0]
+
+    def atomic_number(self, symbol, reference=None):
+        queried_columns = [ElementSymbolProperty.z]
+        filters = [ElementSymbolProperty.symbol == symbol]
+        exception = ValueError('Unknown atomic number for symbol="{0}" and '
+                               'reference="{1}"'.format(symbol, reference))
+        return self._get(queried_columns, filters, exception, reference)[0]
+
+    def name(self, zeq, language='en', reference=None):
         z = self._get_z(zeq)
+        queried_columns = [ElementNameProperty.name]
+        filters = [ElementNameProperty.z == z,
+                   ElementNameProperty.language_code == language]
+        exception = ValueError('Unknown name for z="{0}", '
+                               'language="{1}" and '
+                                'reference="{2}"'.format(z, language, reference))
+        return self._get(queried_columns, filters, exception, reference)[0]
 
-        with session_scope(self.engine) as session:
-            q = session.query(getattr(clasz, attr))\
-                       .filter(getattr(clasz, 'z') == z)\
-                       .join(Reference)\
-                       .filter(Reference.bibtexkey == reference)
-
-            result = q.first()
-            if not result:
-                raise ValueError('Unknown {0} for z={1} and reference "{2}"'
-                                 .format(name, z, reference))
-
-            return result[0]
-
-    def symbol(self, z, reference='unattributed'):
-        return self._get_property(z, reference,
-                                  ElementSymbolProperty, 'symbol', 'symbol')
-
-    def atomic_number(self, symbol, reference='unattributed'):
-        with session_scope(self.engine) as session:
-            q = session.query(ElementSymbolProperty.z)\
-                       .filter(ElementSymbolProperty.symbol == symbol)\
-                       .join(Reference)\
-                       .filter(Reference.bibtexkey == reference)
-
-            result = q.first()
-            if not result:
-                raise ValueError('Unknown atomic number for symbol "{0}" and'
-                                 ' reference "{1}"'.format(symbol, reference))
-
-            return result[0]
-
-    def name(self, zeq, language='en', reference='unattributed'):
-        z = self._get_z(zeq)
-
-        with session_scope(self.engine) as session:
-            q = session.query(ElementNameProperty.name)\
-                       .filter(ElementNameProperty.z == z)\
-                       .filter(ElementNameProperty.language_code == language)\
-                       .join(Reference)\
-                       .filter(Reference.bibtexkey == reference)
-
-            result = q.first()
-            if not result:
-                raise ValueError('Unknown name for z={0}, language="{1}" and'
-                                 ' reference="{2}"'.format(zeq, language, reference))
-
-            return result[0]
-
-    def atomic_weight(self, zeq, ref='unattributed'):
+    def atomic_weight(self, zeq, ref=None):
         raise NotImplementedError
 
-    def mass_density_kg_per_m3(self, zeq, ref='unattributed'):
+    def mass_density_kg_per_m3(self, zeq, ref=None):
         raise NotImplementedError
 
 if __name__ == '__main__':
@@ -80,8 +53,18 @@ if __name__ == '__main__':
 
     filepath = os.path.join(os.path.dirname(__file__), '..', 'data', 'pyxray.sql')
     engine = create_engine('sqlite:///' + os.path.abspath(filepath))
+
+#    with session_scope(engine) as session:
+#        ref = Reference(bibtexkey='test')
+#        p = ElementSymbolProperty(z=92, symbol='U2', reference=ref)
+#        session.add(p)
+#        session.commit()
+
     db = SqlEngineElementDatabase(engine)
+    db.reference_priority = ['test2']
     print(db.symbol(92, reference='unattributed'))
-    print(db.symbol(95))
+    print(db.symbol(92))
     print(db.atomic_number('al'))
     print(db.name('na', language='en', reference='wikipedia2016'))
+    print(db.name('na', language='en'))
+#    print(db.name('na', language='en', reference='unattributed'))
