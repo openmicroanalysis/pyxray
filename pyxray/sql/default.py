@@ -49,7 +49,7 @@ SYMBOLS = [
         "Uut", "Fl" , "Uup", "Lv" , "Uus", "Uuo"
     ]
 
-def populate_symbol_table(engine):
+def populate_element_symbol_table(engine):
     with session_scope(engine) as session:
         ref = require_reference(session, 'unattributed')
 
@@ -75,7 +75,7 @@ def main():
     create_tables(engine)
     print('Created tables')
 
-    populate_symbol_table(engine)
+    populate_element_symbol_table(engine)
     print('Populated symbol table')
 
 if __name__ == '__main__':
