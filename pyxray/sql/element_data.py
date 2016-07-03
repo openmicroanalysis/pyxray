@@ -6,7 +6,8 @@
 
 # Local modules.
 from pyxray.meta.element_data import _ElementDatabase
-from pyxray.sql.model import Reference, ElementSymbolProperty
+from pyxray.sql.model import \
+    (Reference, ElementSymbolProperty, ElementNameProperty)
 from pyxray.sql.util import session_scope
 
 # Globals and constants variables.
@@ -51,7 +52,21 @@ class SqlEngineElementDatabase(_ElementDatabase):
             return result[0]
 
     def name(self, zeq, language='en', reference='unattributed'):
-        raise NotImplementedError
+        z = self._get_z(zeq)
+
+        with session_scope(self.engine) as session:
+            q = session.query(ElementNameProperty.name)\
+                       .filter(ElementNameProperty.z == z)\
+                       .filter(ElementNameProperty.language_code == language)\
+                       .join(Reference)\
+                       .filter(Reference.bibtexkey == reference)
+
+            result = q.first()
+            if not result:
+                raise ValueError('Unknown name for z={0}, language="{1}" and'
+                                 ' reference="{2}"'.format(zeq, language, reference))
+
+            return result[0]
 
     def atomic_weight(self, zeq, ref='unattributed'):
         raise NotImplementedError
@@ -68,4 +83,5 @@ if __name__ == '__main__':
     db = SqlEngineElementDatabase(engine)
     print(db.symbol(92, reference='unattributed'))
     print(db.symbol(95))
-    print(db.atomic_number('Al'))
+    print(db.atomic_number('al'))
+    print(db.name('na', language='en', reference='wikipedia2016'))
