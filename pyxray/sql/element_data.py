@@ -8,7 +8,8 @@
 from pyxray.meta.element_data import _ElementDatabase
 from pyxray.sql.data import _SqlEngineDatabase
 from pyxray.sql.model import \
-    (ElementSymbolProperty, ElementNameProperty)
+    (ElementSymbolProperty, ElementNameProperty, ElementAtomicWeightProperty,
+     ElementMassDensityProperty)
 
 # Globals and constants variables.
 
@@ -41,11 +42,21 @@ class SqlEngineElementDatabase(_ElementDatabase, _SqlEngineDatabase):
                                 'reference="{2}"'.format(z, language, reference))
         return self._get(queried_columns, filters, exception, reference)[0]
 
-    def atomic_weight(self, zeq, ref=None):
-        raise NotImplementedError
+    def atomic_weight(self, zeq, reference=None):
+        z = self._get_z(zeq)
+        queried_columns = [ElementAtomicWeightProperty.value]
+        filters = [ElementAtomicWeightProperty.z == z]
+        exception = ValueError('Unknown atomic weight for z="{0}" and '
+                                'reference="{1}"'.format(z, reference))
+        return self._get(queried_columns, filters, exception, reference)[0]
 
-    def mass_density_kg_per_m3(self, zeq, ref=None):
-        raise NotImplementedError
+    def mass_density_kg_per_m3(self, zeq, reference=None):
+        z = self._get_z(zeq)
+        queried_columns = [ElementMassDensityProperty.value]
+        filters = [ElementMassDensityProperty.z == z]
+        exception = ValueError('Unknown mass density for z="{0}" and '
+                                'reference="{1}"'.format(z, reference))
+        return self._get(queried_columns, filters, exception, reference)[0]
 
 if __name__ == '__main__':
     import os
