@@ -95,3 +95,13 @@ class _ElementDatabase(_Database):
         """
         raise NotImplementedError
 
+    def mass_density_g_per_cm3(self, zeq, reference=None):
+        """
+        Returns the mass density (in g/cm3).
+
+        :arg zeq: atomic number equivalent, accepts atomic number, symbol,
+            object with :attr:`z` or :attr:`atomic_number`
+        :arg reference: key of the reference to use to retrieve this value
+        """
+        return self.mass_density_kg_per_m3(zeq, reference) / 1e3
+
