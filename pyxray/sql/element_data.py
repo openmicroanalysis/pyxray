@@ -6,17 +6,18 @@
 
 # Local modules.
 from pyxray.meta.element_data import _ElementDatabase
-from pyxray.sql.data import _SqlEngineDatabase
+from pyxray.sql.data import _SqlEngineDatabaseMixin
 from pyxray.sql.model import \
     (ElementSymbolProperty, ElementNameProperty, ElementAtomicWeightProperty,
      ElementMassDensityProperty)
 
 # Globals and constants variables.
 
-class SqlEngineElementDatabase(_ElementDatabase, _SqlEngineDatabase):
+class SqlEngineElementDatabase(_SqlEngineDatabaseMixin, _ElementDatabase):
 
     def __init__(self, engine):
-        super().__init__(engine)
+        super().__init__()
+        self.engine = engine
 
     def symbol(self, z, reference=None):
         queried_columns = [ElementSymbolProperty.symbol]
@@ -72,10 +73,9 @@ if __name__ == '__main__':
 #        session.commit()
 
     db = SqlEngineElementDatabase(engine)
-    db.reference_priority = ['test2']
     print(db.symbol(92, reference='unattributed'))
     print(db.symbol(92))
     print(db.atomic_number('al'))
-    print(db.name('na', language='en', reference='wikipedia2016'))
-    print(db.name('na', language='en'))
+    print(db.name('o', language='en', reference='wikipedia2016'))
+    print(db.name('o', language='de'))
 #    print(db.name('na', language='en', reference='unattributed'))

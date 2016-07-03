@@ -10,14 +10,10 @@ from pyxray.sql.model import Reference
 from pyxray.sql.util import session_scope
 
 # Local modules.
-from pyxray.meta.data import _Database
 
 # Globals and constants variables.
 
-class _SqlEngineDatabase(_Database):
-
-    def __init__(self, engine):
-        self.engine = engine
+class _SqlEngineDatabaseMixin(object):
 
     def _get(self, queried_columns, filters, exception, reference=None):
         """
