@@ -8,7 +8,7 @@ from sqlalchemy.orm.query import Query
 from sqlalchemy.orm.exc import NoResultFound
 
 # Local modules.
-from pyxray.meta.element_data import _ElementDatabase
+from pyxray.meta.data import _Database
 from pyxray.sql.model import \
     (Reference,
      Element, ElementNameProperty, ElementAtomicWeightProperty,
@@ -17,7 +17,7 @@ from pyxray.sql.util import session_scope, one_or_list
 
 # Globals and constants variables.
 
-class SqlEngineElementDatabase(_ElementDatabase):
+class SqlEngineDatabase(_Database):
 
     def __init__(self, engine):
         super().__init__()
@@ -61,20 +61,20 @@ class SqlEngineElementDatabase(_ElementDatabase):
             reference, value = results.popitem(last=False)
             return one_or_list(value), reference
 
-    def symbol(self, z):
+    def element_symbol(self, z):
         q = Query(Element.symbol)
         q = q.filter(Element.z == z)
         exception = ValueError('Unknown symbol for z={0}'.format(z))
         return self._query_one(q, exception)
 
-    def atomic_number(self, symbol):
+    def element_atomic_number(self, symbol):
         q = Query(Element.z)
         q = q.filter(Element.symbol == symbol)
         exception = \
             ValueError('Unknown atomic number for symbol="{0}"'.format(symbol))
         return self._query_one(q, exception)
 
-    def name(self, zeq, language='en', reference=None):
+    def element_name(self, zeq, language='en', reference=None):
         z = self._get_z(zeq)
         q = Query(ElementNameProperty.name)
         q = q.filter(ElementNameProperty.language_code == language)
@@ -86,7 +86,7 @@ class SqlEngineElementDatabase(_ElementDatabase):
                                 .format(z, language, reference))
         return self._query_with_references(q, exception, reference)
 
-    def atomic_weight(self, zeq, reference=None):
+    def element_atomic_weight(self, zeq, reference=None):
         z = self._get_z(zeq)
         q = Query(ElementAtomicWeightProperty.value)
         q = q.join(Element)
@@ -95,7 +95,7 @@ class SqlEngineElementDatabase(_ElementDatabase):
                                 'reference="{1}"'.format(z, reference))
         return self._query_with_references(q, exception, reference)
 
-    def mass_density_kg_per_m3(self, zeq, reference=None):
+    def element_mass_density_kg_per_m3(self, zeq, reference=None):
         z = self._get_z(zeq)
         q = Query(ElementMassDensityProperty.value_kg_per_m3)
         q = q.join(Element)
@@ -117,9 +117,9 @@ if __name__ == '__main__':
 #        session.add(p)
 #        session.commit()
 
-    db = SqlEngineElementDatabase(engine)
-    print(db.symbol(92))
-    print(db.atomic_number('al'))
+    db = SqlEngineDatabase(engine)
+    print(db.element_symbol(92))
+    print(db.element_atomic_number('al'))
 #    print(db.name('o', language='en', reference='wikipedia2016'))
 #    print(db.name('o', language='de'))
 #    print(db.name('na', language='en', reference='unattributed'))
