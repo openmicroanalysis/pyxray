@@ -20,7 +20,7 @@ from pyxray.sql.util import session_scope
 def create_mock_database():
     engine = create_engine('sqlite:///:memory:')
 
-    Base.metadata.create_all(engine)
+    Base.metadata.create_all(engine) #@UndefinedVariable
 
     elements = {}
     data = [(26, 'Fe'), (8, 'O')]
@@ -88,50 +88,70 @@ class TestSqlEngineElementDatabase(unittest.TestCase):
         self.assertRaises(ValueError, self.db.atomic_number, 'H')
 
     def testname(self):
-        self.assertEqual('Iron', self.db.name(26))
-        self.assertEqual('Iron', self.db.name(26, 'en'))
-        self.assertEqual('Eisen', self.db.name(26, 'de'))
-        self.assertEqual('Iron', self.db.name('Fe'))
+        self.assertTupleEqual(('Iron', 'ref1'), self.db.name(26))
+        self.assertTupleEqual(('Iron', 'ref1'), self.db.name(26, 'en'))
+        self.assertTupleEqual(('Eisen', 'ref1'), self.db.name(26, 'de'))
+        self.assertTupleEqual(('Iron', 'ref1'), self.db.name('Fe'))
 
-        self.assertEqual('Oxygen', self.db.name(8))
-        self.assertEqual('Oxygen', self.db.name(8, 'en'))
-        self.assertEqual('Sauerstoff', self.db.name(8, 'de'))
-        self.assertEqual('Oxygen', self.db.name('O'))
+        self.assertTupleEqual(('Oxygen', 'ref1'), self.db.name(8))
+        self.assertTupleEqual(('Oxygen', 'ref1'), self.db.name(8, 'en'))
+        self.assertTupleEqual(('Sauerstoff', 'ref1'), self.db.name(8, 'de'))
+        self.assertTupleEqual(('Oxygen', 'ref1'), self.db.name('O'))
 
         self.assertRaises(ValueError, self.db.name, 'H')
         self.assertRaises(ValueError, self.db.name, 26, 'fr')
 
     def testatomic_weight(self):
-        self.assertAlmostEqual(55.845, self.db.atomic_weight(26), 3)
-        self.assertAlmostEqual(55.845, self.db.atomic_weight('Fe'), 3)
-        self.assertAlmostEqual(55.845, self.db.atomic_weight(26, reference='ref1'), 3)
-        self.assertAlmostEqual(58.0, self.db.atomic_weight(26, reference='ref2'), 3)
+        self.assertAlmostEqual(55.845, self.db.atomic_weight(26)[0], 3)
+        self.assertEqual('ref1', self.db.atomic_weight(26)[1])
+        self.assertAlmostEqual(55.845, self.db.atomic_weight('Fe')[0], 3)
+        self.assertEqual('ref1', self.db.atomic_weight('Fe')[1])
+        self.assertAlmostEqual(55.845, self.db.atomic_weight(26, reference='ref1')[0], 3)
+        self.assertAlmostEqual(58.0, self.db.atomic_weight(26, reference='ref2')[0], 3)
+        self.assertEqual('ref2', self.db.atomic_weight(26, reference='ref2')[1])
 
-        self.assertAlmostEqual(15.9994, self.db.atomic_weight(8), 3)
-        self.assertAlmostEqual(15.9994, self.db.atomic_weight('O'), 3)
-        self.assertAlmostEqual(15.9994, self.db.atomic_weight(8, reference='ref1'), 3)
+        self.assertAlmostEqual(15.9994, self.db.atomic_weight(8)[0], 3)
+        self.assertEqual('ref1', self.db.atomic_weight(8)[1])
+        self.assertAlmostEqual(15.9994, self.db.atomic_weight('O')[0], 3)
+        self.assertEqual('ref1', self.db.atomic_weight('O')[1])
+        self.assertAlmostEqual(15.9994, self.db.atomic_weight(8, reference='ref1')[0], 3)
 
         self.db.reference_priority = ['ref2']
-        self.assertAlmostEqual(58.0, self.db.atomic_weight(26), 3)
-        self.assertAlmostEqual(55.845, self.db.atomic_weight(26, reference='ref1'), 3)
-        self.assertAlmostEqual(58.0, self.db.atomic_weight(26, reference='ref2'), 3)
-        self.assertAlmostEqual(15.9994, self.db.atomic_weight(8), 3)
+        self.assertAlmostEqual(58.0, self.db.atomic_weight(26)[0], 3)
+        self.assertEqual('ref2', self.db.atomic_weight(26)[1])
+        self.assertAlmostEqual(55.845, self.db.atomic_weight(26, reference='ref1')[0], 3)
+        self.assertEqual('ref1', self.db.atomic_weight(26, reference='ref1')[1])
+        self.assertAlmostEqual(58.0, self.db.atomic_weight(26, reference='ref2')[0], 3)
+        self.assertEqual('ref2', self.db.atomic_weight(26, reference='ref2')[1])
+        self.assertAlmostEqual(15.9994, self.db.atomic_weight(8)[0], 3)
+        self.assertEqual('ref1', self.db.atomic_weight(8)[1])
 
     def testmass_density(self):
-        self.assertAlmostEqual(7874.0, self.db.mass_density_kg_per_m3(26), 3)
-        self.assertAlmostEqual(7874.0, self.db.mass_density_kg_per_m3('Fe'), 3)
-        self.assertAlmostEqual(7874.0, self.db.mass_density_kg_per_m3(26, reference='ref1'), 3)
-        self.assertAlmostEqual(9000.0, self.db.mass_density_kg_per_m3(26, reference='ref2'), 3)
+        self.assertAlmostEqual(7874.0, self.db.mass_density_kg_per_m3(26)[0], 3)
+        self.assertEqual('ref1', self.db.mass_density_kg_per_m3(26)[1], 3)
+        self.assertAlmostEqual(7874.0, self.db.mass_density_kg_per_m3('Fe')[0], 3)
+        self.assertEqual('ref1', self.db.mass_density_kg_per_m3('Fe')[1], 3)
+        self.assertAlmostEqual(7874.0, self.db.mass_density_kg_per_m3(26, reference='ref1')[0], 3)
+        self.assertEqual('ref1', self.db.mass_density_kg_per_m3(26, reference='ref1')[1], 3)
+        self.assertAlmostEqual(9000.0, self.db.mass_density_kg_per_m3(26, reference='ref2')[0], 3)
+        self.assertEqual('ref2', self.db.mass_density_kg_per_m3(26, reference='ref2')[1], 3)
 
-        self.assertAlmostEqual(1.429, self.db.mass_density_kg_per_m3(8), 3)
-        self.assertAlmostEqual(1.429, self.db.mass_density_kg_per_m3('O'), 3)
-        self.assertAlmostEqual(1.429, self.db.mass_density_kg_per_m3(8, reference='ref1'), 3)
+        self.assertAlmostEqual(1.429, self.db.mass_density_kg_per_m3(8)[0], 3)
+        self.assertEqual('ref1', self.db.mass_density_kg_per_m3(8)[1], 3)
+        self.assertAlmostEqual(1.429, self.db.mass_density_kg_per_m3('O')[0], 3)
+        self.assertEqual('ref1', self.db.mass_density_kg_per_m3('O')[1], 3)
+        self.assertAlmostEqual(1.429, self.db.mass_density_kg_per_m3(8, reference='ref1')[0], 3)
+        self.assertEqual('ref1', self.db.mass_density_kg_per_m3(8, reference='ref1')[1], 3)
 
         self.db.reference_priority = ['ref2']
-        self.assertAlmostEqual(9000.0, self.db.mass_density_kg_per_m3(26), 3)
-        self.assertAlmostEqual(7874.0, self.db.mass_density_kg_per_m3(26, reference='ref1'), 3)
-        self.assertAlmostEqual(9000.0, self.db.mass_density_kg_per_m3(26, reference='ref2'), 3)
-        self.assertAlmostEqual(1.429, self.db.mass_density_kg_per_m3(8), 3)
+        self.assertAlmostEqual(9000.0, self.db.mass_density_kg_per_m3(26)[0], 3)
+        self.assertEqual('ref2', self.db.mass_density_kg_per_m3(26)[1], 3)
+        self.assertAlmostEqual(7874.0, self.db.mass_density_kg_per_m3(26, reference='ref1')[0], 3)
+        self.assertEqual('ref1', self.db.mass_density_kg_per_m3(26, reference='ref1')[1], 3)
+        self.assertAlmostEqual(9000.0, self.db.mass_density_kg_per_m3(26, reference='ref2')[0], 3)
+        self.assertEqual('ref2', self.db.mass_density_kg_per_m3(26, reference='ref2')[1], 3)
+        self.assertAlmostEqual(1.429, self.db.mass_density_kg_per_m3(8)[0], 3)
+        self.assertEqual('ref1', self.db.mass_density_kg_per_m3(8)[1], 3)
 
 if __name__ == '__main__': #pragma: no cover
     logging.getLogger().setLevel(logging.DEBUG)

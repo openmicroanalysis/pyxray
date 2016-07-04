@@ -22,3 +22,10 @@ def session_scope(engine):
         raise
     finally:
         session.close()
+
+def one_or_list(values):
+    if len(values) == 1:
+        return values[0]
+    else:
+        values
+

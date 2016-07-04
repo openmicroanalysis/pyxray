@@ -1,70 +1,108 @@
 """"""
 
 # Standard library modules.
+from collections import OrderedDict
 
 # Third party modules.
+from sqlalchemy.orm.query import Query
+from sqlalchemy.orm.exc import NoResultFound
 
 # Local modules.
 from pyxray.meta.element_data import _ElementDatabase
-from pyxray.sql.data import _SqlEngineDatabaseMixin
 from pyxray.sql.model import \
-    (Element, ElementNameProperty, ElementAtomicWeightProperty,
+    (Reference,
+     Element, ElementNameProperty, ElementAtomicWeightProperty,
      ElementMassDensityProperty)
-from pyxray.sql.util import session_scope
+from pyxray.sql.util import session_scope, one_or_list
 
 # Globals and constants variables.
 
-class SqlEngineElementDatabase(_SqlEngineDatabaseMixin, _ElementDatabase):
+class SqlEngineElementDatabase(_ElementDatabase):
 
     def __init__(self, engine):
         super().__init__()
         self.engine = engine
 
-    def _get_element_id(self, z):
+    def _query_one(self, q, exception):
         with session_scope(self.engine) as session:
-            return session.query(Element.id).filter(Element.z == z).one()[0]
+            q = q.with_session(session)
+            try:
+                return one_or_list(q.one())
+            except NoResultFound:
+                raise exception
+
+    def _query_with_references(self, q, exception, reference=None):
+        q = q.add_columns(Reference.bibtexkey)
+        q = q.join(Reference)
+        q = q.order_by(Reference.id)
+
+        with session_scope(self.engine) as session:
+            q = q.with_session(session)
+
+            results = OrderedDict((k, v) for * v, k in q.all())
+
+            # No results from query
+            if not results:
+                raise exception
+
+            # Check result from specified reference
+            if reference is not None:
+                if reference in results:
+                    return one_or_list(results[reference]), reference
+                else:
+                    raise exception
+
+            # Check result from preferred references
+            for reference in self.reference_priority:
+                if reference in results:
+                    return one_or_list(results[reference]), reference
+
+            # Return first result
+            reference, value = results.popitem(last=False)
+            return one_or_list(value), reference
 
     def symbol(self, z):
-        queried_columns = [Element.symbol]
-        filters = [Element.z == z]
+        q = Query(Element.symbol)
+        q = q.filter(Element.z == z)
         exception = ValueError('Unknown symbol for z={0}'.format(z))
-        return self._get_noref(queried_columns, filters, exception)[0]
+        return self._query_one(q, exception)
 
     def atomic_number(self, symbol):
-        queried_columns = [Element.z]
-        filters = [Element.symbol == symbol]
-        exception = ValueError('Unknown atomic number for symbol="{0}"'.format(symbol))
-        return self._get_noref(queried_columns, filters, exception)[0]
+        q = Query(Element.z)
+        q = q.filter(Element.symbol == symbol)
+        exception = \
+            ValueError('Unknown atomic number for symbol="{0}"'.format(symbol))
+        return self._query_one(q, exception)
 
     def name(self, zeq, language='en', reference=None):
         z = self._get_z(zeq)
-        element_id = self._get_element_id(z)
-        queried_columns = [ElementNameProperty.name]
-        filters = [ElementNameProperty.element_id == element_id,
-                   ElementNameProperty.language_code == language]
+        q = Query(ElementNameProperty.name)
+        q = q.filter(ElementNameProperty.language_code == language)
+        q = q.join(Element)
+        q = q.filter(Element.z == z)
         exception = ValueError('Unknown name for z="{0}", '
                                'language="{1}" and '
                                 'reference="{2}"'
                                 .format(z, language, reference))
-        return self._get(queried_columns, filters, exception, reference)[0]
+        return self._query_with_references(q, exception, reference)
 
     def atomic_weight(self, zeq, reference=None):
         z = self._get_z(zeq)
-        element_id = self._get_element_id(z)
-        queried_columns = [ElementAtomicWeightProperty.value]
-        filters = [ElementAtomicWeightProperty.element_id == element_id]
+        q = Query(ElementAtomicWeightProperty.value)
+        q = q.join(Element)
+        q = q.filter(Element.z == z)
         exception = ValueError('Unknown atomic weight for z="{0}" and '
                                 'reference="{1}"'.format(z, reference))
-        return self._get(queried_columns, filters, exception, reference)[0]
+        return self._query_with_references(q, exception, reference)
 
     def mass_density_kg_per_m3(self, zeq, reference=None):
         z = self._get_z(zeq)
-        element_id = self._get_element_id(z)
-        queried_columns = [ElementMassDensityProperty.value_kg_per_m3]
-        filters = [ElementMassDensityProperty.element_id == element_id]
+        q = Query(ElementMassDensityProperty.value_kg_per_m3)
+        q = q.join(Element)
+        q = q.filter(Element.z == z)
         exception = ValueError('Unknown mass density for z="{0}" and '
                                 'reference="{1}"'.format(z, reference))
-        return self._get(queried_columns, filters, exception, reference)[0]
+        return self._query_with_references(q, exception, reference)
 
 if __name__ == '__main__':
     import os
