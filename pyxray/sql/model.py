@@ -4,9 +4,8 @@
 
 # Third party modules.
 from sqlalchemy.ext.declarative import declarative_base, declared_attr
-from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy import Column, Integer, Unicode, String, ForeignKey, Float
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, synonym
 
 # Local modules.
 
@@ -124,7 +123,10 @@ class Reference(PrimaryKeyMixin, Base):
     doi = Column(Unicode)
 
     def __repr__(self):
-        return '<Reference(%s)>' % self.bibtexkey
+        return '<Reference({0})>'.format(self.bibtexkey)
+
+    def __str__(self):
+        return self.bibtexkey
 
 class NotationType(ReferenceMixin, Base):
 
@@ -132,6 +134,12 @@ class NotationType(ReferenceMixin, Base):
 
     id = Column(Integer, primary_key=True)
     name = Column(String(collation='NOCASE'), nullable=False)
+
+    def __repr__(self):
+        return '<NotationType({0})>'.format(self.name)
+
+    def __str__(self):
+        return self.name
 
 #--- Element
 
@@ -141,6 +149,12 @@ class Element(PrimaryKeyMixin, Base):
 
     z = Column(Integer, nullable=False)
     symbol = Column(String(3, collation='NOCASE'), nullable=False)
+
+    def __repr__(self):
+        return '<Element({0})>'.format(self.symbol)
+
+    def __str__(self):
+        return self.symbol
 
 class ElementNameProperty(PrimaryKeyMixin,
                           ElementPropertyMixin,
@@ -187,9 +201,13 @@ class AtomicShell(PrimaryKeyMixin, Base):
 
     principal_quantum_number = Column(Integer, nullable=False)
 
-    @hybrid_property
-    def n(self):
-        return self.principal_quantum_number
+    n = synonym("principal_quantum_number")
+
+    def __repr__(self):
+        return '<AtomicShell({0:d}>'.format(self.n)
+
+    def __str__(self):
+        return '{0:d}'.format(self.n)
 
 class AtomicShellNotationProperty(PrimaryKeyMixin,
                                   AtomicShellPropertyMixin,
@@ -205,15 +223,23 @@ class AtomicSubshell(PrimaryKeyMixin, AtomicShellPropertyMixin, Base):
     __tablename__ = 'atomic_subshell'
 
     azimuthal_quantum_number = Column(Integer, nullable=False)
-    total_angular_momentum = Column(Float, nullable=False)
+    total_angular_momentum_n = Column(Integer, nullable=False)
 
-    @hybrid_property
-    def l(self):
-        return self.azimuthal_quantum_number
+    @declared_attr
+    def total_angular_momentum(self):
+        return self.total_angular_momentum_n / 2
 
-    @hybrid_property
-    def j(self):
-        return self.total_angular_momentum
+    l = synonym("azimuthal_quantum_number")
+    j = synonym("total_angular_momentum")
+    j_n = synonym("total_angular_momentum_n")
+
+    def __repr__(self):
+        return '<AtomicSubshell(n={0:d}, l={1:d}, j={2:d}/2)>'\
+                .format(self.atomic_shell.n, self.l, self.j_n)
+
+    def __str__(self):
+        return '({0:d},{1:d},{2:d})'\
+                .format(self.atomic_shell.n, self.l, self.j_n)
 
 class AtomicSubshellNotationProperty(PrimaryKeyMixin,
                                      AtomicSubshellPropertyMixin,
@@ -225,6 +251,7 @@ class AtomicSubshellNotationProperty(PrimaryKeyMixin,
 class AtomicSubshellEdgeEnergyProperty(PrimaryKeyMixin,
                                        AtomicShellPropertyMixin,
                                        ElementPropertyMixin,
+                                       ReferenceMixin,
                                        Base):
 
     __tablename__ = 'atomic_subshell_edge_energy'
@@ -234,11 +261,22 @@ class AtomicSubshellEdgeEnergyProperty(PrimaryKeyMixin,
 class AtomicSubshellNaturalWidthProperty(PrimaryKeyMixin,
                                          AtomicShellPropertyMixin,
                                          ElementPropertyMixin,
+                                         ReferenceMixin,
                                          Base):
 
     __tablename__ = 'atomic_subshell_natural_width'
 
     value_eV = Column(Float, nullable=False)
+
+class AtomicSubshellOccupancyProperty(PrimaryKeyMixin,
+                                      AtomicShellPropertyMixin,
+                                      ElementPropertyMixin,
+                                      ReferenceMixin,
+                                      Base):
+
+    __tablename__ = 'atomic_subshell_occupancy'
+
+    value = Column(Integer, nullable=False)
 
 #--- Transition
 
@@ -277,6 +315,7 @@ class TransitionNotationProperty(PrimaryKeyMixin,
 class TransitionEnergyProperty(PrimaryKeyMixin,
                                TransitionPropertyMixin,
                                ElementPropertyMixin,
+                               ReferenceMixin,
                                Base):
 
     __tablename__ = 'transition_energy'
@@ -286,6 +325,7 @@ class TransitionEnergyProperty(PrimaryKeyMixin,
 class TransitionProbabilityProperty(PrimaryKeyMixin,
                                     TransitionPropertyMixin,
                                     ElementPropertyMixin,
+                                    ReferenceMixin,
                                     Base):
 
     __tablename__ = 'transition_probability'

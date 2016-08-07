@@ -34,5 +34,19 @@ setup(name="pyxray",
       test_suite='nose.collector',
 
       cmdclass=versioneer.get_cmdclass(),
+
+      entry_points={
+          'pyxray.sql.mapping':
+            ['element = pyxray.sql.mapping.base:mapper_element',
+             'notation type = pyxray.sql.mapping.base:mapper_notation_type',
+             'atomic shell = pyxray.sql.mapping.base:mapper_atomic_shell',
+             'atomic shell notation = pyxray.sql.mapping.base:mapper_atomic_shell_notation',
+             'atomic subshell = pyxray.sql.mapping.base:mapper_atomic_subshell',
+             'atomic subshell notation = pyxray.sql.mapping.base:mapper_atomic_subshell_notation',
+             'Sargent-Welch element atomic weight = pyxray.sql.mapping.sargent_welch:mapper_atomic_weight',
+             'Sargent-Welch element mass density = pyxray.sql.mapping.sargent_welch:mapper_mass_density',
+             #'Wikipedia element name = pyxray.sql.mapping.wikipedia:mapper_name',
+             ],
+                      },
 )
 

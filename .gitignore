@@ -1,3 +1,7 @@
+pyxray/data/cache
+pyxray/data/*.sql
+
+
 #### joe made this: https://goel.io/joe
 
 #####=== Eclipse ===#####
