@@ -13,12 +13,14 @@ from pyxray.sql.model import \
     (NotationType,
      Element,
      AtomicShell, AtomicShellNotationProperty,
-     AtomicSubshell, AtomicSubshellNotationProperty)
+     AtomicSubshell, AtomicSubshellNotationProperty,
+     Transition)
 from pyxray.parser.base import \
     (NotationTypeParser,
      ElementParser,
      AtomicShellParser, AtomicShellNotationParser,
-     AtomicSubshellParser, AtomicSubshellNotationParser)
+     AtomicSubshellParser, AtomicSubshellNotationParser,
+     TransitionParser)
 
 # Globals and constants variables.
 
@@ -64,3 +66,15 @@ bindings = {AtomicSubshellNotationProperty.atomic_subshell: \
             AtomicSubshellNotationProperty.value_html: get_key(parser.KEY_VALUE_HTML),
             AtomicSubshellNotationProperty.value_latex: get_key(parser.KEY_VALUE_LATEX)}
 mapper_atomic_subshell_notation = SqlMapper(model, parser, bindings, [mapper_atomic_subshell])
+
+model = Transition
+parser = TransitionParser()
+bindings = {Transition.source_subshell: \
+                get_atomic_subshell(parser.KEY_SOURCE_N,
+                                    parser.KEY_SOURCE_L,
+                                    parser.KEY_SOURCE_Jn),
+            Transition.destination_subshell: \
+                get_atomic_subshell(parser.KEY_DESTINATION_N,
+                                    parser.KEY_DESTINATION_L,
+                                    parser.KEY_DESTINATION_Jn)}
+mapper_transition = SqlMapper(model, parser, bindings, [mapper_atomic_subshell])

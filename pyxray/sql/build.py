@@ -142,7 +142,7 @@ def main():
     logging.getLogger().setLevel(level)
     logging.basicConfig()
 
-    builder = SqliteDatabaseBuilder(purge=True)
+    builder = SqliteDatabaseBuilder(purge=False)
     builder.build()
 
 if __name__ == '__main__':

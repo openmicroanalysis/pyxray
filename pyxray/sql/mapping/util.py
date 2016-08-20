@@ -67,3 +67,17 @@ def get_atomic_subshell(key_n, key_l, key_jn):
         query = query.filter(AtomicSubshell.j_n == j_n)
         return query.one()
     return funckey
+
+#def get_transition(key_n0, key_l0, key_j0n,
+#                   key_n1, key_l1, key_j1n,
+#                   key_n2=None, key_l2=None, key_j2n=None):
+#    def funckey(session, entry):
+#        atomic_shell = get_atomic_shell(key_n)(session, entry)
+#        l = entry[key_l]
+#        j_n = entry[key_jn]
+#        query = session.query(AtomicSubshell)
+#        query = query.filter(AtomicSubshell.atomic_shell == atomic_shell)
+#        query = query.filter(AtomicSubshell.l == l)
+#        query = query.filter(AtomicSubshell.j_n == j_n)
+#        return query.one()
+#    return funckey

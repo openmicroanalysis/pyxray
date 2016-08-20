@@ -5,7 +5,7 @@
 # Third party modules.
 from sqlalchemy.ext.declarative import declarative_base, declared_attr
 from sqlalchemy import Column, Integer, Unicode, String, ForeignKey, Float
-from sqlalchemy.orm import relationship, synonym
+from sqlalchemy.orm import relationship, synonym, validates
 
 # Local modules.
 
@@ -203,8 +203,14 @@ class AtomicShell(PrimaryKeyMixin, Base):
 
     n = synonym("principal_quantum_number")
 
+    @validates('principal_quantum_number')
+    def validate_principal_quantum_number(self, key, principal_quantum_number):
+        if principal_quantum_number < 1:
+            raise ValueError('Minimum principal number is 1')
+        return principal_quantum_number
+
     def __repr__(self):
-        return '<AtomicShell({0:d}>'.format(self.n)
+        return '<AtomicShell({0:d})>'.format(self.n)
 
     def __str__(self):
         return '{0:d}'.format(self.n)
@@ -284,26 +290,29 @@ class Transition(PrimaryKeyMixin, Base):
 
     __tablename__ = 'transition'
 
-    source_id = Column(Integer, ForeignKey('atomic_subshell.id'), nullable=False)
-    source = relationship('AtomicSubshell',
-                          foreign_keys=source_id)
+    source_subshell_id = \
+        Column(Integer, ForeignKey('atomic_subshell.id'), nullable=False)
+    source_subshell = relationship('AtomicSubshell',
+                                   foreign_keys=source_subshell_id)
 
-    destination_id = Column(Integer, ForeignKey('atomic_subshell.id'), nullable=False)
-    destination = relationship('AtomicSubshell',
-                               foreign_keys=destination_id)
+    destination_subshell_id = \
+        Column(Integer, ForeignKey('atomic_subshell.id'), nullable=False)
+    destination_subshell = relationship('AtomicSubshell',
+                                        foreign_keys=destination_subshell_id)
 
-    secondary_destination_id = Column(Integer, ForeignKey('atomic_subshell.id'))
-    secondary_destination = relationship('AtomicSubshell',
-                                         foreign_keys=secondary_destination_id)
+    secondary_destination_subshell_id = \
+        Column(Integer, ForeignKey('atomic_subshell.id'))
+    secondary_destination_subshell = \
+        relationship('AtomicSubshell', foreign_keys=secondary_destination_subshell_id)
 
     def is_radiative(self):
-        return self.secondary_destination is None
+        return self.secondary_destination_subshell is None
 
     def is_nonradiative(self):
         return not self.is_radiative()
 
     def is_coster_kronig(self):
-        return self.source.n == self.destination.n
+        return self.source_subshell.n == self.destination_subshell.n
 
 class TransitionNotationProperty(PrimaryKeyMixin,
                                  TransitionPropertyMixin,

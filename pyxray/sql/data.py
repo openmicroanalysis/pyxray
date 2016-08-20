@@ -12,7 +12,8 @@ from pyxray.meta.data import _Database
 from pyxray.sql.model import \
     (Reference,
      Element, ElementNameProperty, ElementAtomicWeightProperty,
-     ElementMassDensityProperty)
+     ElementMassDensityProperty,
+     AtomicShell)
 from pyxray.sql.util import session_scope, one_or_list
 
 # Globals and constants variables.
@@ -120,6 +121,11 @@ if __name__ == '__main__':
     db = SqlEngineDatabase(engine)
     print(db.element_symbol(92))
     print(db.element_atomic_number('al'))
+
+    with session_scope(engine) as session:
+        query = session.query(AtomicShell).filter(AtomicShell.n == 0)
+        print(repr(query.one()))
+
 #    print(db.name('o', language='en', reference='wikipedia2016'))
 #    print(db.name('o', language='de'))
 #    print(db.name('na', language='en', reference='unattributed'))
