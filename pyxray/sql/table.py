@@ -5,7 +5,8 @@ SQL table definitions.
 # Standard library modules.
 
 # Third party modules.
-from sqlalchemy import Table, Column, Integer, Unicode, String, ForeignKey, Float, MetaData
+from sqlalchemy import \
+    Table, Column, Integer, Unicode, String, ForeignKey, Float, MetaData
 
 # Local modules.
 
@@ -41,9 +42,10 @@ def _append_notation_columns(table):
                                ForeignKey('notation.id'), nullable=False))
 
 def _append_notation_property_columns(table):
-    table.append_column(Column('value', String, nullable=False))
-    table.append_column(Column('value_html', String))
-    table.append_column(Column('value_latex', String))
+    table.append_column(Column('ascii', String, nullable=False))
+    table.append_column(Column('utf16', Unicode))
+    table.append_column(Column('html', String))
+    table.append_column(Column('latex', String))
 
 def _append_reference_columns(table):
     table.append_column(Column('reference_id', Integer,
@@ -75,10 +77,19 @@ transition = \
     Table('transition', metadata,
           Column('source_subshell_id', Integer, ForeignKey('atomic_shell.id'), nullable=False),
           Column('destination_subshell_id', Integer, ForeignKey('atomic_shell.id'), nullable=False),
-          Column('second_destination_subshell_id', Integer, ForeignKey('atomic_shell.id'), nullable=False))
+          Column('secondary_destination_subshell_id', Integer, ForeignKey('atomic_shell.id')))
 _append_primary_key_columns(transition)
 
-#TODO: table for transitionset
+transitionset_association = \
+    Table('transitionset_association', metadata,
+          Column('transitionset_id', Integer, ForeignKey('transitionset.id'), nullable=False),
+          Column('transition_id', Integer, ForeignKey('transition.id'), nullable=False))
+_append_primary_key_columns(transitionset_association)
+
+transitionset = \
+    Table('transitionset', metadata,
+          Column('association_id', Integer, ForeignKey('transitionset_association.id'), nullable=False))
+_append_primary_key_columns(transitionset)
 
 language = \
     Table('language', metadata,

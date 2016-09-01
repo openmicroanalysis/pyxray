@@ -33,6 +33,7 @@ class _DatabaseBuilder(metaclass=abc.ABCMeta):
         self._propfuncs[props.ElementMassDensity] = self._add_element_mass_density_property
         self._propfuncs[props.AtomicShellNotation] = self._add_atomic_shell_notation_property
         self._propfuncs[props.AtomicSubshellNotation] = self._add_atomic_subshell_notation_property
+        self._propfuncs[props.TransitionNotation] = self._add_transition_notation_property
 
     @abc.abstractmethod
     def _backup_existing_database(self):
@@ -153,6 +154,65 @@ class _DatabaseBuilder(metaclass=abc.ABCMeta):
         with engine.begin() as conn:
             result = conn.execute(command)
             return result.inserted_primary_key[0]
+
+    def _require_transition(self, engine, transition):
+        source_subshell_id = \
+            self._require_atomic_subshell(engine, transition.source_subshell)
+        destination_subshell_id = \
+            self._require_atomic_subshell(engine, transition.destination_subshell)
+        if transition.secondary_destination_subshell:
+            secondary_destination_subshell_id = \
+                self._require_atomic_subshell(engine, transition.secondary_destination_subshell)
+        else:
+            secondary_destination_subshell_id = None
+
+        tbl = table.transition
+        tbl.create(engine, checkfirst=True)
+
+        command = sql.select([tbl])
+        command = command.where(sql.and_(tbl.c.source_subshell_id == source_subshell_id,
+                                         tbl.c.destination_subshell_id == destination_subshell_id,
+                                         tbl.c.secondary_destination_subshell_id == secondary_destination_subshell_id))
+        with engine.begin() as conn:
+            result = conn.execute(command)
+            row = result.first()
+            if row is not None:
+                return row['id']
+
+        command = sql.insert(tbl)
+        command = command.values(source_subshell_id=source_subshell_id,
+                                 destination_subshell_id=destination_subshell_id,
+                                 secondary_destination_subshell_id=secondary_destination_subshell_id)
+        with engine.begin() as conn:
+            result = conn.execute(command)
+            return result.inserted_primary_key[0]
+
+    def _require_transitionset(self, engine, transitionset):
+        transition_ids = set()
+        for transition in transitionset.transition:
+            transition_id = self._require_transition(engine, transition)
+            transition_ids.add(transition_id)
+
+#        tbl = table.transition
+#        tbl.create(engine, checkfirst=True)
+#
+#        command = sql.select([tbl])
+#        command = command.where(sql.and_(tbl.c.source_subshell_id == source_subshell_id,
+#                                         tbl.c.destination_subshell_id == destination_subshell_id,
+#                                         tbl.c.second_destination_subshell_id == second_destination_subshell_id))
+#        with engine.begin() as conn:
+#            result = conn.execute(command)
+#            row = result.first()
+#            if row is not None:
+#                return row['id']
+#
+#        command = sql.insert(tbl)
+#        command = command.values(source_subshell_id=source_subshell_id,
+#                                 destination_subshell_id=destination_subshell_id,
+#                                 second_destination_subshell_id=second_destination_subshell_id)
+#        with engine.begin() as conn:
+#            result = conn.execute(command)
+#            return result.inserted_primary_key[0]
 
     def _require_language(self, engine, language):
         tbl = table.language
@@ -336,9 +396,10 @@ class _DatabaseBuilder(metaclass=abc.ABCMeta):
         reference_id = self._require_reference(engine, prop.reference)
         atomic_shell_id = self._require_atomic_shell(engine, prop.atomic_shell)
         notation_id = self._require_notation(engine, prop.notation)
-        value = prop.value
-        value_html = prop.value_html
-        value_latex = prop.value_latex
+        ascii = prop.ascii
+        utf16 = prop.utf16
+        html = prop.html
+        latex = prop.latex
 
         tbl = table.atomic_shell_notation
         tbl.create(engine, checkfirst=True)
@@ -357,9 +418,10 @@ class _DatabaseBuilder(metaclass=abc.ABCMeta):
         command = command.values(reference_id=reference_id,
                                  atomic_shell_id=atomic_shell_id,
                                  notation_id=notation_id,
-                                 value=value,
-                                 value_html=value_html,
-                                 value_latex=value_latex)
+                                 ascii=ascii,
+                                 utf16=utf16,
+                                 html=html,
+                                 latex=latex)
         with engine.begin() as conn:
             result = conn.execute(command)
             return result.inserted_primary_key[0]
@@ -368,9 +430,10 @@ class _DatabaseBuilder(metaclass=abc.ABCMeta):
         reference_id = self._require_reference(engine, prop.reference)
         atomic_subshell_id = self._require_atomic_subshell(engine, prop.atomic_subshell)
         notation_id = self._require_notation(engine, prop.notation)
-        value = prop.value
-        value_html = prop.value_html
-        value_latex = prop.value_latex
+        ascii = prop.ascii
+        utf16 = prop.utf16
+        html = prop.html
+        latex = prop.latex
 
         tbl = table.atomic_subshell_notation
         tbl.create(engine, checkfirst=True)
@@ -389,9 +452,44 @@ class _DatabaseBuilder(metaclass=abc.ABCMeta):
         command = command.values(reference_id=reference_id,
                                  atomic_subshell_id=atomic_subshell_id,
                                  notation_id=notation_id,
-                                 value=value,
-                                 value_html=value_html,
-                                 value_latex=value_latex)
+                                 ascii=ascii,
+                                 utf16=utf16,
+                                 html=html,
+                                 latex=latex)
+        with engine.begin() as conn:
+            result = conn.execute(command)
+            return result.inserted_primary_key[0]
+
+    def _add_transition_notation_property(self, engine, prop):
+        reference_id = self._require_reference(engine, prop.reference)
+        transition_id = self._require_transition(engine, prop.transition)
+        notation_id = self._require_notation(engine, prop.notation)
+        ascii = prop.ascii
+        utf16 = prop.utf16
+        html = prop.html
+        latex = prop.latex
+
+        tbl = table.transition_notation
+        tbl.create(engine, checkfirst=True)
+
+        command = sql.select([tbl])
+        command = command.where(sql.and_(tbl.c.reference_id == reference_id,
+                                         tbl.c.transition_id == transition_id,
+                                         tbl.c.notation_id == notation_id))
+        with engine.begin() as conn:
+            result = conn.execute(command)
+            row = result.first()
+            if row is not None:
+                return row['id']
+
+        command = sql.insert(tbl)
+        command = command.values(reference_id=reference_id,
+                                 transition_id=transition_id,
+                                 notation_id=notation_id,
+                                 ascii=ascii,
+                                 utf16=utf16,
+                                 html=html,
+                                 latex=latex)
         with engine.begin() as conn:
             result = conn.execute(command)
             return result.inserted_primary_key[0]
@@ -442,7 +540,7 @@ def main():
     logging.getLogger().setLevel(level)
     logging.basicConfig()
 
-    builder = SqliteDatabaseBuilder(purge=False)
+    builder = SqliteDatabaseBuilder(purge=True)
     builder.build()
 
 if __name__ == '__main__':

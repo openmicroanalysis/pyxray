@@ -51,7 +51,7 @@ class AtomicShellNotationParser(_Parser):
             for n, value in enumerate(values, 1):
                 atomic_shell = AtomicShell(n)
                 yield AtomicShellNotation(UNATTRIBUTED, atomic_shell, notation,
-                                          value, value, value)
+                                          value, value, value, value)
 
 def iter_subshells(max_n=7):
     for n in range(1, max_n + 1):
@@ -69,27 +69,26 @@ class AtomicSubshellNotationParser(_Parser):
 
     def _create_entry_siegbahn(self, n, l, j_n, i):
         shell = self.SHELLS['siegbahn'][n - 1]
-        value = shell
+        s = shell
         if i > 1:
-            value += self.SIEGBAHN_NUMBERS[i - 1]
-        value_html = value_latex = value
-        return value, value_html, value_latex
+            s += self.SIEGBAHN_NUMBERS[i - 1]
+        return s, s, s, s
 
     def _create_entry_iupac(self, n, l, j_n, i):
         shell = self.SHELLS['iupac'][n - 1]
-        value = value_html = value_latex = shell
+        s = html = latex = shell
         if i > 1:
-            value += str(i)
-            value_html += '<sub>{0:d}</sub>'.format(i)
-            value_latex += '$_{{{0:d}}}$'.format(i)
-        return value, value_html, value_latex
+            s += str(i)
+            html += '<sub>{0:d}</sub>'.format(i)
+            latex += '$_{{{0:d}}}$'.format(i)
+        return s, s, html, latex
 
     def _create_entry_orbital(self, n, l, j_n, i):
         l_letter = self.ORBITAL_L[l]
-        value = '{0:d}{1}{2}/2'.format(n, l_letter, j_n)
-        value_html = '{0:d}{1}<sub>{2}/2</sub>'.format(n, l_letter, j_n)
-        value_latex = '{0:d}{1}$_{{{2}/2}}$'.format(n, l_letter, j_n)
-        return value, value_html, value_latex
+        s = '{0:d}{1}{2}/2'.format(n, l_letter, j_n)
+        html = '{0:d}{1}<sub>{2}/2</sub>'.format(n, l_letter, j_n)
+        latex = '{0:d}{1}$_{{{2}/2}}$'.format(n, l_letter, j_n)
+        return s, s, html, latex
 
     def __iter__(self):
         nprev = 0
@@ -99,26 +98,26 @@ class AtomicSubshellNotationParser(_Parser):
 
             atomic_subshell = AtomicSubshell(n, l, j_n)
 
-            value, value_html, value_latex = \
+            ascii, utf16, html, latex = \
                 self._create_entry_siegbahn(n, l, j_n, i)
             yield AtomicSubshellNotation(UNATTRIBUTED,
                                          atomic_subshell,
                                          Notation('siegbahn'),
-                                         value, value_html, value_latex)
+                                         ascii, utf16, html, latex)
 
-            value, value_html, value_latex = \
+            ascii, utf16, html, latex = \
                 self._create_entry_iupac(n, l, j_n, i)
             yield AtomicSubshellNotation(UNATTRIBUTED,
                                          atomic_subshell,
                                          Notation('iupac'),
-                                         value, value_html, value_latex)
+                                         ascii, utf16, html, latex)
 
-            value, value_html, value_latex = \
+            ascii, utf16, html, latex = \
                 self._create_entry_orbital(n, l, j_n, i)
             yield AtomicSubshellNotation(UNATTRIBUTED,
                                          atomic_subshell,
                                          Notation('orbital'),
-                                         value, value_html, value_latex)
+                                         ascii, utf16, html, latex)
 
             i += 1
             nprev = n
