@@ -13,11 +13,11 @@ from pyxray.property import ElementAtomicWeight, ElementMassDensity
 
 # Globals and constants variables.
 
-SARGENT_WELCH = Reference('sargentwelch2010')
-#                          year=2010,
-#                          title='Student Periodic Tables',
-#                          publisher='Sargent-Welch scientifique Canada Limitee',
-#                          note='Extracted by Hendrix Demers')
+SARGENT_WELCH = Reference('sargentwelch2010',
+                          year=2010,
+                          title='Student Periodic Tables',
+                          publisher='Sargent-Welch scientifique Canada Limitee',
+                          note='Extracted by Hendrix Demers')
 
 class SargentWelchElementMassDensityParser(_Parser):
 

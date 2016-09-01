@@ -22,7 +22,6 @@ class Element(metaclass=_Descriptor,
         if atomic_number < 1 or atomic_number > 118:
             raise ValueError('Atomic number ({0}) must be [1, 118]'
                              .format(atomic_number))
-        return (atomic_number,)
 
     def __repr__(self):
         return '{0}(z={1})'.format(self.__class__.__name__, self.z)
@@ -39,7 +38,6 @@ class AtomicShell(metaclass=_Descriptor,
         if principal_quantum_number < 1:
             raise ValueError('Principal quantum number ({0}) must be [1, inf['
                              .format(principal_quantum_number))
-        return (principal_quantum_number,)
 
     def __repr__(self):
         return '{0}(n={1})'.format(self.__class__.__name__, self.n)

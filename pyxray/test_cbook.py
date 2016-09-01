@@ -33,6 +33,24 @@ class MockValidable(metaclass=Validable):
     def __init__(self, foo):
         self.foo = foo
 
+class MockValidable2(metaclass=Validable):
+
+    @classmethod
+    def validate(cls, foo):
+        pass
+
+    def __init__(self, foo):
+        self.foo = foo
+
+class MockValidable3(metaclass=Validable):
+
+    @classmethod
+    def validate(cls, foo):
+        return (), {'foo': foo + 'd'}
+
+    def __init__(self, foo):
+        self.foo = foo
+
 class CombinedType(Immutable, Cachable, Validable):
     pass
 
@@ -55,8 +73,19 @@ class TestImmutable(unittest.TestCase):
         unittest.TestCase.tearDown(self)
 
     def test__init__(self):
+        self.assertEqual('abc', self.obj.foo)
+        self.assertEqual(123, self.obj.bar)
+
         self.assertRaises(TypeError, MockImmutable, 'abc')
         self.assertRaises(TypeError, MockImmutable, 'abc', 'abc', 'abc')
+
+        obj = MockImmutable('abc', bar=123)
+        self.assertEqual('abc', obj.foo)
+        self.assertEqual(123, obj.bar)
+
+        obj = MockImmutable(foo='abc', bar=123)
+        self.assertEqual('abc', obj.foo)
+        self.assertEqual(123, obj.bar)
 
     def test__slots__(self):
         self.assertRaises(AttributeError, setattr, self.obj, 'foo2', 'abc')
@@ -101,12 +130,16 @@ class TestValidable(unittest.TestCase):
         unittest.TestCase.setUp(self)
 
         self.obj = MockValidable('abc')
+        self.obj2 = MockValidable2('abc')
+        self.obj3 = MockValidable3('abc')
 
     def tearDown(self):
         unittest.TestCase.tearDown(self)
 
     def test__init__(self):
         self.assertEqual('abcd', self.obj.foo)
+        self.assertEqual('abc', self.obj2.foo)
+        self.assertEqual('abcd', self.obj3.foo)
 
     def testvalidate(self):
         self.assertRaises(ValueError, MockValidable, 'def')

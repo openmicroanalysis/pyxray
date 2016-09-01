@@ -24,7 +24,7 @@ from pyxray.property import ElementName
 # Globals and constants variables.
 
 WIKIPEDIA = Reference('wikipedia',
-                      'Wikipedia contributors')
+                      author='Wikipedia contributors')
 
 class WikipediaElementNameParser(_Parser):
 
