@@ -1,4 +1,6 @@
-""""""
+"""
+Build the SQL database from the registered parsers.
+"""
 
 # Standard library modules.
 import os
@@ -10,23 +12,27 @@ import shutil
 
 # Third party modules.
 from sqlalchemy import create_engine
-
-import pkg_resources
-
-import six
+import sqlalchemy.sql as sql
 
 # Local modules.
-from pyxray.sql.model import Base
+from pyxray.parser.parser import find_parsers
+import pyxray.sql.table as table
+import pyxray.property as props
 
 # Globals and constants variables.
 
-_ENTRY_POINT_GROUP = 'pyxray.sql.mapping'
-
-@six.add_metaclass(abc.ABCMeta)
-class _DatabaseBuilder:
+class _DatabaseBuilder(metaclass=abc.ABCMeta):
 
     def __init__(self, purge=False):
-        self._purge = purge
+        self.purge = purge
+
+        self._propfuncs = {}
+        self._propfuncs[props.ElementSymbol] = self._add_element_symbol_property
+        self._propfuncs[props.ElementName] = self._add_element_name_property
+        self._propfuncs[props.ElementAtomicWeight] = self._add_element_atomic_weight_property
+        self._propfuncs[props.ElementMassDensity] = self._add_element_mass_density_property
+        self._propfuncs[props.AtomicShellNotation] = self._add_atomic_shell_notation_property
+        self._propfuncs[props.AtomicSubshellNotation] = self._add_atomic_subshell_notation_property
 
     @abc.abstractmethod
     def _backup_existing_database(self):
@@ -43,30 +49,20 @@ class _DatabaseBuilder:
     def _cleanup(self):
         pass
 
-    def _find_mappers(self):
-        mappers = []
-        for entry_point in pkg_resources.iter_entry_points(_ENTRY_POINT_GROUP):
-            name = entry_point.name
-            mapper = entry_point.load()
-            mappers.append((name, mapper))
-        return mappers
+    def _find_parsers(self):
+        return find_parsers()
 
-    def _organize_mappers(self, mappers):
-        mappers2 = []
-        for name, mapper in mappers:
-            if not mapper.dependencies:
-                mappers2.insert(0, (name, mapper))
-            else:
-                mappers2.append((name, mapper))
-        return mappers2
+    def _process_parser(self, engine, parser):
+        for prop in parser:
+            func = self._propfuncs[type(prop)]
+            func(engine, prop)
 
     def purge_database(self, engine):
-        Base.metadata.drop_all(engine) #@UndefinedVariable
+        table.metadata.drop_all(engine) #@UndefinedVariable
 
     def build(self):
-        mappers = self._find_mappers()
-        mappers = self._organize_mappers(mappers)
-        logger.info('Found {:d} mappers'.format(len(mappers)))
+        parsers = self._find_parsers()
+        logger.info('Found {:d} parsers'.format(len(parsers)))
 
         backuped = self._backup_existing_database()
         if backuped:
@@ -80,8 +76,8 @@ class _DatabaseBuilder:
                 self.purge_database(engine)
                 logger.info('Purged database')
 
-            for name, mapper in mappers:
-                mapper.populate(engine)
+            for name, parser in parsers:
+                self._process_parser(engine, parser)
                 logger.info('Populated {0}'.format(name))
 
         except:
@@ -92,9 +88,313 @@ class _DatabaseBuilder:
 
         self._cleanup()
 
-    @property
-    def purge(self):
-        return self._purge
+    def _require_element(self, engine, element):
+        atomic_number = element.atomic_number
+
+        tbl = table.element
+        tbl.create(engine, checkfirst=True)
+
+        command = sql.select([tbl])
+        command = command.where(tbl.c.atomic_number == atomic_number)
+        with engine.begin() as conn:
+            result = conn.execute(command)
+            row = result.first()
+            if row is not None:
+                return row['id']
+
+        command = sql.insert(tbl)
+        command = command.values(atomic_number=atomic_number)
+        with engine.begin() as conn:
+            result = conn.execute(command)
+            return result.inserted_primary_key[0]
+
+    def _require_atomic_shell(self, engine, atomic_shell):
+        principal_quantum_number = atomic_shell.principal_quantum_number
+
+        tbl = table.atomic_shell
+        tbl.create(engine, checkfirst=True)
+
+        command = sql.select([tbl])
+        command = command.where(tbl.c.principal_quantum_number == principal_quantum_number)
+        with engine.begin() as conn:
+            result = conn.execute(command)
+            row = result.first()
+            if row is not None:
+                return row['id']
+
+        command = sql.insert(tbl)
+        command = command.values(principal_quantum_number=principal_quantum_number)
+        with engine.begin() as conn:
+            result = conn.execute(command)
+            return result.inserted_primary_key[0]
+
+    def _require_atomic_subshell(self, engine, atomic_subshell):
+        atomic_shell_id = self._require_atomic_shell(engine, atomic_subshell.atomic_shell)
+        azimuthal_quantum_number = atomic_subshell.azimuthal_quantum_number
+        total_angular_momentum_nominator = atomic_subshell.total_angular_momentum_nominator
+
+        tbl = table.atomic_subshell
+        tbl.create(engine, checkfirst=True)
+
+        command = sql.select([tbl])
+        command = command.where(sql.and_(tbl.c.atomic_shell_id == atomic_shell_id,
+                                         tbl.c.azimuthal_quantum_number == azimuthal_quantum_number,
+                                         tbl.c.total_angular_momentum_nominator == total_angular_momentum_nominator))
+        with engine.begin() as conn:
+            result = conn.execute(command)
+            row = result.first()
+            if row is not None:
+                return row['id']
+
+        command = sql.insert(tbl)
+        command = command.values(atomic_shell_id=atomic_shell_id,
+                                 azimuthal_quantum_number=azimuthal_quantum_number,
+                                 total_angular_momentum_nominator=total_angular_momentum_nominator)
+        with engine.begin() as conn:
+            result = conn.execute(command)
+            return result.inserted_primary_key[0]
+
+    def _require_language(self, engine, language):
+        tbl = table.language
+        tbl.create(engine, checkfirst=True)
+
+        command = sql.select([tbl])
+        command = command.where(tbl.c.code == language.code)
+        with engine.begin() as conn:
+            result = conn.execute(command)
+            row = result.first()
+            if row is not None:
+                return row['id']
+
+        command = sql.insert(tbl)
+        command = command.values(code=language.code)
+        with engine.begin() as conn:
+            result = conn.execute(command)
+            return result.inserted_primary_key[0]
+
+    def _require_notation(self, engine, notation):
+        tbl = table.notation
+        tbl.create(engine, checkfirst=True)
+
+        command = sql.select([tbl])
+        command = command.where(tbl.c.name == notation.name)
+        with engine.begin() as conn:
+            result = conn.execute(command)
+            row = result.first()
+            if row is not None:
+                return row['id']
+
+        command = sql.insert(tbl)
+        command = command.values(name=notation.name)
+        with engine.begin() as conn:
+            result = conn.execute(command)
+            return result.inserted_primary_key[0]
+
+    def _require_reference(self, engine, reference):
+        tbl = table.reference
+        tbl.create(engine, checkfirst=True)
+
+        command = sql.select([tbl])
+        command = command.where(tbl.c.bibtexkey == reference.bibtexkey)
+        with engine.begin() as conn:
+            result = conn.execute(command)
+            row = result.first()
+            if row is not None:
+                return row['id']
+
+        command = sql.insert(tbl)
+        command = command.values(bibtexkey=reference.bibtexkey,
+                                 author=reference.author,
+                                 year=reference.year,
+                                 title=reference.title,
+                                 type=reference.type,
+                                 booktitle=reference.booktitle,
+                                 editor=reference.editor,
+                                 pages=reference.pages,
+                                 edition=reference.edition,
+                                 journal=reference.journal,
+                                 school=reference.school,
+                                 address=reference.address,
+                                 url=reference.url,
+                                 note=reference.note,
+                                 number=reference.number,
+                                 series=reference.series,
+                                 volume=reference.volume,
+                                 publisher=reference.publisher,
+                                 organization=reference.organization,
+                                 chapter=reference.chapter,
+                                 howpublished=reference.howpublished,
+                                 doi=reference.doi)
+        with engine.begin() as conn:
+            result = conn.execute(command)
+            return result.inserted_primary_key[0]
+
+    def _add_element_symbol_property(self, engine, prop):
+        reference_id = self._require_reference(engine, prop.reference)
+        element_id = self._require_element(engine, prop.element)
+        symbol = prop.symbol
+
+        tbl = table.element_symbol
+        tbl.create(engine, checkfirst=True)
+
+        command = sql.select([tbl])
+        command = command.where(sql.and_(tbl.c.reference_id == reference_id,
+                                         tbl.c.element_id == element_id))
+        with engine.begin() as conn:
+            result = conn.execute(command)
+            row = result.first()
+            if row is not None:
+                return row['id']
+
+        command = sql.insert(tbl)
+        command = command.values(reference_id=reference_id,
+                                 element_id=element_id,
+                                 symbol=symbol)
+        with engine.begin() as conn:
+            result = conn.execute(command)
+            return result.inserted_primary_key[0]
+
+    def _add_element_name_property(self, engine, prop):
+        reference_id = self._require_reference(engine, prop.reference)
+        element_id = self._require_element(engine, prop.element)
+        language_id = self._require_language(engine, prop.language)
+        name = prop.name
+
+        tbl = table.element_name
+        tbl.create(engine, checkfirst=True)
+
+        command = sql.select([tbl])
+        command = command.where(sql.and_(tbl.c.reference_id == reference_id,
+                                         tbl.c.element_id == element_id,
+                                         tbl.c.language_id == language_id))
+        with engine.begin() as conn:
+            result = conn.execute(command)
+            row = result.first()
+            if row is not None:
+                return row['id']
+
+        command = sql.insert(tbl)
+        command = command.values(reference_id=reference_id,
+                                 element_id=element_id,
+                                 language_id=language_id,
+                                 name=name)
+        with engine.begin() as conn:
+            result = conn.execute(command)
+            return result.inserted_primary_key[0]
+
+    def _add_element_atomic_weight_property(self, engine, prop):
+        reference_id = self._require_reference(engine, prop.reference)
+        element_id = self._require_element(engine, prop.element)
+        value = prop.value
+
+        tbl = table.element_atomic_weight
+        tbl.create(engine, checkfirst=True)
+
+        command = sql.select([tbl])
+        command = command.where(sql.and_(tbl.c.reference_id == reference_id,
+                                         tbl.c.element_id == element_id))
+        with engine.begin() as conn:
+            result = conn.execute(command)
+            row = result.first()
+            if row is not None:
+                return row['id']
+
+        command = sql.insert(tbl)
+        command = command.values(reference_id=reference_id,
+                                 element_id=element_id,
+                                 value=value)
+        with engine.begin() as conn:
+            result = conn.execute(command)
+            return result.inserted_primary_key[0]
+
+    def _add_element_mass_density_property(self, engine, prop):
+        reference_id = self._require_reference(engine, prop.reference)
+        element_id = self._require_element(engine, prop.element)
+        value_kg_per_m3 = prop.value_kg_per_m3
+
+        tbl = table.element_mass_density
+        tbl.create(engine, checkfirst=True)
+
+        command = sql.select([tbl])
+        command = command.where(sql.and_(tbl.c.reference_id == reference_id,
+                                         tbl.c.element_id == element_id))
+        with engine.begin() as conn:
+            result = conn.execute(command)
+            row = result.first()
+            if row is not None:
+                return row['id']
+
+        command = sql.insert(tbl)
+        command = command.values(reference_id=reference_id,
+                                 element_id=element_id,
+                                 value_kg_per_m3=value_kg_per_m3)
+        with engine.begin() as conn:
+            result = conn.execute(command)
+            return result.inserted_primary_key[0]
+
+    def _add_atomic_shell_notation_property(self, engine, prop):
+        reference_id = self._require_reference(engine, prop.reference)
+        atomic_shell_id = self._require_atomic_shell(engine, prop.atomic_shell)
+        notation_id = self._require_notation(engine, prop.notation)
+        value = prop.value
+        value_html = prop.value_html
+        value_latex = prop.value_latex
+
+        tbl = table.atomic_shell_notation
+        tbl.create(engine, checkfirst=True)
+
+        command = sql.select([tbl])
+        command = command.where(sql.and_(tbl.c.reference_id == reference_id,
+                                         tbl.c.atomic_shell_id == atomic_shell_id,
+                                         tbl.c.notation_id == notation_id))
+        with engine.begin() as conn:
+            result = conn.execute(command)
+            row = result.first()
+            if row is not None:
+                return row['id']
+
+        command = sql.insert(tbl)
+        command = command.values(reference_id=reference_id,
+                                 atomic_shell_id=atomic_shell_id,
+                                 notation_id=notation_id,
+                                 value=value,
+                                 value_html=value_html,
+                                 value_latex=value_latex)
+        with engine.begin() as conn:
+            result = conn.execute(command)
+            return result.inserted_primary_key[0]
+
+    def _add_atomic_subshell_notation_property(self, engine, prop):
+        reference_id = self._require_reference(engine, prop.reference)
+        atomic_subshell_id = self._require_atomic_subshell(engine, prop.atomic_subshell)
+        notation_id = self._require_notation(engine, prop.notation)
+        value = prop.value
+        value_html = prop.value_html
+        value_latex = prop.value_latex
+
+        tbl = table.atomic_subshell_notation
+        tbl.create(engine, checkfirst=True)
+
+        command = sql.select([tbl])
+        command = command.where(sql.and_(tbl.c.reference_id == reference_id,
+                                         tbl.c.atomic_subshell_id == atomic_subshell_id,
+                                         tbl.c.notation_id == notation_id))
+        with engine.begin() as conn:
+            result = conn.execute(command)
+            row = result.first()
+            if row is not None:
+                return row['id']
+
+        command = sql.insert(tbl)
+        command = command.values(reference_id=reference_id,
+                                 atomic_subshell_id=atomic_subshell_id,
+                                 notation_id=notation_id,
+                                 value=value,
+                                 value_html=value_html,
+                                 value_latex=value_latex)
+        with engine.begin() as conn:
+            result = conn.execute(command)
+            return result.inserted_primary_key[0]
 
 class SqliteDatabaseBuilder(_DatabaseBuilder):
 

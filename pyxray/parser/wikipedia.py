@@ -1,30 +1,32 @@
-""""""
+"""
+Parsers from data collected from Wikipedia.
+"""
 
 # Standard library modules.
+import os
 
 # Third party modules.
 import requests
 
+try:
+    import requests_cache
+    filepath = os.path.join(os.path.dirname(__file__),
+                            '..', 'data', 'cache', 'wikipedia')
+    requests_cache.install_cache(filepath)
+except ImportError:
+    pass
+
 # Local modules.
-from pyxray.meta.parser import _CachedParser
-from pyxray.meta.reference import Reference
+from pyxray.parser.parser import _Parser
+from pyxray.descriptor import Reference, Element, Language
+from pyxray.property import ElementName
 
 # Globals and constants variables.
 
-class _WikipediaParser(_CachedParser):
+WIKIPEDIA = Reference('wikipedia',
+                      'Wikipedia contributors')
 
-    REFERENCE = Reference('wikipedia',
-                          author='Wikipedia contributors',
-                          publisher='Wikipedia, The Free Encyclopedia')
-
-    def __init__(self, usecache=True):
-        super().__init__(self.REFERENCE, usecache)
-
-class WikipediaElementNameParser(_WikipediaParser):
-
-    KEY_Z = 'z'
-    KEY_LANGUAGE_CODE = 'lang'
-    KEY_NAME = 'name'
+class WikipediaElementNameParser(_Parser):
 
     NAMES_EN = [
         "Hydrogen"    , "Helium"      , "Lithium"     , "Beryllium"   ,
@@ -67,17 +69,17 @@ class WikipediaElementNameParser(_WikipediaParser):
 
     def _find_wikipedia_names(self, name_en):
         """
-        Finds all Wikipedia pages referring to the specified name in English and 
+        Finds all Wikipedia pages referring to the specified name in English and
         returns a dictionary where the keys are the language code and the values
         are the titles of the corresponding pages.
         """
         url = 'https://en.wikipedia.org/w/api.php'
-        data = {'action': 'query',
-                'titles': name_en,
-                'prop': 'langlinks',
-                'lllimit': 500,
-                'format': 'json'}
-        r = requests.post(url, data=data)
+        params = {'action': 'query',
+                  'titles': name_en,
+                  'prop': 'langlinks',
+                  'lllimit': 500,
+                  'format': 'json'}
+        r = requests.get(url, params=params)
         if not r:
             raise ValueError('Could not find wikipedia page: {0}'.format(name_en))
         out = r.json()
@@ -90,22 +92,14 @@ class WikipediaElementNameParser(_WikipediaParser):
 
         return names
 
-    def parse_nocache(self):
-        entries = []
+    def __iter__(self):
         for z, name_en in enumerate(self.NAMES_EN, 1):
-            entries.append({self.KEY_Z: z,
-                            self.KEY_LANGUAGE_CODE: 'en',
-                            self.KEY_NAME: name_en})
-
+            element = Element(z)
+            language = Language('en')
+            yield ElementName(WIKIPEDIA, element, language, name_en)
 
             names = self._find_wikipedia_names(name_en)
-            for lang, name in names.items():
-                if lang not in self.LANGUAGES: continue
-                entries.append({self.KEY_Z: z,
-                                self.KEY_LANGUAGE_CODE: lang,
-                                self.KEY_NAME: name})
-
-        return entries
-
-    def keys(self):
-        return set([self.KEY_Z, self.KEY_LANGUAGE_CODE, self.KEY_NAME])
+            for code, name in names.items():
+                if code not in self.LANGUAGES: continue
+                language = Language(code)
+                yield ElementName(WIKIPEDIA, element, language, name)

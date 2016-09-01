@@ -1,29 +1,25 @@
-""""""
+"""
+Parsers from Sargent-Welch.
+"""
 
 # Standard library modules.
 
 # Third party modules.
 
 # Local modules.
-from pyxray.meta.parser import _CachedParser
-from pyxray.meta.reference import Reference
+from pyxray.parser.parser import _Parser
+from pyxray.descriptor import Reference, Element
+from pyxray.property import ElementAtomicWeight, ElementMassDensity
 
 # Globals and constants variables.
 
-class _SargentWelchParser(_CachedParser):
+SARGENT_WELCH = Reference('sargentwelch2010')
+#                          year=2010,
+#                          title='Student Periodic Tables',
+#                          publisher='Sargent-Welch scientifique Canada Limitee',
+#                          note='Extracted by Hendrix Demers')
 
-    REFERENCE = Reference('sargentwelch2010',
-                          year=2010,
-                          title='Student Periodic Tables',
-                          publisher='Sargent-Welch scientifique Canada Limitee',
-                          note='Extracted by Hendrix Demers')
-
-    KEY_Z = 'z'
-
-    def __init__(self, usecache=True):
-        super().__init__(self.REFERENCE, usecache)
-
-class SargentWelchElementMassDensityParser(_SargentWelchParser):
+class SargentWelchElementMassDensityParser(_Parser):
 
     DENSITIES = [
         0.0899, 0.1787, 0.5300, 1.8500, 2.3400, 2.6200, 1.2510, 1.4290,
@@ -40,20 +36,14 @@ class SargentWelchElementMassDensityParser(_SargentWelchParser):
         10.070, 11.700, 15.400, 18.900, 20.400, 19.800, 13.600, 13.511
     ]
 
-    KEY_DENSITY = 'density'
-
-    def parse_nocache(self):
-        entries = []
+    def __iter__(self):
         for z, rho in enumerate(self.DENSITIES, 1):
             if rho is None:
                 continue
-            entries.append({self.KEY_Z: z, self.KEY_DENSITY: rho * 1000.0})
-        return entries
+            element = Element(z)
+            yield ElementMassDensity(SARGENT_WELCH, element, rho * 1000.0)
 
-    def keys(self):
-        return set([self.KEY_Z, self.KEY_DENSITY])
-
-class SargentWelchElementAtomicWeightParser(_SargentWelchParser):
+class SargentWelchElementAtomicWeightParser(_Parser):
 
     ATOMIC_WEIGHTS = [
         1.0079000, 4.0026000, 6.9410000, 9.0121800, 10.810000, 12.011000,
@@ -76,15 +66,9 @@ class SargentWelchElementAtomicWeightParser(_SargentWelchParser):
         260.00000, 261.00000, 262.00000, 263.00000
     ]
 
-    KEY_ATOMIC_WEIGHT = 'atomicweight'
-
-    def parse_nocache(self):
-        entries = []
+    def __iter__(self):
         for z, aw in enumerate(self.ATOMIC_WEIGHTS, 1):
             if aw is None:
                 continue
-            entries.append({self.KEY_Z: z, self.KEY_ATOMIC_WEIGHT: aw})
-        return entries
-
-    def keys(self):
-        return set([self.KEY_Z, self.KEY_ATOMIC_WEIGHT])
+            element = Element(z)
+            yield ElementAtomicWeight(SARGENT_WELCH, element, aw)

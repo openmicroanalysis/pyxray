@@ -1,4 +1,6 @@
-""""""
+"""
+Definition of descriptors.
+"""
 
 # Standard library modules.
 
@@ -116,6 +118,30 @@ class Transition(metaclass=_Descriptor,
                  destination_subshell,
                  secondary_destination_subshell=None):
         #TODO: Validate transition
+#        """
+#        Inspired from NIST EPQ library by Nicholas Ritchie.
+#        """
+#        def electric_dipole_permitted(n0, l0, j0_n, n1, l1, j1_n):
+#            delta_j_n = abs(j1_n - j0_n)
+#            if delta_j_n > 2:
+#                return False
+#            assert delta_j_n == 0 or delta_j_n == 2
+#            return abs(l1 - l0) == 1
+#
+#        def electric_quadrupole_permitted(n0, l0, j0_n, n1, l1, j1_n):
+#            delta_j_n = abs(j1_n - j0_n)
+#            if delta_j_n > 4:
+#                return False
+#            assert delta_j_n == 0 or delta_j_n == 2 or delta_j_n == 4
+#
+#            delta_l = abs(l1 - l0)
+#            return delta_l == 0 or delta_l == 2
+#
+#        if n0 == n1:
+#            return False
+#
+#        return electric_dipole_permitted(n0, l0, j0_n, n1, l1, j1_n) or \
+#                electric_quadrupole_permitted(n0, l0, j0_n, n1, l1, j1_n)
         return (source_subshell,
                 destination_subshell,
                 secondary_destination_subshell)
@@ -153,6 +179,27 @@ class TransitionSet(metaclass=_Descriptor,
     def __repr__(self):
         return '{0}({1:d} transitions)'.format(self.__class__.__name__,
                                                len(self.transitions))
+
+class Language(metaclass=_Descriptor,
+               attrs=('code',)):
+
+    @classmethod
+    def validate(cls, code):
+        lencode = len(code)
+        if lencode < 2 or lencode > 3:
+            raise ValueError('Code must be between 2 and 3 characters')
+        code = code.lower()
+        return (code,)
+
+class Notation(metaclass=_Descriptor,
+               attrs=('name',)):
+
+    @classmethod
+    def validate(cls, name):
+        if not name:
+            raise ValueError('Name cannot be empty')
+        name = name.lower()
+        return (name,)
 
 class Reference(metaclass=_Descriptor,
                 attrs=('bibtexkey', 'author', 'year', 'title', 'type',
