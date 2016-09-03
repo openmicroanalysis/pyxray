@@ -11,7 +11,7 @@ from pyxray.cbook import Immutable, Cachable, Validable
 
 # Globals and constants variables.
 
-class _Descriptor(Immutable, Cachable, Validable):
+class _Descriptor(Immutable, Validable, Cachable):
     pass
 
 class Element(metaclass=_Descriptor,
