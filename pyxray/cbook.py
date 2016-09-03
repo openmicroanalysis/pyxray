@@ -120,3 +120,16 @@ class Validable(type):
                 raise ValueError('Unknown type of return arguments')
 
         return super().__call__(*args, **kwargs)
+
+def allequal(iterator):
+    """
+    Returns ``True`` if all elements are equal.
+    
+    From: http://stackoverflow.com/questions/3844801/check-if-all-elements-in-a-list-are-identical
+    """
+    try:
+        iterator = iter(iterator)
+        first = next(iterator)
+        return all(first == rest for rest in iterator)
+    except StopIteration:
+        return True

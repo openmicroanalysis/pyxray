@@ -33,6 +33,10 @@ def _append_transition_columns(table):
     table.append_column(Column('transition_id', Integer,
                                ForeignKey('transition.id'), nullable=False))
 
+def _append_transitionset_columns(table):
+    table.append_column(Column('transitionset_id', Integer,
+                               ForeignKey('transitionset.id'), nullable=False))
+
 def _append_language_columns(table):
     table.append_column(Column('language_id', Integer,
                                ForeignKey('language.id'), nullable=False))
@@ -87,8 +91,7 @@ transitionset_association = \
 _append_primary_key_columns(transitionset_association)
 
 transitionset = \
-    Table('transitionset', metadata,
-          Column('association_id', Integer, ForeignKey('transitionset_association.id'), nullable=False))
+    Table('transitionset', metadata)
 _append_primary_key_columns(transitionset)
 
 language = \
@@ -221,3 +224,11 @@ _append_primary_key_columns(transition_probability)
 _append_reference_columns(transition_probability)
 _append_element_columns(transition_probability)
 _append_transition_columns(transition_probability)
+
+transitionset_notation = \
+    Table('transitionset_notation', metadata)
+_append_primary_key_columns(transitionset_notation)
+_append_reference_columns(transitionset_notation)
+_append_transitionset_columns(transitionset_notation)
+_append_notation_columns(transitionset_notation)
+_append_notation_property_columns(transitionset_notation)

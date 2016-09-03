@@ -9,6 +9,7 @@ logger = logging.getLogger(__name__)
 import abc
 import argparse
 import shutil
+from operator import itemgetter
 
 # Third party modules.
 from sqlalchemy import create_engine
@@ -18,14 +19,16 @@ import sqlalchemy.sql as sql
 from pyxray.parser.parser import find_parsers
 import pyxray.sql.table as table
 import pyxray.property as props
+import pyxray.cbook as cbook
 
 # Globals and constants variables.
 
+class NotFound(Exception):
+    pass
+
 class _DatabaseBuilder(metaclass=abc.ABCMeta):
 
-    def __init__(self, purge=False):
-        self.purge = purge
-
+    def __init__(self):
         self._propfuncs = {}
         self._propfuncs[props.ElementSymbol] = self._add_element_symbol_property
         self._propfuncs[props.ElementName] = self._add_element_name_property
@@ -34,6 +37,7 @@ class _DatabaseBuilder(metaclass=abc.ABCMeta):
         self._propfuncs[props.AtomicShellNotation] = self._add_atomic_shell_notation_property
         self._propfuncs[props.AtomicSubshellNotation] = self._add_atomic_subshell_notation_property
         self._propfuncs[props.TransitionNotation] = self._add_transition_notation_property
+        self._propfuncs[props.TransitionSetNotation] = self._add_transitionset_notation_property
 
     @abc.abstractmethod
     def _backup_existing_database(self):
@@ -73,9 +77,8 @@ class _DatabaseBuilder(metaclass=abc.ABCMeta):
             engine = self._create_database_engine()
             logger.info('Created database engine')
 
-            if self.purge:
-                self.purge_database(engine)
-                logger.info('Purged database')
+            self.purge_database(engine)
+            logger.info('Purged database')
 
             for name, parser in parsers:
                 self._process_parser(engine, parser)
@@ -89,7 +92,7 @@ class _DatabaseBuilder(metaclass=abc.ABCMeta):
 
         self._cleanup()
 
-    def _require_element(self, engine, element):
+    def _get_element(self, engine, element):
         atomic_number = element.atomic_number
 
         tbl = table.element
@@ -103,13 +106,9 @@ class _DatabaseBuilder(metaclass=abc.ABCMeta):
             if row is not None:
                 return row['id']
 
-        command = sql.insert(tbl)
-        command = command.values(atomic_number=atomic_number)
-        with engine.begin() as conn:
-            result = conn.execute(command)
-            return result.inserted_primary_key[0]
+        raise NotFound
 
-    def _require_atomic_shell(self, engine, atomic_shell):
+    def _get_atomic_shell(self, engine, atomic_shell):
         principal_quantum_number = atomic_shell.principal_quantum_number
 
         tbl = table.atomic_shell
@@ -123,13 +122,9 @@ class _DatabaseBuilder(metaclass=abc.ABCMeta):
             if row is not None:
                 return row['id']
 
-        command = sql.insert(tbl)
-        command = command.values(principal_quantum_number=principal_quantum_number)
-        with engine.begin() as conn:
-            result = conn.execute(command)
-            return result.inserted_primary_key[0]
+        raise NotFound
 
-    def _require_atomic_subshell(self, engine, atomic_subshell):
+    def _get_atomic_subshell(self, engine, atomic_subshell):
         atomic_shell_id = self._require_atomic_shell(engine, atomic_subshell.atomic_shell)
         azimuthal_quantum_number = atomic_subshell.azimuthal_quantum_number
         total_angular_momentum_nominator = atomic_subshell.total_angular_momentum_nominator
@@ -147,15 +142,9 @@ class _DatabaseBuilder(metaclass=abc.ABCMeta):
             if row is not None:
                 return row['id']
 
-        command = sql.insert(tbl)
-        command = command.values(atomic_shell_id=atomic_shell_id,
-                                 azimuthal_quantum_number=azimuthal_quantum_number,
-                                 total_angular_momentum_nominator=total_angular_momentum_nominator)
-        with engine.begin() as conn:
-            result = conn.execute(command)
-            return result.inserted_primary_key[0]
+        raise NotFound
 
-    def _require_transition(self, engine, transition):
+    def _get_transition(self, engine, transition):
         source_subshell_id = \
             self._require_atomic_subshell(engine, transition.source_subshell)
         destination_subshell_id = \
@@ -179,6 +168,135 @@ class _DatabaseBuilder(metaclass=abc.ABCMeta):
             if row is not None:
                 return row['id']
 
+        raise NotFound
+
+    def _get_transitionset(self, engine, transitionset):
+        transition_ids = set()
+        for transition in transitionset.transitions:
+            transition_id = self._require_transition(engine, transition)
+            transition_ids.add(transition_id)
+
+        table.transitionset.create(engine, checkfirst=True)
+        table.transitionset_association.create(engine, checkfirst=True)
+
+        tbl = table.transitionset_association
+        conditions = []
+        for transition_id in transition_ids:
+            conditions.append(tbl.c.transition_id == transition_id)
+
+        command = sql.select([table.transitionset_association])
+        command = command.where(sql.or_(*conditions))
+
+        with engine.begin() as conn:
+            result = conn.execute(command)
+            rows = result.fetchall()
+            if rows and cbook.allequal(map(itemgetter(0), rows)):
+                return rows[0]['transitionset_id']
+
+        raise NotFound
+
+    def _get_language(self, engine, language):
+        code = language.code
+
+        tbl = table.language
+        tbl.create(engine, checkfirst=True)
+
+        command = sql.select([tbl])
+        command = command.where(tbl.c.code == code)
+        with engine.begin() as conn:
+            result = conn.execute(command)
+            row = result.first()
+            if row is not None:
+                return row['id']
+
+        raise NotFound
+
+    def _get_notation(self, engine, notation):
+        name = notation.name
+
+        tbl = table.notation
+        tbl.create(engine, checkfirst=True)
+
+        command = sql.select([tbl])
+        command = command.where(tbl.c.name == name)
+        with engine.begin() as conn:
+            result = conn.execute(command)
+            row = result.first()
+            if row is not None:
+                return row['id']
+
+        raise NotFound
+
+    def _get_reference(self, engine, reference):
+        bibtexkey = reference.bibtexkey
+
+        tbl = table.reference
+        tbl.create(engine, checkfirst=True)
+
+        command = sql.select([tbl])
+        command = command.where(tbl.c.bibtexkey == bibtexkey)
+        with engine.begin() as conn:
+            result = conn.execute(command)
+            row = result.first()
+            if row is not None:
+                return row['id']
+
+        raise NotFound
+
+    def _insert_element(self, engine, element):
+        atomic_number = element.atomic_number
+
+        tbl = table.element
+        tbl.create(engine, checkfirst=True)
+
+        command = sql.insert(tbl)
+        command = command.values(atomic_number=atomic_number)
+        with engine.begin() as conn:
+            result = conn.execute(command)
+            return result.inserted_primary_key[0]
+
+    def _insert_atomic_shell(self, engine, atomic_shell):
+        principal_quantum_number = atomic_shell.principal_quantum_number
+
+        tbl = table.atomic_shell
+        tbl.create(engine, checkfirst=True)
+
+        command = sql.insert(tbl)
+        command = command.values(principal_quantum_number=principal_quantum_number)
+        with engine.begin() as conn:
+            result = conn.execute(command)
+            return result.inserted_primary_key[0]
+
+    def _insert_atomic_subshell(self, engine, atomic_subshell):
+        atomic_shell_id = self._require_atomic_shell(engine, atomic_subshell.atomic_shell)
+        azimuthal_quantum_number = atomic_subshell.azimuthal_quantum_number
+        total_angular_momentum_nominator = atomic_subshell.total_angular_momentum_nominator
+
+        tbl = table.atomic_subshell
+        tbl.create(engine, checkfirst=True)
+
+        command = sql.insert(tbl)
+        command = command.values(atomic_shell_id=atomic_shell_id,
+                                 azimuthal_quantum_number=azimuthal_quantum_number,
+                                 total_angular_momentum_nominator=total_angular_momentum_nominator)
+        with engine.begin() as conn:
+            result = conn.execute(command)
+            return result.inserted_primary_key[0]
+
+    def _insert_transition(self, engine, transition):
+        source_subshell_id = \
+            self._require_atomic_subshell(engine, transition.source_subshell)
+        destination_subshell_id = \
+            self._require_atomic_subshell(engine, transition.destination_subshell)
+        if transition.secondary_destination_subshell:
+            secondary_destination_subshell_id = \
+                self._require_atomic_subshell(engine, transition.secondary_destination_subshell)
+        else:
+            secondary_destination_subshell_id = None
+
+        tbl = table.transition
+        tbl.create(engine, checkfirst=True)
+
         command = sql.insert(tbl)
         command = command.values(source_subshell_id=source_subshell_id,
                                  destination_subshell_id=destination_subshell_id,
@@ -187,80 +305,61 @@ class _DatabaseBuilder(metaclass=abc.ABCMeta):
             result = conn.execute(command)
             return result.inserted_primary_key[0]
 
-    def _require_transitionset(self, engine, transitionset):
+    def _insert_transitionset(self, engine, transitionset):
         transition_ids = set()
-        for transition in transitionset.transition:
+        for transition in transitionset.transitions:
             transition_id = self._require_transition(engine, transition)
             transition_ids.add(transition_id)
 
-#        tbl = table.transition
-#        tbl.create(engine, checkfirst=True)
-#
-#        command = sql.select([tbl])
-#        command = command.where(sql.and_(tbl.c.source_subshell_id == source_subshell_id,
-#                                         tbl.c.destination_subshell_id == destination_subshell_id,
-#                                         tbl.c.second_destination_subshell_id == second_destination_subshell_id))
-#        with engine.begin() as conn:
-#            result = conn.execute(command)
-#            row = result.first()
-#            if row is not None:
-#                return row['id']
-#
-#        command = sql.insert(tbl)
-#        command = command.values(source_subshell_id=source_subshell_id,
-#                                 destination_subshell_id=destination_subshell_id,
-#                                 second_destination_subshell_id=second_destination_subshell_id)
-#        with engine.begin() as conn:
-#            result = conn.execute(command)
-#            return result.inserted_primary_key[0]
+        table.transitionset.create(engine, checkfirst=True)
+        table.transitionset_association.create(engine, checkfirst=True)
 
-    def _require_language(self, engine, language):
+        # Create empty transitionset row
+        command = sql.insert(table.transitionset)
+        with engine.begin() as conn:
+            result = conn.execute(command)
+            transitionset_id = result.inserted_primary_key[0]
+
+        # Populate association table
+        values = []
+        for transition_id in transition_ids:
+            values.append({'transitionset_id': transitionset_id,
+                           'transition_id': transition_id})
+
+        command = sql.insert(table.transitionset_association)
+        command = command.values(values)
+        with engine.begin() as conn:
+            conn.execute(command)
+
+        return transitionset_id
+
+    def _insert_language(self, engine, language):
+        code = language.code
+
         tbl = table.language
         tbl.create(engine, checkfirst=True)
 
-        command = sql.select([tbl])
-        command = command.where(tbl.c.code == language.code)
-        with engine.begin() as conn:
-            result = conn.execute(command)
-            row = result.first()
-            if row is not None:
-                return row['id']
-
         command = sql.insert(tbl)
-        command = command.values(code=language.code)
+        command = command.values(code=code)
         with engine.begin() as conn:
             result = conn.execute(command)
             return result.inserted_primary_key[0]
 
-    def _require_notation(self, engine, notation):
+    def _insert_notation(self, engine, notation):
+        name = notation.name
+
         tbl = table.notation
         tbl.create(engine, checkfirst=True)
 
-        command = sql.select([tbl])
-        command = command.where(tbl.c.name == notation.name)
-        with engine.begin() as conn:
-            result = conn.execute(command)
-            row = result.first()
-            if row is not None:
-                return row['id']
-
         command = sql.insert(tbl)
-        command = command.values(name=notation.name)
+        command = command.values(name=name)
         with engine.begin() as conn:
             result = conn.execute(command)
             return result.inserted_primary_key[0]
 
-    def _require_reference(self, engine, reference):
+    def _insert_reference(self, engine, reference):
         tbl = table.reference
         tbl.create(engine, checkfirst=True)
-
-        command = sql.select([tbl])
-        command = command.where(tbl.c.bibtexkey == reference.bibtexkey)
-        with engine.begin() as conn:
-            result = conn.execute(command)
-            row = result.first()
-            if row is not None:
-                return row['id']
 
         command = sql.insert(tbl)
         command = command.values(bibtexkey=reference.bibtexkey,
@@ -289,6 +388,54 @@ class _DatabaseBuilder(metaclass=abc.ABCMeta):
             result = conn.execute(command)
             return result.inserted_primary_key[0]
 
+    def _require_element(self, engine, element):
+        try:
+            return self._get_element(engine, element)
+        except NotFound:
+            return self._insert_element(engine, element)
+
+    def _require_atomic_shell(self, engine, atomic_shell):
+        try:
+            return self._get_atomic_shell(engine, atomic_shell)
+        except NotFound:
+            return self._insert_atomic_shell(engine, atomic_shell)
+
+    def _require_atomic_subshell(self, engine, atomic_subshell):
+        try:
+            return self._get_atomic_subshell(engine, atomic_subshell)
+        except NotFound:
+            return self._insert_atomic_subshell(engine, atomic_subshell)
+
+    def _require_transition(self, engine, transition):
+        try:
+            return self._get_transition(engine, transition)
+        except NotFound:
+            return self._insert_transition(engine, transition)
+
+    def _require_transitionset(self, engine, transitionset):
+        try:
+            return self._get_transitionset(engine, transitionset)
+        except NotFound:
+            return self._insert_transitionset(engine, transitionset)
+
+    def _require_language(self, engine, language):
+        try:
+            return self._get_language(engine, language)
+        except NotFound:
+            return self._insert_language(engine, language)
+
+    def _require_notation(self, engine, notation):
+        try:
+            return self._get_notation(engine, notation)
+        except NotFound:
+            return self._insert_notation(engine, notation)
+
+    def _require_reference(self, engine, reference):
+        try:
+            return self._get_reference(engine, reference)
+        except NotFound:
+            return self._insert_reference(engine, reference)
+
     def _add_element_symbol_property(self, engine, prop):
         reference_id = self._require_reference(engine, prop.reference)
         element_id = self._require_element(engine, prop.element)
@@ -296,15 +443,6 @@ class _DatabaseBuilder(metaclass=abc.ABCMeta):
 
         tbl = table.element_symbol
         tbl.create(engine, checkfirst=True)
-
-        command = sql.select([tbl])
-        command = command.where(sql.and_(tbl.c.reference_id == reference_id,
-                                         tbl.c.element_id == element_id))
-        with engine.begin() as conn:
-            result = conn.execute(command)
-            row = result.first()
-            if row is not None:
-                return row['id']
 
         command = sql.insert(tbl)
         command = command.values(reference_id=reference_id,
@@ -323,16 +461,6 @@ class _DatabaseBuilder(metaclass=abc.ABCMeta):
         tbl = table.element_name
         tbl.create(engine, checkfirst=True)
 
-        command = sql.select([tbl])
-        command = command.where(sql.and_(tbl.c.reference_id == reference_id,
-                                         tbl.c.element_id == element_id,
-                                         tbl.c.language_id == language_id))
-        with engine.begin() as conn:
-            result = conn.execute(command)
-            row = result.first()
-            if row is not None:
-                return row['id']
-
         command = sql.insert(tbl)
         command = command.values(reference_id=reference_id,
                                  element_id=element_id,
@@ -350,15 +478,6 @@ class _DatabaseBuilder(metaclass=abc.ABCMeta):
         tbl = table.element_atomic_weight
         tbl.create(engine, checkfirst=True)
 
-        command = sql.select([tbl])
-        command = command.where(sql.and_(tbl.c.reference_id == reference_id,
-                                         tbl.c.element_id == element_id))
-        with engine.begin() as conn:
-            result = conn.execute(command)
-            row = result.first()
-            if row is not None:
-                return row['id']
-
         command = sql.insert(tbl)
         command = command.values(reference_id=reference_id,
                                  element_id=element_id,
@@ -374,15 +493,6 @@ class _DatabaseBuilder(metaclass=abc.ABCMeta):
 
         tbl = table.element_mass_density
         tbl.create(engine, checkfirst=True)
-
-        command = sql.select([tbl])
-        command = command.where(sql.and_(tbl.c.reference_id == reference_id,
-                                         tbl.c.element_id == element_id))
-        with engine.begin() as conn:
-            result = conn.execute(command)
-            row = result.first()
-            if row is not None:
-                return row['id']
 
         command = sql.insert(tbl)
         command = command.values(reference_id=reference_id,
@@ -403,16 +513,6 @@ class _DatabaseBuilder(metaclass=abc.ABCMeta):
 
         tbl = table.atomic_shell_notation
         tbl.create(engine, checkfirst=True)
-
-        command = sql.select([tbl])
-        command = command.where(sql.and_(tbl.c.reference_id == reference_id,
-                                         tbl.c.atomic_shell_id == atomic_shell_id,
-                                         tbl.c.notation_id == notation_id))
-        with engine.begin() as conn:
-            result = conn.execute(command)
-            row = result.first()
-            if row is not None:
-                return row['id']
 
         command = sql.insert(tbl)
         command = command.values(reference_id=reference_id,
@@ -438,16 +538,6 @@ class _DatabaseBuilder(metaclass=abc.ABCMeta):
         tbl = table.atomic_subshell_notation
         tbl.create(engine, checkfirst=True)
 
-        command = sql.select([tbl])
-        command = command.where(sql.and_(tbl.c.reference_id == reference_id,
-                                         tbl.c.atomic_subshell_id == atomic_subshell_id,
-                                         tbl.c.notation_id == notation_id))
-        with engine.begin() as conn:
-            result = conn.execute(command)
-            row = result.first()
-            if row is not None:
-                return row['id']
-
         command = sql.insert(tbl)
         command = command.values(reference_id=reference_id,
                                  atomic_subshell_id=atomic_subshell_id,
@@ -472,16 +562,6 @@ class _DatabaseBuilder(metaclass=abc.ABCMeta):
         tbl = table.transition_notation
         tbl.create(engine, checkfirst=True)
 
-        command = sql.select([tbl])
-        command = command.where(sql.and_(tbl.c.reference_id == reference_id,
-                                         tbl.c.transition_id == transition_id,
-                                         tbl.c.notation_id == notation_id))
-        with engine.begin() as conn:
-            result = conn.execute(command)
-            row = result.first()
-            if row is not None:
-                return row['id']
-
         command = sql.insert(tbl)
         command = command.values(reference_id=reference_id,
                                  transition_id=transition_id,
@@ -494,10 +574,34 @@ class _DatabaseBuilder(metaclass=abc.ABCMeta):
             result = conn.execute(command)
             return result.inserted_primary_key[0]
 
+    def _add_transitionset_notation_property(self, engine, prop):
+        reference_id = self._require_reference(engine, prop.reference)
+        transitionset_id = self._require_transitionset(engine, prop.transitionset)
+        notation_id = self._require_notation(engine, prop.notation)
+        ascii = prop.ascii
+        utf16 = prop.utf16
+        html = prop.html
+        latex = prop.latex
+
+        tbl = table.transitionset_notation
+        tbl.create(engine, checkfirst=True)
+
+        command = sql.insert(tbl)
+        command = command.values(reference_id=reference_id,
+                                 transitionset_id=transitionset_id,
+                                 notation_id=notation_id,
+                                 ascii=ascii,
+                                 utf16=utf16,
+                                 html=html,
+                                 latex=latex)
+        with engine.begin() as conn:
+            result = conn.execute(command)
+            return result.inserted_primary_key[0]
+
 class SqliteDatabaseBuilder(_DatabaseBuilder):
 
-    def __init__(self, filepath=None, purge=False):
-        super().__init__(purge)
+    def __init__(self, filepath=None):
+        super().__init__()
         if filepath is None:
             filepath = self._get_default_database_filepath()
         self._filepath = filepath
@@ -540,7 +644,7 @@ def main():
     logging.getLogger().setLevel(level)
     logging.basicConfig()
 
-    builder = SqliteDatabaseBuilder(purge=True)
+    builder = SqliteDatabaseBuilder()
     builder.build()
 
 if __name__ == '__main__':

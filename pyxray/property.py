@@ -59,19 +59,28 @@ class AtomicShellNotation(metaclass=_Property,
         pass
 
 class AtomicSubshellNotation(metaclass=_Property,
-                          attrs=('reference', 'atomic_subshell', 'notation',
-                                 'ascii', 'utf16', 'html', 'latex')):
+                             attrs=('reference', 'atomic_subshell', 'notation',
+                                    'ascii', 'utf16', 'html', 'latex')):
 
     @classmethod
-    def validate(cls, reference, atomic_shell, notation,
+    def validate(cls, reference, atomic_subshell, notation,
                  ascii, utf16=None, html=None, latex=None):
         pass
 
 class TransitionNotation(metaclass=_Property,
-                          attrs=('reference', 'transition', 'notation',
-                                 'ascii', 'utf16', 'html', 'latex')):
+                         attrs=('reference', 'transition', 'notation',
+                                'ascii', 'utf16', 'html', 'latex')):
 
     @classmethod
-    def validate(cls, reference, atomic_shell, notation,
+    def validate(cls, reference, transition, notation,
+                 ascii, utf16=None, html=None, latex=None):
+        pass
+
+class TransitionSetNotation(metaclass=_Property,
+                            attrs=('reference', 'transitionset', 'notation',
+                                   'ascii', 'utf16', 'html', 'latex')):
+
+    @classmethod
+    def validate(cls, reference, transitionset, notation,
                  ascii, utf16=None, html=None, latex=None):
         pass
