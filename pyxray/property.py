@@ -83,6 +83,22 @@ class AtomicSubshellRadiativeWidth(metaclass=_Property,
     def validate(cls, reference, element, atomic_subshell, value_eV):
         pass
 
+class AtomicSubshellNonRadiativeWidth(metaclass=_Property,
+                                      attrs=('reference', 'element', 'atomic_subshell',
+                                             'value_eV')):
+
+    @classmethod
+    def validate(cls, reference, element, atomic_subshell, value_eV):
+        pass
+
+class AtomicSubshellOccupancy(metaclass=_Property,
+                              attrs=('reference', 'element', 'atomic_subshell',
+                                     'value')):
+
+    @classmethod
+    def validate(cls, reference, element, atomic_subshell, value_eV):
+        pass
+
 class TransitionNotation(metaclass=_Property,
                          attrs=('reference', 'transition', 'notation',
                                 'ascii', 'utf16', 'html', 'latex')):
@@ -96,14 +112,14 @@ class TransitionEnergy(metaclass=_Property,
                        attrs=('reference', 'element', 'transition', 'value_eV')):
 
     @classmethod
-    def validate(cls, reference, element, atomic_subshell, value_eV):
+    def validate(cls, reference, element, transition, value_eV):
         pass
 
 class TransitionProbability(metaclass=_Property,
                             attrs=('reference', 'element', 'transition', 'value')):
 
     @classmethod
-    def validate(cls, reference, element, atomic_subshell, value):
+    def validate(cls, reference, element, transition, value):
         pass
 
 class TransitionSetNotation(metaclass=_Property,
@@ -113,4 +129,12 @@ class TransitionSetNotation(metaclass=_Property,
     @classmethod
     def validate(cls, reference, transitionset, notation,
                  ascii, utf16=None, html=None, latex=None):
+        pass
+
+class TransitionSetEnergy(metaclass=_Property,
+                          attrs=('reference', 'element', 'transitionset',
+                                 'value_eV')):
+
+    @classmethod
+    def validate(cls, reference, element, transitionset, value_eV):
         pass

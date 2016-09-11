@@ -37,7 +37,7 @@ class Testtable(unittest.TestCase):
         conn = sqlite3.connect(self.dbpath)
         command = "SELECT count(*) FROM sqlite_master WHERE type = 'table'"
         ntable, = conn.execute(command).fetchone()
-        self.assertEqual(21, ntable)
+        self.assertEqual(24, ntable)
 
 if __name__ == '__main__': #pragma: no cover
     logging.getLogger().setLevel(logging.DEBUG)

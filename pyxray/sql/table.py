@@ -177,21 +177,29 @@ _append_atomic_subshell_columns(atomic_subshell_notation)
 _append_notation_columns(atomic_subshell_notation)
 _append_notation_property_columns(atomic_subshell_notation)
 
-atomic_subshell_edge_energy = \
-    Table('atomic_subshell_edge_energy', metadata)
-_append_primary_key_columns(atomic_subshell_edge_energy)
-_append_reference_columns(atomic_subshell_edge_energy)
-_append_element_columns(atomic_subshell_edge_energy)
-_append_atomic_subshell_columns(atomic_subshell_edge_energy)
-_append_energy_property_columns(atomic_subshell_edge_energy)
+atomic_subshell_binding_energy = \
+    Table('atomic_subshell_binding_energy', metadata)
+_append_primary_key_columns(atomic_subshell_binding_energy)
+_append_reference_columns(atomic_subshell_binding_energy)
+_append_element_columns(atomic_subshell_binding_energy)
+_append_atomic_subshell_columns(atomic_subshell_binding_energy)
+_append_energy_property_columns(atomic_subshell_binding_energy)
 
-atomic_subshell_natural_width = \
-    Table('atomic_subshell_natural_width', metadata)
-_append_primary_key_columns(atomic_subshell_natural_width)
-_append_reference_columns(atomic_subshell_natural_width)
-_append_element_columns(atomic_subshell_natural_width)
-_append_atomic_subshell_columns(atomic_subshell_natural_width)
-_append_energy_property_columns(atomic_subshell_natural_width)
+atomic_subshell_radiative_width = \
+    Table('atomic_subshell_radiative_width', metadata)
+_append_primary_key_columns(atomic_subshell_radiative_width)
+_append_reference_columns(atomic_subshell_radiative_width)
+_append_element_columns(atomic_subshell_radiative_width)
+_append_atomic_subshell_columns(atomic_subshell_radiative_width)
+_append_energy_property_columns(atomic_subshell_radiative_width)
+
+atomic_subshell_nonradiative_width = \
+    Table('atomic_subshell_nonradiative_width', metadata)
+_append_primary_key_columns(atomic_subshell_nonradiative_width)
+_append_reference_columns(atomic_subshell_nonradiative_width)
+_append_element_columns(atomic_subshell_nonradiative_width)
+_append_atomic_subshell_columns(atomic_subshell_nonradiative_width)
+_append_energy_property_columns(atomic_subshell_nonradiative_width)
 
 atomic_subshell_occupancy = \
     Table('atomic_subshell_occupancy', metadata,
@@ -232,3 +240,10 @@ _append_reference_columns(transitionset_notation)
 _append_transitionset_columns(transitionset_notation)
 _append_notation_columns(transitionset_notation)
 _append_notation_property_columns(transitionset_notation)
+
+transitionset_energy = \
+    Table('transitionset_energy', metadata)
+_append_primary_key_columns(transitionset_energy)
+_append_reference_columns(transitionset_energy)
+_append_transitionset_columns(transitionset_energy)
+_append_energy_property_columns(transitionset_energy)
