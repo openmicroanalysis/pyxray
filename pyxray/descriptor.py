@@ -7,11 +7,11 @@ Definition of descriptors.
 # Third party modules.
 
 # Local modules.
-from pyxray.cbook import Immutable, Cachable, Validable
+from pyxray.cbook import Immutable, Cachable, Validable, Reprable
 
 # Globals and constants variables.
 
-class _Descriptor(Immutable, Validable, Cachable):
+class _Descriptor(Immutable, Validable, Cachable, Reprable):
     pass
 
 class Element(metaclass=_Descriptor,
@@ -23,8 +23,8 @@ class Element(metaclass=_Descriptor,
             raise ValueError('Atomic number ({0}) must be [1, 118]'
                              .format(atomic_number))
 
-    def __repr__(self):
-        return '{0}(z={1})'.format(self.__class__.__name__, self.z)
+    def _repr_inner(self):
+        return 'z={0}'.format(self.z)
 
     @property
     def z(self):
@@ -39,8 +39,8 @@ class AtomicShell(metaclass=_Descriptor,
             raise ValueError('Principal quantum number ({0}) must be [1, inf['
                              .format(principal_quantum_number))
 
-    def __repr__(self):
-        return '{0}(n={1})'.format(self.__class__.__name__, self.n)
+    def _repr_inner(self):
+        return 'n={0}'.format(self.n)
 
     @property
     def n(self):
@@ -77,9 +77,8 @@ class AtomicSubshell(metaclass=_Descriptor,
                 azimuthal_quantum_number,
                 total_angular_momentum_nominator)
 
-    def __repr__(self):
-        return '{0}(n={1}, l={2}, j={3:.1f})'.format(self.__class__.__name__,
-                                                     self.n, self.l, self.j)
+    def _repr_inner(self):
+        return 'n={0}, l={1}, j={2:.1f}'.format(self.n, self.l, self.j)
 
     @property
     def principal_quantum_number(self):
@@ -144,16 +143,12 @@ class Transition(metaclass=_Descriptor,
                 destination_subshell,
                 secondary_destination_subshell)
 
-    def __repr__(self):
-        r = '{0}('
-        r += '[n={src.n}, l={src.l}, j={src.j:.1f}]'
+    def _repr_inner(self):
+        r = '[n={src.n}, l={src.l}, j={src.j:.1f}]'
         r += ' -> [n={dest.n}, l={dest.l}, j={dest.j:.1f}]'
         if self.secondary_destination_subshell is not None:
             r += ' -> [n={dest2.n}, l={dest2.l}, j={dest2.j:.1f}]'
-        r += ')'
-
-        return r.format(self.__class__.__name__,
-                        src=self.source_subshell,
+        return r.format(src=self.source_subshell,
                         dest=self.destination_subshell,
                         dest2=self.secondary_destination_subshell)
 
@@ -174,9 +169,8 @@ class TransitionSet(metaclass=_Descriptor,
         transitions = frozenset(transitions)
         return (transitions,)
 
-    def __repr__(self):
-        return '{0}({1:d} transitions)'.format(self.__class__.__name__,
-                                               len(self.transitions))
+    def _repr_inner(self):
+        return '{1:d} transitions'.format(len(self.transitions))
 
 class Language(metaclass=_Descriptor,
                attrs=('code',)):
@@ -221,5 +215,5 @@ class Reference(metaclass=_Descriptor,
                 number, series, volume, publisher, organization,
                 chapter, howpublished, doi)
 
-    def __repr__(self):
-        return '{0}({1})'.format(self.__class__.__name__, self.bibtexkey)
+    def _repr_inner(self):
+        return '{0}'.format(self.bibtexkey)

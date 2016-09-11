@@ -7,11 +7,11 @@ Definition of properties.
 # Third party modules.
 
 # Local modules.
-from pyxray.cbook import Immutable, Validable
+from pyxray.cbook import Immutable, Validable, Reprable
 
 # Globals and constants variables.
 
-class _Property(Immutable, Validable):
+class _Property(Immutable, Validable, Reprable):
     pass
 
 class ElementSymbol(metaclass=_Property,
@@ -67,6 +67,22 @@ class AtomicSubshellNotation(metaclass=_Property,
                  ascii, utf16=None, html=None, latex=None):
         pass
 
+class AtomicSubshellBindingEnergy(metaclass=_Property,
+                                  attrs=('reference', 'element', 'atomic_subshell',
+                                         'value_eV')):
+
+    @classmethod
+    def validate(cls, reference, element, atomic_subshell, value_eV):
+        pass
+
+class AtomicSubshellRadiativeWidth(metaclass=_Property,
+                                   attrs=('reference', 'element', 'atomic_subshell',
+                                          'value_eV')):
+
+    @classmethod
+    def validate(cls, reference, element, atomic_subshell, value_eV):
+        pass
+
 class TransitionNotation(metaclass=_Property,
                          attrs=('reference', 'transition', 'notation',
                                 'ascii', 'utf16', 'html', 'latex')):
@@ -74,6 +90,20 @@ class TransitionNotation(metaclass=_Property,
     @classmethod
     def validate(cls, reference, transition, notation,
                  ascii, utf16=None, html=None, latex=None):
+        pass
+
+class TransitionEnergy(metaclass=_Property,
+                       attrs=('reference', 'element', 'transition', 'value_eV')):
+
+    @classmethod
+    def validate(cls, reference, element, atomic_subshell, value_eV):
+        pass
+
+class TransitionProbability(metaclass=_Property,
+                            attrs=('reference', 'element', 'transition', 'value')):
+
+    @classmethod
+    def validate(cls, reference, element, atomic_subshell, value):
         pass
 
 class TransitionSetNotation(metaclass=_Property,

@@ -56,6 +56,9 @@ class TestElementSymbol(unittest.TestCase):
         self.assertRaises(AttributeError, setattr,
                           self.prop, 'abc', 7)
 
+    def testreprable(self):
+        self.assertEqual('ElementSymbol(test2016, z=6, symbol=C)', repr(self.prop))
+
 if __name__ == '__main__': #pragma: no cover
     logging.getLogger().setLevel(logging.DEBUG)
     unittest.main()

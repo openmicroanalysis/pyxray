@@ -43,16 +43,17 @@ class Immutable(type):
                 raise TypeError('Expected {} arguments'.format(len(attrs)))
 
             obj = object.__new__(cls)
-            obj._fieldvalues = tuple(args)
+            obj._values = tuple(args)
+            obj._attrs = tuple(attrs)
 
             return obj
         methods['__new__'] = __new__
 
         # Configure __slots__
-        methods['__slots__'] = ('__weakref__', '_fieldvalues')
+        methods['__slots__'] = ('__weakref__', '_values', '_attrs')
 
         # Populate a dictionary of field property accessors
-        methods.update({name: property(lambda s, n=n: s._fieldvalues[n])
+        methods.update({name: property(lambda s, n=n: s._values[n])
                         for n, name in enumerate(attrs)})
 
         cls = super().__new__(cls, name, bases, methods)
@@ -120,6 +121,37 @@ class Validable(type):
                 raise ValueError('Unknown type of return arguments')
 
         return super().__call__(*args, **kwargs)
+
+class Reprable(type):
+    """
+    Construct the __repr__ of an object based on the :meth:`_repr_inner` method
+    if it is defined.
+    """
+
+    def __new__(cls, name, bases, methods, *args, **kwargs):
+        def __repr__(self):
+            s = '{0}('.format(self.__class__.__name__)
+
+            if hasattr(self, '_repr_inner'):
+                s += self._repr_inner()
+
+            else:
+                inner = []
+                for attr, value in zip(self._attrs, self._values):
+                    if hasattr(value, '_repr_inner'):
+                        inner.append(value._repr_inner())
+                    elif '_' in attr:
+                        _, unit = attr.rsplit('_', 1)
+                        inner.append('{0:.4e}{1}'.format(value, unit))
+                    else:
+                        inner.append('{0}={1}'.format(attr, value))
+                s += ', '.join(inner)
+
+            s += ')'
+            return s
+        methods['__repr__'] = __repr__
+
+        return super().__new__(cls, name, bases, methods, *args, **kwargs)
 
 def allequal(iterator):
     """

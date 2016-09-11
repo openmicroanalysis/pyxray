@@ -45,6 +45,9 @@ class TestElement(unittest.TestCase):
         self.assertEqual(Element(6), self.element)
         self.assertIs(Element(6), self.element)
 
+    def testreprable(self):
+        self.assertEqual('Element(z=6)', repr(self.element))
+
 class TestAtomicShell(unittest.TestCase):
 
     def setUp(self):
@@ -74,6 +77,9 @@ class TestAtomicShell(unittest.TestCase):
     def testcachable(self):
         self.assertEqual(AtomicShell(3), self.atomicshell)
         self.assertIs(AtomicShell(3), self.atomicshell)
+
+    def testreprable(self):
+        self.assertEqual('AtomicShell(n=3)', repr(self.atomicshell))
 
 class TestAtomicSubshell(unittest.TestCase):
 
@@ -116,6 +122,9 @@ class TestAtomicSubshell(unittest.TestCase):
         self.assertEqual(AtomicSubshell(3, 0, 1), self.atomicsubshell)
         self.assertIs(AtomicSubshell(3, 0, 1), self.atomicsubshell)
 
+    def testreprable(self):
+        self.assertEqual('AtomicSubshell(n=3, l=0, j=0.5)', repr(self.atomicsubshell))
+
 class TestReference(unittest.TestCase):
 
     def setUp(self):
@@ -147,6 +156,9 @@ class TestReference(unittest.TestCase):
     def testcachable(self):
         self.assertEqual(Reference('doe2016'), self.ref)
         self.assertIs(Reference('doe2016'), self.ref)
+
+    def testreprable(self):
+        self.assertEqual('Reference(doe2016)', repr(self.ref))
 
 if __name__ == '__main__': #pragma: no cover
     logging.getLogger().setLevel(logging.DEBUG)
