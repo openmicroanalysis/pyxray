@@ -4,6 +4,8 @@ Parsers from data collected from Wikipedia.
 
 # Standard library modules.
 import os
+import logging
+logger = logging.getLogger(__name__)
 
 # Third party modules.
 import requests
@@ -93,13 +95,20 @@ class WikipediaElementNameParser(_Parser):
         return names
 
     def __iter__(self):
+        length = len(self.NAMES_EN)
         for z, name_en in enumerate(self.NAMES_EN, 1):
             element = Element(z)
             language = Language('en')
-            yield ElementName(WIKIPEDIA, element, language, name_en)
+            prop = ElementName(WIKIPEDIA, element, language, name_en)
+            logger.debug('Parsed: {0}'.format(prop))
+            yield prop
 
             names = self._find_wikipedia_names(name_en)
             for code, name in names.items():
                 if code not in self.LANGUAGES: continue
                 language = Language(code)
-                yield ElementName(WIKIPEDIA, element, language, name)
+                prop = ElementName(WIKIPEDIA, element, language, name)
+                logger.debug('Parsed: {0}'.format(prop))
+                yield prop
+
+            self.update(int((z - 1) / length * 100.0))

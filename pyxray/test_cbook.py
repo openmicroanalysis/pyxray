@@ -9,7 +9,8 @@ import logging
 # Third party modules.
 
 # Local modules.
-from pyxray.cbook import Immutable, Cachable, Validable
+from pyxray.cbook import \
+    Immutable, Cachable, Validable, ProgressMixin, ProgressReportMixin
 
 # Globals and constants variables.
 
@@ -61,6 +62,12 @@ class MockCombined(metaclass=CombinedType, attrs=('foo', 'bar')):
         if len(foo) != 3:
             raise ValueError
         return (foo + 'd', bar)
+
+class MockProgress(ProgressMixin):
+    pass
+
+class MockProgressReport(ProgressReportMixin):
+    pass
 
 class TestImmutable(unittest.TestCase):
 
@@ -181,6 +188,41 @@ class TestCombined(unittest.TestCase):
         self.assertEqual('defd', obj3.foo)
         self.assertNotEqual(obj3, self.obj)
         self.assertIsNot(obj3, self.obj)
+
+class TestProgressMixin(unittest.TestCase):
+
+    def setUp(self):
+        unittest.TestCase.setUp(self)
+
+        self.obj = MockProgress()
+
+    def tearDown(self):
+        unittest.TestCase.tearDown(self)
+
+    def testupdate(self):
+        self.obj.update(50)
+        self.assertEqual(50, self.obj.progress)
+
+class TestProgressReportMixin(unittest.TestCase):
+
+    def setUp(self):
+        unittest.TestCase.setUp(self)
+
+        self.obj = MockProgressReport()
+        self.obj.add_reporthook(self._hook)
+        self.progress = 0
+
+    def tearDown(self):
+        unittest.TestCase.tearDown(self)
+
+    def _hook(self, progress):
+        self.progress = progress
+
+    def testupdate(self):
+        self.assertEqual(0, self.progress)
+        self.obj.update(50)
+        self.assertEqual(50, self.obj.progress)
+        self.assertEqual(50, self.progress)
 
 if __name__ == '__main__': #pragma: no cover
     logging.getLogger().setLevel(logging.DEBUG)

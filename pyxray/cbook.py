@@ -153,6 +153,38 @@ class Reprable(type):
 
         return super().__new__(cls, name, bases, methods, *args, **kwargs)
 
+class ProgressMixin:
+
+    def update(self, progress):
+        """
+        Update the progress, a value between 0 and 100.
+        """
+        assert 0 <= progress <= 100
+        self._progress = int(progress)
+
+    @property
+    def progress(self):
+        """
+        Current progress, a value between 0 and 100.
+        """
+        return getattr(self, '_progress', 0)
+
+class ProgressReportMixin(ProgressMixin):
+
+    def add_reporthook(self, hook):
+        assert callable(hook)
+        if not hasattr(self, '_reporthooks'):
+            self._reporthooks = set()
+        self._reporthooks.add(hook)
+
+    def clear_reporthooks(self):
+        self._reporthooks = set()
+
+    def update(self, progress):
+        super().update(progress)
+        for hook in getattr(self, '_reporthooks', []):
+            hook(progress)
+
 def allequal(iterator):
     """
     Returns ``True`` if all elements are equal.

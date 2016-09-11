@@ -10,12 +10,13 @@ import inspect
 import pkg_resources
 
 # Local modules.
+from pyxray.cbook import ProgressReportMixin
 
 # Globals and constants variables.
 
 ENTRY_POINT = 'pyxray.parser'
 
-class _Parser(collections.abc.Iterable):
+class _Parser(collections.abc.Iterable, ProgressReportMixin):
     """
     (abstract) Class to parse X-ray related information from a data source.
     
@@ -30,7 +31,6 @@ class _Parser(collections.abc.Iterable):
     Each parser should be registered in the setup.py under the entry point:
     `pyxray.parser`
     """
-
     pass
 
 def find_parsers():

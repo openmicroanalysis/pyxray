@@ -3,6 +3,8 @@ Parsers from Sargent-Welch.
 """
 
 # Standard library modules.
+import logging
+logger = logging.getLogger(__name__)
 
 # Third party modules.
 
@@ -37,11 +39,15 @@ class SargentWelchElementMassDensityParser(_Parser):
     ]
 
     def __iter__(self):
+        length = len(self.DENSITIES)
         for z, rho in enumerate(self.DENSITIES, 1):
             if rho is None:
                 continue
             element = Element(z)
-            yield ElementMassDensity(SARGENT_WELCH, element, rho * 1000.0)
+            prop = ElementMassDensity(SARGENT_WELCH, element, rho * 1000.0)
+            logger.debug('Parsed: {0}'.format(prop))
+            self.update(int((z - 1) / length * 100.0))
+            yield prop
 
 class SargentWelchElementAtomicWeightParser(_Parser):
 
@@ -67,8 +73,12 @@ class SargentWelchElementAtomicWeightParser(_Parser):
     ]
 
     def __iter__(self):
+        length = len(self.ATOMIC_WEIGHTS)
         for z, aw in enumerate(self.ATOMIC_WEIGHTS, 1):
             if aw is None:
                 continue
             element = Element(z)
-            yield ElementAtomicWeight(SARGENT_WELCH, element, aw)
+            prop = ElementAtomicWeight(SARGENT_WELCH, element, aw)
+            logger.debug('Parsed: {0}'.format(prop))
+            self.update(int((z - 1) / length * 100.0))
+            yield prop
