@@ -15,6 +15,8 @@ from operator import itemgetter
 from sqlalchemy import create_engine
 import sqlalchemy.sql as sql
 
+import progressbar
+
 # Local modules.
 from pyxray.parser.parser import find_parsers
 import pyxray.sql.table as table
@@ -30,14 +32,26 @@ class _DatabaseBuilder(metaclass=abc.ABCMeta):
 
     def __init__(self):
         self._propfuncs = {}
+
         self._propfuncs[props.ElementSymbol] = self._add_element_symbol_property
         self._propfuncs[props.ElementName] = self._add_element_name_property
         self._propfuncs[props.ElementAtomicWeight] = self._add_element_atomic_weight_property
         self._propfuncs[props.ElementMassDensity] = self._add_element_mass_density_property
+
         self._propfuncs[props.AtomicShellNotation] = self._add_atomic_shell_notation_property
+
         self._propfuncs[props.AtomicSubshellNotation] = self._add_atomic_subshell_notation_property
+        self._propfuncs[props.AtomicSubshellBindingEnergy] = self._add_atomic_subshell_binding_energy_property
+        self._propfuncs[props.AtomicSubshellRadiativeWidth] = self._add_atomic_subshell_radiative_width_property
+        self._propfuncs[props.AtomicSubshellNonRadiativeWidth] = self._add_atomic_subshell_nonradiative_width_property
+        self._propfuncs[props.AtomicSubshellOccupancy] = self._add_atomic_subshell_occupancy_property
+
         self._propfuncs[props.TransitionNotation] = self._add_transition_notation_property
+        self._propfuncs[props.TransitionEnergy] = self._add_transition_energy_property
+        self._propfuncs[props.TransitionProbability] = self._add_transition_propability_property
+
         self._propfuncs[props.TransitionSetNotation] = self._add_transitionset_notation_property
+        self._propfuncs[props.TransitionSetEnergy] = self._add_transitionset_energy_property
 
     @abc.abstractmethod
     def _backup_existing_database(self):
@@ -57,10 +71,24 @@ class _DatabaseBuilder(metaclass=abc.ABCMeta):
     def _find_parsers(self):
         return find_parsers()
 
-    def _process_parser(self, engine, parser):
-        for prop in parser:
-            func = self._propfuncs[type(prop)]
-            func(engine, prop)
+    def _create_progressbar(self, desc):
+        widgets = [desc, ' ' * 4, progressbar.Bar(), progressbar.Percentage()]
+        return progressbar.ProgressBar(max_value=100, widgets=widgets)
+
+    def _process_parser(self, engine, name, parser):
+        bar = self._create_progressbar(name)
+        parser.add_reporthook(bar.update)
+
+        try:
+            bar.start()
+
+            for prop in parser:
+                func = self._propfuncs[type(prop)]
+                func(engine, prop)
+
+        finally:
+            parser.clear_reporthooks()
+            bar.finish()
 
     def purge_database(self, engine):
         table.metadata.drop_all(engine) #@UndefinedVariable
@@ -81,7 +109,7 @@ class _DatabaseBuilder(metaclass=abc.ABCMeta):
             logger.info('Purged database')
 
             for name, parser in parsers:
-                self._process_parser(engine, parser)
+                self._process_parser(engine, name, parser)
                 logger.info('Populated {0}'.format(name))
 
         except:
@@ -550,6 +578,78 @@ class _DatabaseBuilder(metaclass=abc.ABCMeta):
             result = conn.execute(command)
             return result.inserted_primary_key[0]
 
+    def _add_atomic_subshell_binding_energy_property(self, engine, prop):
+        reference_id = self._require_reference(engine, prop.reference)
+        element_id = self._require_element(engine, prop.element)
+        atomic_subshell_id = self._require_atomic_subshell(engine, prop.atomic_subshell)
+        value_eV = prop.value_eV
+
+        tbl = table.atomic_subshell_binding_energy
+        tbl.create(engine, checkfirst=True)
+
+        command = sql.insert(tbl)
+        command = command.values(reference_id=reference_id,
+                                 element_id=element_id,
+                                 atomic_subshell_id=atomic_subshell_id,
+                                 value_eV=value_eV)
+        with engine.begin() as conn:
+            result = conn.execute(command)
+            return result.inserted_primary_key[0]
+
+    def _add_atomic_subshell_radiative_width_property(self, engine, prop):
+        reference_id = self._require_reference(engine, prop.reference)
+        element_id = self._require_element(engine, prop.element)
+        atomic_subshell_id = self._require_atomic_subshell(engine, prop.atomic_subshell)
+        value_eV = prop.value_eV
+
+        tbl = table.atomic_subshell_radiative_width
+        tbl.create(engine, checkfirst=True)
+
+        command = sql.insert(tbl)
+        command = command.values(reference_id=reference_id,
+                                 element_id=element_id,
+                                 atomic_subshell_id=atomic_subshell_id,
+                                 value_eV=value_eV)
+        with engine.begin() as conn:
+            result = conn.execute(command)
+            return result.inserted_primary_key[0]
+
+    def _add_atomic_subshell_nonradiative_width_property(self, engine, prop):
+        reference_id = self._require_reference(engine, prop.reference)
+        element_id = self._require_element(engine, prop.element)
+        atomic_subshell_id = self._require_atomic_subshell(engine, prop.atomic_subshell)
+        value_eV = prop.value_eV
+
+        tbl = table.atomic_subshell_nonradiative_width
+        tbl.create(engine, checkfirst=True)
+
+        command = sql.insert(tbl)
+        command = command.values(reference_id=reference_id,
+                                 element_id=element_id,
+                                 atomic_subshell_id=atomic_subshell_id,
+                                 value_eV=value_eV)
+        with engine.begin() as conn:
+            result = conn.execute(command)
+            return result.inserted_primary_key[0]
+
+    def _add_atomic_subshell_occupancy_property(self, engine, prop):
+        reference_id = self._require_reference(engine, prop.reference)
+        element_id = self._require_element(engine, prop.element)
+        atomic_subshell_id = self._require_atomic_subshell(engine, prop.atomic_subshell)
+        value = prop.value
+
+        tbl = table.atomic_subshell_occupancy
+        tbl.create(engine, checkfirst=True)
+
+        command = sql.insert(tbl)
+        command = command.values(reference_id=reference_id,
+                                 element_id=element_id,
+                                 atomic_subshell_id=atomic_subshell_id,
+                                 value=value)
+        with engine.begin() as conn:
+            result = conn.execute(command)
+            return result.inserted_primary_key[0]
+
     def _add_transition_notation_property(self, engine, prop):
         reference_id = self._require_reference(engine, prop.reference)
         transition_id = self._require_transition(engine, prop.transition)
@@ -574,6 +674,42 @@ class _DatabaseBuilder(metaclass=abc.ABCMeta):
             result = conn.execute(command)
             return result.inserted_primary_key[0]
 
+    def _add_transition_energy_property(self, engine, prop):
+        reference_id = self._require_reference(engine, prop.reference)
+        element_id = self._require_element(engine, prop.element)
+        transition_id = self._require_transition(engine, prop.transition)
+        value_eV = prop.value_eV
+
+        tbl = table.transition_energy
+        tbl.create(engine, checkfirst=True)
+
+        command = sql.insert(tbl)
+        command = command.values(reference_id=reference_id,
+                                 element_id=element_id,
+                                 transition_id=transition_id,
+                                 value_eV=value_eV)
+        with engine.begin() as conn:
+            result = conn.execute(command)
+            return result.inserted_primary_key[0]
+
+    def _add_transition_propability_property(self, engine, prop):
+        reference_id = self._require_reference(engine, prop.reference)
+        element_id = self._require_element(engine, prop.element)
+        transition_id = self._require_transition(engine, prop.transition)
+        value = prop.value
+
+        tbl = table.transition_probability
+        tbl.create(engine, checkfirst=True)
+
+        command = sql.insert(tbl)
+        command = command.values(reference_id=reference_id,
+                                 element_id=element_id,
+                                 transition_id=transition_id,
+                                 value=value)
+        with engine.begin() as conn:
+            result = conn.execute(command)
+            return result.inserted_primary_key[0]
+
     def _add_transitionset_notation_property(self, engine, prop):
         reference_id = self._require_reference(engine, prop.reference)
         transitionset_id = self._require_transitionset(engine, prop.transitionset)
@@ -594,6 +730,24 @@ class _DatabaseBuilder(metaclass=abc.ABCMeta):
                                  utf16=utf16,
                                  html=html,
                                  latex=latex)
+        with engine.begin() as conn:
+            result = conn.execute(command)
+            return result.inserted_primary_key[0]
+
+    def _add_transitionset_energy_property(self, engine, prop):
+        reference_id = self._require_reference(engine, prop.reference)
+        element_id = self._require_element(engine, prop.element)
+        transitionset_id = self._require_transitionset(engine, prop.transitionset)
+        value_eV = prop.value_eV
+
+        tbl = table.transitionset_energy
+        tbl.create(engine, checkfirst=True)
+
+        command = sql.insert(tbl)
+        command = command.values(reference_id=reference_id,
+                                 element_id=element_id,
+                                 transitionset_id=transitionset_id,
+                                 value_eV=value_eV)
         with engine.begin() as conn:
             result = conn.execute(command)
             return result.inserted_primary_key[0]
