@@ -4,6 +4,9 @@ pyxray/data/*.sql
 
 #### joe made this: https://goel.io/joe
 
+#####=== PyCharm ===#####
+.idea
+
 #####=== Eclipse ===#####
 *.pydevproject
 .metadata
