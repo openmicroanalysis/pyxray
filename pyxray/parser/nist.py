@@ -17,22 +17,24 @@ from pyxray.property import ElementAtomicWeight
 
 # Globals and constants variables.
 
-NIST = Reference('NIST',
+NIST = Reference('coursey2015',
                  author='J. S. Coursey, D. J. Schwab, J. J. Tsai, R. A. Dragoset',
                  title='Atomic Weights and Isotopic Compositions',
-                 organization = 'NIST Physical Measurement Laboratory',
+                 organization='NIST Physical Measurement Laboratory',
                  year=2015)
+
+NIST_ATOMICWEIGHT_URL = 'http://physics.nist.gov/cgi-bin/Compositions/stand_alone.pl'
 
 class NISTElementAtomicWeightParser(_Parser):
 
     def __iter__(self):
-        r = requests.get(
-            'http://physics.nist.gov/cgi-bin/Compositions/stand_alone.pl?ele=Li&all=all&ascii=ascii2&isotype=some', stream=True)
+        params = {'ele': 'Li', 'all': 'all', 'ascii': 'ascii2', 'isotype': 'some'}
+        r = requests.get(NIST_ATOMICWEIGHT_URL, params=params, stream=True)
         current_z = "1"
         value = 0
 
         try:
-            ATOMIC_WEIGHTS = []
+            atomic_weights = []
             for line in r.iter_lines():
                 line = line.decode('ascii')
                 z = re.search(r"Atomic\sNumber\s=\s([0-9]*)", line)
@@ -41,9 +43,9 @@ class NISTElementAtomicWeightParser(_Parser):
                 if z != None:
                     if current_z != z.group(1):
                         current_z = z.group(1)
-                        if value =0:
+                        if value == 0:
                             value = None
-                        ATOMIC_WEIGHTS.append(value)
+                        atomic_weights.append(value)
                         value = 0
                 elif relative_mass != None:
                     if relative_mass.group(1) == '':
@@ -60,8 +62,8 @@ class NISTElementAtomicWeightParser(_Parser):
         finally:
             r.close()
 
-        length = len(self.ATOMIC_WEIGHTS)
-        for z, aw in enumerate(self.ATOMIC_WEIGHTS, 1):
+        length = len(atomic_weights)
+        for z, aw in enumerate(atomic_weights, 1):
             if aw is None:
                 continue
             element = Element(z)
