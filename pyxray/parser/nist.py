@@ -6,9 +6,18 @@ Parsers from NIST.
 import logging
 logger = logging.getLogger(__name__)
 import re
+import os
 
 # Third party modules.
 import requests
+
+try:
+    import requests_cache
+    filepath = os.path.join(os.path.dirname(__file__),
+                            '..', 'data', 'cache', 'nist_element_atomic_weight')
+    requests_cache.install_cache(filepath)
+except ImportError:
+    pass
 
 # Local modules.
 from pyxray.parser.parser import _Parser
