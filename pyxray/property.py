@@ -122,6 +122,13 @@ class TransitionProbability(metaclass=_Property,
     def validate(cls, reference, element, transition, value):
         pass
 
+class TransitionRelativeWeight(metaclass=_Property,
+                            attrs=('reference', 'element', 'transition', 'value')):
+
+    @classmethod
+    def validate(cls, reference, element, transition, value):
+        pass
+
 class TransitionSetNotation(metaclass=_Property,
                             attrs=('reference', 'transitionset', 'notation',
                                    'ascii', 'utf16', 'html', 'latex')):
@@ -137,4 +144,12 @@ class TransitionSetEnergy(metaclass=_Property,
 
     @classmethod
     def validate(cls, reference, element, transitionset, value_eV):
+        pass
+
+class TransitionSetRelativeWeight(metaclass=_Property,
+                          attrs=('reference', 'element', 'transitionset',
+                                 'value')):
+
+    @classmethod
+    def validate(cls, reference, element, transitionset, value):
         pass

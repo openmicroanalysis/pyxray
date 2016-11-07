@@ -10,8 +10,8 @@ logger = logging.getLogger(__name__)
 
 # Local modules.
 from pyxray.parser.parser import _Parser
-from pyxray.descriptor import Reference, Element, Transition, AtomicSubshell
-from pyxray.property import TransitionEnergy, TransitionProbability
+from pyxray.descriptor import Reference, Element, Transition, TransitionSet, AtomicSubshell
+from pyxray.property import TransitionEnergy, TransitionSetEnergy, TransitionRelativeWeight, TransitionSetRelativeWeight
 
 # Globals and constants variables.
 
@@ -45,11 +45,14 @@ O8 = AtomicSubshell(5, 4, 7)
 O9 = AtomicSubshell(5, 4, 9)
 
 _TRANSITION_LOOKUP = {
-'KA': (L3, K), ''KA1': (L3, K), 'KA2': (L2, K),
+#Siegbahn
+'KA1': (L3, K), 'KA2': (L2, K),
 
-'KB1': (M3, K), 'KB2_1': (N3, K), 'KB2_2': (N2, K),
-'KB3': (M2, K), 'KB4_1': (N5, K), 'KB4_2': (N4, K), 'KB4x': (N4, K),
-'KB5_1': (M5, K), 'KB5_2': (M4, K),
+'KB1': (M3, K),
+'KB2': (N3, K), 'KB2_1': (N3, K), 'KB2+2': (N2, K), 'KB2_2': (N2, K),
+'KB3': (M2, K),
+'KB4': (N5, K), 'KB4_1': (N5, K), 'KB4_2': (N4, K), 'KB4x': (N4, K),
+'KB5': (M5, K), 'KB5_1': (M5, K), 'KB5+2': (M4, K), 'KB5_2': (M4, K),
 
 'LA1': (M5, L3), 'LA2': (M4, L3),
 
@@ -64,78 +67,128 @@ _TRANSITION_LOOKUP = {
 'LG4_p': (O2, L1), 'LG5': (N1, L2), 'LG6': (O4, L2), 'LG8': (O1, L2),
 'LG8_p': (N6, L2),
 
+'MA1': (N7, M5), 'MA2': (N6, M5),
+
 'MB': (N6, M4),
 
 'MG': (N5, M3),
 
-'MA1': (N7, M5), 'MA2': (N6, M5),
+'MZ1': (N3, M5), 'MZ2': (N2, M4),
 
+#IUPAC
+'M1-N2': (N2, M1), 'M1-N3': (N3, M1),
+'M2-M4': (M4, M2), 'M2-N1': (N1, M2), 'M2-N4': (N4, M2), 'M2-O4': (O4, M2),
+'M3-M5': (M5, M3), 'M3-N1': (N1, M3), 'M3-N4': (N4, M3),
+'M4-O2': (O2, M4), 'M4-O3': (O3, M4),
+'M5-N1': (N1, M5), 'M5-O3': (O3, M5),
+'N6-O4': (O4, N6), 'N7-O5': (O5, N7)
 }
 
-def extract():
-    infile = open('../data/lambda.asc', 'r')
-    notread = set()
-    try:
-        data = []
-        for line in infile:
-            line = line.strip()
-            if not line: continue
+_TRANSITION_SET_LOOKUP= {
+'KA': [(L3, K),(L2, K)],
+'KA1,2': [(L3, K),(L2, K)],
+'KB': [(M3, K), (M2, K), (M5, K), (M4, K)],
+'KB1,3': [(M3, K), (M2, K)],
+'LA1,2': [(M5, L3), (M4, L3)],
+'LB5': [(O4, L3),(O5, L3)],
+'LB2,15': [(N5, L3), (N4, L3)],
+'LB3,4': [(M3, L1), (M2, L1)],
+'LG2,3': [(N2, L1), (N3, L1)],
+'MA': [(N7, M5), (N6, M5)],
+'MZ': [(N3, M5), (N2, M4)],
 
-            z = int(line[0:2])
+'K-O2,3': [(O2, K), (O3, K)],
+'M1-N2,3': [(N2, M1), (N3, M1)],
+'M2,3M4,': [(M4, M2), (M4, M3)],
+'M4,5O2,': [(O2, M4), (O2, M5)],
+'M3-O4,5': [(O4, M3), (O5, M3)],
+'M4-O2,3': [(O2, M4), (O3, M4)],
 
-            siegbahn = line[10:17].strip()
-            if siegbahn.startswith('A'):  # skip absorption edges
-                continue
-            if siegbahn.startswith('S'):  # skip satellite lines
-                continue
-            if siegbahn not in _TRANSITION_LOOKUP:  # check for equivalence
-                notread.add(siegbahn)
-                continue
-            subshells = list(_TRANSITION_LOOKUP[siegbahn])
+'LL,N': [(M1, L2), (M1, L3)]
+}
 
-            probability = line[20:23].strip()
-            if not probability:  # skip transition with no probability
-                continue
 
-            probability = float(probability) / 100.0
-            if probability > 1:  # skip sum of transitions
-                continue
+'KA': (_TRANSITION_LOOKUP[KA1], _TRANSITION_LOOKUP[KA2])
+TransitionSet([Transition(LOOKUP['KA'])[0],Transition(LOOKUP['KA'])[1]])
+#EnergieNiveau Schemata mit Übergängen
+#missing Transitions
 
-            wavelength = float(line[26:35])
-            energy = (4.13566733e-15 * 299792458) / (wavelength * 1e-10)
-            data.append((z, subshells, probability, energy))
 
-    finally:
-        infile.close()
+#left out Transition Sets: KBX, KB5+, L2,3-M
 
-    return data
 
-class JEOLTransitionEnergyParser(_Parser):
+class JEOLTransitionParser(_Parser):
 
     def __iter__(self):
-        transition_energy = extract()
+        notread = set()
+        with open('../data/lambda.asc', 'r') as infile:
+            transition_energy = []
+            transition_set_energy = []
+            for line in infile:
+                line = line.strip()
+                if not line: continue
+
+                z = int(line[0:2])
+
+                siegbahn = line[10:17].strip()
+                if siegbahn.startswith('A'):  # skip absorption edges
+                    continue
+                if siegbahn.startswith('S'):  # skip satellite lines
+                    continue
+                if siegbahn not in _TRANSITION_LOOKUP and siegbahn not in _TRANSITION_SET_LOOKUP:  # check for equivalence
+                    notread.add(siegbahn)
+                    continue
+
+                probability = line[20:23].strip()
+                if not probability:  # skip transition with no probability
+                    continue
+
+                probability = float(probability) / 100.0
+                if probability > 1:  # skip sum of transitions
+                    continue
+
+                wavelength = float(line[26:35])
+                energy = (4.13566733e-15 * 299792458) / (wavelength * 1e-10)
+
+                if siegbahn in _TRANSITION_LOOKUP:
+                    subshells = list(_TRANSITION_LOOKUP[siegbahn])
+                    transition_energy.append((z, subshells, probability, energy))
+                    continue
+
+                if siegbahn in _TRANSITION_SET_LOOKUP:
+                    transitions = list(_TRANSITION_LOOKUP[siegbahn])
+                    transition_set_energy.append((z, transitions, probability, energy))
+
         length = len(transition_energy)
         for z, subshells, probability, eV in enumerate(transition_energy, 1):
             if eV is None:
                 continue
             transition = Transition(subshells)
             element = Element(z)
-            prop = TransitionEnergy(JOEL, element, transition, eV)
+
+            propeV = TransitionEnergy(JOEL, element, transition, eV)
             logger.debug('Parsed: {0}'.format(prop))
             self.update(int((z - 1) / length * 100.0))
             yield prop
 
-class JEOLTransitionProbabilityParser(_Parser):
+            prop = TransitionRelativeWeight(JOEL, element, transition, probability)
+            logger.debug('Parsed: {0}'.format(prop))
+            self.update(int((z - 1) / length * 100.0))
+            yield prop
 
-    def __iter__(self):
-        transition_probability = extract()
-        length = len(transition_probability)
-        for z, subshells, probability, eV in enumerate(transition_probability, 1):
-            if probability is None:
+        length = len(transition_set_energy)
+        for z, transitions, probability, eV in enumerate(transition_set_energy, 1):
+            if eV is None:
                 continue
-            transition = Transition(subshells)
+            transitionset = TransitionSet(transitions)
             element = Element(z)
-            prop = TransitionProbability(JOEL, element, transition, probability)
+
+            propeV = TransitionSetEnergy(JOEL, element, transitionset, eV)
+            logger.debug('Parsed: {0}'.format(prop))
+            self.update(int((z - 1) / length * 100.0))
+            yield prop
+
+            prop = TransitionSetRelativeWeight(JOEL, element, transitionset, probability)
             logger.debug('Parsed: {0}'.format(prop))
             self.update(int((z - 1) / length * 100.0))
             yield prop
