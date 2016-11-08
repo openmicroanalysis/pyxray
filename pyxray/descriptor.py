@@ -170,7 +170,7 @@ class TransitionSet(metaclass=_Descriptor,
         return (transitions,)
 
     def _repr_inner(self):
-        return '{1:d} transitions'.format(len(self.transitions))
+        return '{0:d} transitions'.format(len(self.transitions))
 
 class Language(metaclass=_Descriptor,
                attrs=('code',)):
