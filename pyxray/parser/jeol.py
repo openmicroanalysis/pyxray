@@ -5,13 +5,18 @@ Parsers from JOEL.
 # Standard library modules.
 import logging
 logger = logging.getLogger(__name__)
+import os
 
 # Third party modules.
+import pkg_resources
 
 # Local modules.
 from pyxray.parser.parser import _Parser
-from pyxray.descriptor import Reference, Element, Transition, TransitionSet, AtomicSubshell
-from pyxray.property import TransitionEnergy, TransitionSetEnergy, TransitionRelativeWeight, TransitionSetRelativeWeight
+from pyxray.descriptor import \
+    Reference, Element, Transition, TransitionSet, AtomicSubshell
+from pyxray.property import \
+    (TransitionEnergy, TransitionSetEnergy,
+     TransitionRelativeWeight, TransitionSetRelativeWeight)
 
 # Globals and constants variables.
 
@@ -113,8 +118,11 @@ _TRANSITION_SET_LOOKUP = {
 class JEOLTransitionParser(_Parser):
 
     def __iter__(self):
+        relpath = os.path.join('..', 'data', 'lambda.asc')
+        filepath = pkg_resources.resource_filename(__name__, relpath)
+
         notread = set()
-        with open('../data/lambda.asc', 'r') as infile:
+        with open(filepath, 'r') as infile:
             transition_energy = []
             transition_set_energy = []
             for line in infile:
