@@ -84,13 +84,13 @@ _TRANSITION_LOOKUP = {
 'N6-O4': (O4, N6), 'N7-O5': (O5, N7)
 }
 
-_TRANSITION_SET_LOOKUP= {
-'KA': [(L3, K),(L2, K)],
-'KA1,2': [(L3, K),(L2, K)],
+_TRANSITION_SET_LOOKUP = {
+'KA': [(L3, K), (L2, K)],
+'KA1,2': [(L3, K), (L2, K)],
 'KB': [(M3, K), (M2, K), (M5, K), (M4, K)],
 'KB1,3': [(M3, K), (M2, K)],
 'LA1,2': [(M5, L3), (M4, L3)],
-'LB5': [(O4, L3),(O5, L3)],
+'LB5': [(O4, L3), (O5, L3)],
 'LB2,15': [(N5, L3), (N4, L3)],
 'LB3,4': [(M3, L1), (M2, L1)],
 'LG2,3': [(N2, L1), (N3, L1)],
@@ -106,13 +106,6 @@ _TRANSITION_SET_LOOKUP= {
 
 'LL,N': [(M1, L2), (M1, L3)]
 }
-
-
-'KA': (_TRANSITION_LOOKUP[KA1], _TRANSITION_LOOKUP[KA2])
-TransitionSet([Transition(LOOKUP['KA'])[0],Transition(LOOKUP['KA'])[1]])
-#EnergieNiveau Schemata mit Übergängen
-#missing Transitions
-
 
 #left out Transition Sets: KBX, KB5+, L2,3-M
 
@@ -166,7 +159,7 @@ class JEOLTransitionParser(_Parser):
             transition = Transition(subshells)
             element = Element(z)
 
-            propeV = TransitionEnergy(JOEL, element, transition, eV)
+            prop = TransitionEnergy(JOEL, element, transition, eV)
             logger.debug('Parsed: {0}'.format(prop))
             self.update(int((z - 1) / length * 100.0))
             yield prop
@@ -183,7 +176,7 @@ class JEOLTransitionParser(_Parser):
             transitionset = TransitionSet(transitions)
             element = Element(z)
 
-            propeV = TransitionSetEnergy(JOEL, element, transitionset, eV)
+            prop = TransitionSetEnergy(JOEL, element, transitionset, eV)
             logger.debug('Parsed: {0}'.format(prop))
             self.update(int((z - 1) / length * 100.0))
             yield prop
