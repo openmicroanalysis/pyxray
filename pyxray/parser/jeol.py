@@ -157,14 +157,14 @@ class JEOLTransitionParser(_Parser):
                     continue
 
                 if siegbahn in _TRANSITION_SET_LOOKUP:
-                    transitions = list(_TRANSITION_LOOKUP[siegbahn])
+                    transitions = list(_TRANSITION_SET_LOOKUP[siegbahn])
                     transition_set_energy.append((z, transitions, probability, energy))
 
         length = len(transition_energy)
-        for z, subshells, probability, eV in enumerate(transition_energy, 1):
+        for z, subshells, probability, eV in transition_energy:
             if eV is None:
                 continue
-            transition = Transition(subshells)
+            transition = Transition(*subshells)
             element = Element(z)
 
             prop = TransitionEnergy(JOEL, element, transition, eV)
@@ -178,7 +178,7 @@ class JEOLTransitionParser(_Parser):
             yield prop
 
         length = len(transition_set_energy)
-        for z, transitions, probability, eV in enumerate(transition_set_energy, 1):
+        for z, transitions, probability, eV in transition_set_energy:
             if eV is None:
                 continue
             transitionset = TransitionSet(transitions)
