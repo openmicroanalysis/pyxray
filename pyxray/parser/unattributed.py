@@ -193,4 +193,3 @@ class TransitionNotationParser(_Parser):
                 logger.debug('Parsed: {0}'.format(prop))
                 yield prop
 
-list(TransitionNotationParser())
