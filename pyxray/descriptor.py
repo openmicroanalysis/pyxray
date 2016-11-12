@@ -114,31 +114,14 @@ class Transition(metaclass=_Descriptor,
                  source_subshell,
                  destination_subshell,
                  secondary_destination_subshell=None):
-        #TODO: Validate transition
-#        """
-#        Inspired from NIST EPQ library by Nicholas Ritchie.
-#        """
-#        def electric_dipole_permitted(n0, l0, j0_n, n1, l1, j1_n):
-#            delta_j_n = abs(j1_n - j0_n)
-#            if delta_j_n > 2:
-#                return False
-#            assert delta_j_n == 0 or delta_j_n == 2
-#            return abs(l1 - l0) == 1
-#
-#        def electric_quadrupole_permitted(n0, l0, j0_n, n1, l1, j1_n):
-#            delta_j_n = abs(j1_n - j0_n)
-#            if delta_j_n > 4:
-#                return False
-#            assert delta_j_n == 0 or delta_j_n == 2 or delta_j_n == 4
-#
-#            delta_l = abs(l1 - l0)
-#            return delta_l == 0 or delta_l == 2
-#
-#        if n0 == n1:
-#            return False
-#
-#        return electric_dipole_permitted(n0, l0, j0_n, n1, l1, j1_n) or \
-#                electric_quadrupole_permitted(n0, l0, j0_n, n1, l1, j1_n)
+        if not isinstance(source_subshell, AtomicSubshell):
+            source_subshell = AtomicSubshell(source_subshell)
+        if not isinstance(destination_subshell, AtomicSubshell):
+            destination_subshell = AtomicSubshell(destination_subshell)
+        if secondary_destination_subshell and \
+                not isinstance(secondary_destination_subshell, AtomicSubshell):
+            secondary_destination_subshell = AtomicSubshell(secondary_destination_subshell)
+
         return (source_subshell,
                 destination_subshell,
                 secondary_destination_subshell)
@@ -153,7 +136,43 @@ class Transition(metaclass=_Descriptor,
                         dest2=self.secondary_destination_subshell)
 
     def is_radiative(self):
-        return self.secondary_destination_subshell is None
+        """
+        Inspired from NIST EPQ library by Nicholas Ritchie.
+        """
+        def electric_dipole_permitted(n0, l0, j0_n, n1, l1, j1_n):
+            delta_j_n = abs(j1_n - j0_n)
+            if delta_j_n > 2:
+                return False
+            assert delta_j_n == 0 or delta_j_n == 2
+            return abs(l1 - l0) == 1
+
+        def electric_quadrupole_permitted(n0, l0, j0_n, n1, l1, j1_n):
+            delta_j_n = abs(j1_n - j0_n)
+            if delta_j_n > 4:
+                return False
+            assert delta_j_n == 0 or delta_j_n == 2 or delta_j_n == 4
+
+            delta_l = abs(l1 - l0)
+            return delta_l == 0 or delta_l == 2
+
+        if self.secondary_destination_subshell is None:
+            return False
+
+        n0 = self.source_subshell.n
+        l0 = self.source_subshell.l
+        j0_n = self.source_subshell.j_n
+        n1 = self.destination_subshell.n
+        l1 = self.destination_subshell.l
+        j1_n = self.destination_subshell.j_n
+
+        if n0 == n1:
+            return False
+
+        if not(electric_dipole_permitted(n0, l0, j0_n, n1, l1, j1_n) or \
+               electric_quadrupole_permitted(n0, l0, j0_n, n1, l1, j1_n)):
+            return False
+
+        return True
 
     def is_nonradiative(self):
         return not self.is_radiative()
@@ -166,8 +185,12 @@ class TransitionSet(metaclass=_Descriptor,
 
     @classmethod
     def validate(cls, transitions):
-        transitions = frozenset(transitions)
-        return (transitions,)
+        transitions2 = set()
+        for transition in transitions:
+            if not isinstance(transition, Transition):
+                transition = Transition(*transition)
+            transitions2.add(transition)
+        return (frozenset(transitions2),)
 
     def _repr_inner(self):
         return '{0:d} transitions'.format(len(self.transitions))
