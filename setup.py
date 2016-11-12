@@ -1,19 +1,39 @@
 #!/usr/bin/env python
 
 # Standard library modules.
+import os
 
 # Third party modules.
-from setuptools import setup
+from setuptools import setup, find_packages
+import setuptools.command.build_py as _build_py
 
 # Local modules.
 import versioneer
 
 # Globals and constants variables.
+BASEDIR = os.path.abspath(os.path.dirname(__file__))
+
+class build_py(_build_py.build_py):
+
+    def run(self):
+        # Build SQL database
+        import pyxray.sql.build
+        builder = pyxray.sql.build.SqliteDatabaseBuilder()
+        builder.build()
+
+        super().run()
+
+with open(os.path.join(BASEDIR, 'README.rst'), 'r') as fp:
+    LONG_DESCRIPTION = fp.read()
+
+CMDCLASS = versioneer.get_cmdclass()
+CMDCLASS['build_py'] = build_py
 
 setup(name="pyxray",
       version=versioneer.get_version(),
-      url='http://pyxray.bitbucket.org',
+      url='https://github.com/ppinard/pyxray',
       description="Definitions and properties of X-ray transitions",
+      long_description=LONG_DESCRIPTION,
       author="Hendrix Demers and Philippe T. Pinard",
       author_email="hendrix.demers@mail.mcgill.ca and philippe.pinard@gmail.com",
       license="MIT",
@@ -26,14 +46,15 @@ setup(name="pyxray",
                    'Topic :: Scientific/Engineering',
                    'Topic :: Scientific/Engineering :: Physics'],
 
-      packages=['pyxray'],
-      package_data={'pyxray': ['data/*']},
+      packages=find_packages(),
+      package_data={'pyxray': ['data/pyxray.sql']},
 
-      install_requires=['pyparsing'],
+      setup_requires=['setuptools', 'nose', 'coverage'],
+      install_requires=['sqlalchemy', 'requests', 'requests-cache', 'progressbar2'],
 
       test_suite='nose.collector',
 
-      cmdclass=versioneer.get_cmdclass(),
+      cmdclass=CMDCLASS,
 
       entry_points={
           'pyxray.parser':

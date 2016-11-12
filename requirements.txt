@@ -1,3 +1,7 @@
-pyparsing
+setuptools
 nose
 coverage
+requests
+requests-cache
+sqlalchemy
+progressbar2

@@ -1,6 +1,7 @@
 pyxray/data/cache
 pyxray/data/*.sql
-
+pyxray/data/*.sql*
+cover
 
 #### joe made this: https://goel.io/joe
 
