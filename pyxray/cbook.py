@@ -197,3 +197,9 @@ def allequal(iterator):
         return all(first == rest for rest in iterator)
     except StopIteration:
         return True
+
+def formatdoc(*formatargs, **formatkwargs):
+    def decorate(func):
+        func.__doc__ = func.__doc__.format(*formatargs, **formatkwargs)
+        return func
+    return decorate
