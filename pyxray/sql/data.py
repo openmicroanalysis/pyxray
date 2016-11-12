@@ -338,8 +338,8 @@ if __name__ == '__main__':
     print(db.transition_probability('Si', 'Ka1'))
     print(db.transition_relative_weight('Si', 'K-L3'))
 #    print(db.transitionset_notation('Ka', 'iupac'))
-    print(db.transitionset_energy_eV(26, ['La1', 'La2']))
-    print(db.transitionset_relative_weight(26, ['La1', 'La2']))
+    print(db.transitionset_energy_eV(26, ('La1', 'La2')))
+    print(db.transitionset_relative_weight(26, ('La1', 'La2')))
 #
 #    with session_scope(engine) as session:
 #        query = session.query(AtomicShell).filter(AtomicShell.n == 0)

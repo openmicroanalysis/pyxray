@@ -20,36 +20,35 @@ from pyxray.base import NotFound
 
 class SqlEngineDatabaseMixin:
 
-    def _retrieve_first(self, engine, command, exc=None):
-        with engine.begin() as conn:
-            result = conn.execute(command)
-            row = result.first()
-            if row is not None:
-                return row[0]
+    def _retrieve_first(self, conn, command, exc=None):
+        result = conn.execute(command)
+        row = result.first()
+        if row is not None:
+            return row[0]
 
-            if exc:
-                raise exc
+        if exc:
+            raise exc
 
-            return None
+        return None
 
-    def _get_element_id(self, engine, element):
+    def _get_element_id(self, conn, element):
         if isinstance(element, str):
             if len(element) <= 2:
                 tbl = table.element_symbol
-                tbl.create(engine, checkfirst=True)
+                tbl.create(conn, checkfirst=True)
                 command = sql.select([tbl.c.element_id])
                 command = command.where(tbl.c.symbol == element)
-                out = self._retrieve_first(engine, command)
+                out = self._retrieve_first(conn, command)
                 if out is not None:
                     return out
 
             # Outside if because name of an element could also be of length 2,
             # but not a symbol
             tbl = table.element_name
-            tbl.create(engine, checkfirst=True)
+            tbl.create(conn, checkfirst=True)
             command = sql.select([tbl.c.element_id])
             command = command.where(tbl.c.name == element)
-            out = self._retrieve_first(engine, command)
+            out = self._retrieve_first(conn, command)
             if out is not None:
                 return out
 
@@ -68,24 +67,24 @@ class SqlEngineDatabaseMixin:
 
         if atomic_number > 0 :
             tbl = table.element
-            tbl.create(engine, checkfirst=True)
+            tbl.create(conn, checkfirst=True)
             command = sql.select([tbl.c.id])
             command = command.where(tbl.c.atomic_number == atomic_number)
-            out = self._retrieve_first(engine, command)
+            out = self._retrieve_first(conn, command)
             if out is not None:
                 return out
 
         raise NotFound('Unknown element: {0}'.format(element))
 
-    def _get_atomic_shell_id(self, engine, atomic_shell):
+    def _get_atomic_shell_id(self, conn, atomic_shell):
         if isinstance(atomic_shell, str):
             tbl = table.atomic_shell_notation
-            tbl.create(engine, checkfirst=True)
+            tbl.create(conn, checkfirst=True)
 
             command = sql.select([tbl.c.atomic_shell_id])
             command = command.where(sql.or_(tbl.c.ascii == atomic_shell,
                                             tbl.c.utf16 == atomic_shell))
-            out = self._retrieve_first(engine, command)
+            out = self._retrieve_first(conn, command)
             if out is not None:
                 return out
 
@@ -98,24 +97,24 @@ class SqlEngineDatabaseMixin:
 
         if principal_quantum_number > 0:
             tbl = table.atomic_shell
-            tbl.create(engine, checkfirst=True)
+            tbl.create(conn, checkfirst=True)
             command = sql.select([tbl.c.id])
             command = command.where(tbl.c.principal_quantum_number == principal_quantum_number)
-            out = self._retrieve_first(engine, command)
+            out = self._retrieve_first(conn, command)
             if out is not None:
                 return out
 
         raise NotFound('Unknown atomic shell: {0}'.format(atomic_shell))
 
-    def _get_atomic_subshell_id(self, engine, atomic_subshell):
+    def _get_atomic_subshell_id(self, conn, atomic_subshell):
         if isinstance(atomic_subshell, str):
             tbl = table.atomic_subshell_notation
-            tbl.create(engine, checkfirst=True)
+            tbl.create(conn, checkfirst=True)
 
             command = sql.select([tbl.c.atomic_subshell_id])
             command = command.where(sql.or_(tbl.c.ascii == atomic_subshell,
                                             tbl.c.utf16 == atomic_subshell))
-            out = self._retrieve_first(engine, command)
+            out = self._retrieve_first(conn, command)
             if out is not None:
                 return out
 
@@ -135,30 +134,30 @@ class SqlEngineDatabaseMixin:
         if principal_quantum_number > 0 and \
                 azimuthal_quantum_number >= 0 and \
                 total_angular_momentum_nominator > 0:
-            atomic_shell_id = self._get_atomic_shell_id(engine, atomic_subshell.atomic_shell)
+            atomic_shell_id = self._get_atomic_shell_id(conn, atomic_subshell.atomic_shell)
 
             tbl = table.atomic_subshell
-            tbl.create(engine, checkfirst=True)
+            tbl.create(conn, checkfirst=True)
 
             command = sql.select([tbl.c.id])
             command = command.where(tbl.c.atomic_shell_id == atomic_shell_id)
             command = command.where(tbl.c.azimuthal_quantum_number == azimuthal_quantum_number)
             command = command.where(tbl.c.total_angular_momentum_nominator == total_angular_momentum_nominator)
-            out = self._retrieve_first(engine, command)
+            out = self._retrieve_first(conn, command)
             if out is not None:
                 return out
 
         raise NotFound('Unknown atomic subshell: {0}'.format(atomic_subshell))
 
-    def _get_transition_id(self, engine, transition):
+    def _get_transition_id(self, conn, transition):
         if isinstance(transition, str):
             tbl = table.transition_notation
-            tbl.create(engine, checkfirst=True)
+            tbl.create(conn, checkfirst=True)
 
             command = sql.select([tbl.c.transition_id])
             command = command.where(sql.or_(tbl.c.ascii == transition,
                                             tbl.c.utf16 == transition))
-            out = self._retrieve_first(engine, command)
+            out = self._retrieve_first(conn, command)
             if out is not None:
                 return out
 
@@ -177,36 +176,36 @@ class SqlEngineDatabaseMixin:
 
         if source_subshell is not None and \
                 destination_subshell is not None:
-            source_subshell_id = self._get_atomic_subshell_id(engine, source_subshell)
-            destination_subshell_id = self._get_atomic_subshell_id(engine, destination_subshell)
+            source_subshell_id = self._get_atomic_subshell_id(conn, source_subshell)
+            destination_subshell_id = self._get_atomic_subshell_id(conn, destination_subshell)
             if secondary_destination_subshell:
                 secondary_destination_subshell_id = \
-                    self._get_atomic_subshell_id(engine, secondary_destination_subshell)
+                    self._get_atomic_subshell_id(conn, secondary_destination_subshell)
             else:
                 secondary_destination_subshell_id = None
 
             tbl = table.transition
-            tbl.create(engine, checkfirst=True)
+            tbl.create(conn, checkfirst=True)
 
             command = sql.select([tbl.c.id])
             command = command.where(sql.and_(tbl.c.source_subshell_id == source_subshell_id,
                                              tbl.c.destination_subshell_id == destination_subshell_id,
                                              tbl.c.secondary_destination_subshell_id == secondary_destination_subshell_id))
-            out = self._retrieve_first(engine, command)
+            out = self._retrieve_first(conn, command)
             if out is not None:
                 return out
 
         raise NotFound('Unknown transition: {0}'.format(transition))
 
-    def _get_transitionset_id(self, engine, transitionset):
+    def _get_transitionset_id(self, conn, transitionset):
         if isinstance(transitionset, str):
             tbl = table.transitionset_notation
-            tbl.create(engine, checkfirst=True)
+            tbl.create(conn, checkfirst=True)
 
             command = sql.select([tbl.c.transitionset_id])
             command = command.where(sql.or_(tbl.c.ascii == transitionset,
                                             tbl.c.utf16 == transitionset))
-            out = self._retrieve_first(engine, command)
+            out = self._retrieve_first(conn, command)
             if out is not None:
                 return out
 
@@ -219,11 +218,11 @@ class SqlEngineDatabaseMixin:
         if transitions:
             transition_ids = set()
             for transition in transitions:
-                transition_id = self._get_transition_id(engine, transition)
+                transition_id = self._get_transition_id(conn, transition)
                 transition_ids.add(transition_id)
 
-            table.transitionset.create(engine, checkfirst=True)
-            table.transitionset_association.create(engine, checkfirst=True)
+            table.transitionset.create(conn, checkfirst=True)
+            table.transitionset_association.create(conn, checkfirst=True)
 
             tbl = table.transitionset_association
             conditions = []
@@ -233,54 +232,53 @@ class SqlEngineDatabaseMixin:
             command = sql.select([table.transitionset_association])
             command = command.where(sql.or_(*conditions))
 
-            with engine.begin() as conn:
-                result = conn.execute(command)
-                rows = result.fetchall()
-                if rows and cbook.allequal(map(itemgetter(0), rows)):
-                    return rows[0]['transitionset_id']
+            result = conn.execute(command)
+            rows = result.fetchall()
+            if rows and cbook.allequal(map(itemgetter(0), rows)):
+                return rows[0]['transitionset_id']
 
         raise NotFound('Unknown transition set: {0}'.format(transitionset))
 
-    def _get_language_id(self, engine, language):
+    def _get_language_id(self, conn, language):
         if isinstance(language, Language):
             code = language.code
         else:
             code = language
 
         tbl = table.language
-        tbl.create(engine, checkfirst=True)
+        tbl.create(conn, checkfirst=True)
         command = sql.select([tbl.c.id])
         command = command.where(tbl.c.code == code)
-        return self._retrieve_first(engine, command,
+        return self._retrieve_first(conn, command,
                                     NotFound('Unknown language: {0}'
                                              .format(language)))
 
-    def _get_notation_id(self, engine, notation):
+    def _get_notation_id(self, conn, notation):
         if isinstance(notation, Notation):
             name = notation.name
         else:
             name = notation
 
         tbl = table.notation
-        tbl.create(engine, checkfirst=True)
+        tbl.create(conn, checkfirst=True)
 
         command = sql.select([tbl.c.id])
         command = command.where(tbl.c.name == name)
-        return self._retrieve_first(engine, command,
+        return self._retrieve_first(conn, command,
                                     NotFound('Unknown notation: {0}'
                                              .format(notation)))
 
-    def _get_reference_id(self, engine, reference):
+    def _get_reference_id(self, conn, reference):
         if isinstance(reference, Reference):
             bibtexkey = reference.bibtexkey
         else:
             bibtexkey = reference
 
         tbl = table.reference
-        tbl.create(engine, checkfirst=True)
+        tbl.create(conn, checkfirst=True)
         command = sql.select([tbl.c.id])
         command = command.where(tbl.c.bibtexkey == bibtexkey)
-        return self._retrieve_first(engine, command,
+        return self._retrieve_first(conn, command,
                                     NotFound('Unknown reference: {0}'
                                              .format(reference)))
 
