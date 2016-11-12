@@ -227,11 +227,19 @@ _append_energy_property_columns(transition_energy)
 
 transition_probability = \
     Table('transition_probability', metadata,
-          Column('value', Integer, nullable=False))
+          Column('value', Float, nullable=False))
 _append_primary_key_columns(transition_probability)
 _append_reference_columns(transition_probability)
 _append_element_columns(transition_probability)
 _append_transition_columns(transition_probability)
+
+transition_relative_weight = \
+    Table('transition_relative_weight', metadata,
+          Column('value', Float, nullable=False))
+_append_primary_key_columns(transition_relative_weight)
+_append_reference_columns(transition_relative_weight)
+_append_element_columns(transition_relative_weight)
+_append_transition_columns(transition_relative_weight)
 
 transitionset_notation = \
     Table('transitionset_notation', metadata)
@@ -245,5 +253,14 @@ transitionset_energy = \
     Table('transitionset_energy', metadata)
 _append_primary_key_columns(transitionset_energy)
 _append_reference_columns(transitionset_energy)
+_append_element_columns(transitionset_energy)
 _append_transitionset_columns(transitionset_energy)
 _append_energy_property_columns(transitionset_energy)
+
+transitionset_relative_weight = \
+    Table('transitionset_relative_weight', metadata,
+          Column('value', Float, nullable=False))
+_append_primary_key_columns(transitionset_relative_weight)
+_append_reference_columns(transitionset_relative_weight)
+_append_element_columns(transitionset_relative_weight)
+_append_transitionset_columns(transitionset_relative_weight)
