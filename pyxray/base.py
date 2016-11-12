@@ -64,16 +64,37 @@ class _Database(object, metaclass=abc.ABCMeta):
 
     def __init__(self):
         self._default_references = {}
+        self._available_methods = set()
+        for attr in self.__class__.__dict__:
+            if attr.startswith('_'): continue
+            self._available_methods.add(attr)
 
-    @property
-    def default_references(self):
+    def set_default_reference(self, method, reference):
         """
-        Returns the default references for each method. The keys are the name of
-        each method and the values the reference keys.
+        Set the default reference for a method. 
         
-        :rtype: :class:`dict`
+        :arg method: name of a method
+        :type method: :class:`str`
+        
+        {reference}
         """
-        return self._default_references
+        if method not in self._available_methods:
+            raise ValueError('Unknown method: {0}'.format(method))
+        self._default_references[method] = reference
+
+    def get_default_reference(self, method):
+        """
+        Returns the default reference for a method. 
+        
+        :arg method: name of a method
+        :type method: :class:`str`
+        
+        :return: reference
+        :rtype: :class:`Reference <pyxray.descriptor.Reference>` or :class:`str`
+        """
+        if method not in self._available_methods:
+            raise ValueError('Unknown method: {0}'.format(method))
+        return self._default_references.get(method)
 
     @abc.abstractmethod
     @formatdoc(**_docextras)
@@ -377,3 +398,4 @@ class _Database(object, metaclass=abc.ABCMeta):
         {exception}
         """
         raise NotImplementedError
+

@@ -40,7 +40,7 @@ class SqlEngineDatabase(_Database, SqlEngineDatabaseMixin):
 
     def element_symbol(self, element, reference=None):
         if not reference:
-            reference = self.default_references.get('element_symbol')
+            reference = self.get_default_reference('element_symbol')
 
         element_id = self._get_element_id(self.engine, element)
 
@@ -54,7 +54,7 @@ class SqlEngineDatabase(_Database, SqlEngineDatabaseMixin):
 
     def element_name(self, element, language='en', reference=None):
         if not reference:
-            reference = self.default_references.get('element_name')
+            reference = self.get_default_reference('element_name')
 
         element_id = self._get_element_id(self.engine, element)
         language_id = self._get_language_id(self.engine, language)
@@ -70,7 +70,7 @@ class SqlEngineDatabase(_Database, SqlEngineDatabaseMixin):
 
     def element_atomic_weight(self, element, reference=None):
         if not reference:
-            reference = self.default_references.get('element_atomic_weight')
+            reference = self.get_default_reference('element_atomic_weight')
 
         element_id = self._get_element_id(self.engine, element)
 
@@ -84,7 +84,7 @@ class SqlEngineDatabase(_Database, SqlEngineDatabaseMixin):
 
     def element_mass_density_kg_per_m3(self, element, reference=None):
         if not reference:
-            reference = self.default_references.get('element_mass_density_kg_per_m3')
+            reference = self.get_default_reference('element_mass_density_kg_per_m3')
 
         element_id = self._get_element_id(self.engine, element)
 
@@ -99,7 +99,7 @@ class SqlEngineDatabase(_Database, SqlEngineDatabaseMixin):
     def atomic_shell_notation(self, atomic_shell, notation,
                               encoding='utf16', reference=None):
         if not reference:
-            reference = self.default_references.get('atomic_shell_notation')
+            reference = self.get_default_reference('atomic_shell_notation')
 
         atomic_shell_id = self._get_atomic_shell_id(self.engine, atomic_shell)
         notation_id = self._get_notation_id(self.engine, notation)
@@ -116,7 +116,7 @@ class SqlEngineDatabase(_Database, SqlEngineDatabaseMixin):
     def atomic_subshell_notation(self, atomic_subshell, notation,
                                  encoding='utf16', reference=None):
         if not reference:
-            reference = self.default_references.get('atomic_subshell_notation')
+            reference = self.get_default_reference('atomic_subshell_notation')
 
         atomic_subshell_id = self._get_atomic_subshell_id(self.engine, atomic_subshell)
         notation_id = self._get_notation_id(self.engine, notation)
@@ -132,7 +132,7 @@ class SqlEngineDatabase(_Database, SqlEngineDatabaseMixin):
 
     def atomic_subshell_binding_energy_eV(self, element, atomic_subshell, reference=None):
         if not reference:
-            reference = self.default_references.get('atomic_subshell_binding_energy_eV')
+            reference = self.get_default_reference('atomic_subshell_binding_energy_eV')
 
         element_id = self._get_element_id(self.engine, element)
         atomic_subshell_id = self._get_atomic_subshell_id(self.engine, atomic_subshell)
@@ -148,7 +148,7 @@ class SqlEngineDatabase(_Database, SqlEngineDatabaseMixin):
 
     def atomic_subshell_radiative_width_eV(self, element, atomic_subshell, reference=None):
         if not reference:
-            reference = self.default_references.get('atomic_subshell_radiative_width_eV')
+            reference = self.get_default_reference('atomic_subshell_radiative_width_eV')
 
         element_id = self._get_element_id(self.engine, element)
         atomic_subshell_id = self._get_atomic_subshell_id(self.engine, atomic_subshell)
@@ -164,7 +164,7 @@ class SqlEngineDatabase(_Database, SqlEngineDatabaseMixin):
 
     def atomic_subshell_nonradiative_width_eV(self, element, atomic_subshell, reference=None):
         if not reference:
-            reference = self.default_references.get('atomic_subshell_nonradiative_width_eV')
+            reference = self.get_default_reference('atomic_subshell_nonradiative_width_eV')
 
         element_id = self._get_element_id(self.engine, element)
         atomic_subshell_id = self._get_atomic_subshell_id(self.engine, atomic_subshell)
@@ -180,7 +180,7 @@ class SqlEngineDatabase(_Database, SqlEngineDatabaseMixin):
 
     def atomic_subshell_occupancy(self, element, atomic_subshell, reference=None):
         if not reference:
-            reference = self.default_references.get('atomic_subshell_occupancy')
+            reference = self.get_default_reference('atomic_subshell_occupancy')
 
         element_id = self._get_element_id(self.engine, element)
         atomic_subshell_id = self._get_atomic_subshell_id(self.engine, atomic_subshell)
@@ -197,7 +197,7 @@ class SqlEngineDatabase(_Database, SqlEngineDatabaseMixin):
     def transition_notation(self, transition, notation,
                             encoding='utf16', reference=None):
         if not reference:
-            reference = self.default_references.get('transition_notation')
+            reference = self.get_default_reference('transition_notation')
 
         transition_id = self._get_transition_id(self.engine, transition)
         notation_id = self._get_notation_id(self.engine, notation)
@@ -213,7 +213,7 @@ class SqlEngineDatabase(_Database, SqlEngineDatabaseMixin):
 
     def transition_energy_eV(self, element, transition, reference=None):
         if not reference:
-            reference = self.default_references.get('transition_energy_eV')
+            reference = self.get_default_reference('transition_energy_eV')
 
         element_id = self._get_element_id(self.engine, element)
         transition_id = self._get_transition_id(self.engine, transition)
@@ -229,7 +229,7 @@ class SqlEngineDatabase(_Database, SqlEngineDatabaseMixin):
 
     def transition_probability(self, element, transition, reference=None):
         if not reference:
-            reference = self.default_references.get('transition_probability')
+            reference = self.get_default_reference('transition_probability')
 
         element_id = self._get_element_id(self.engine, element)
         transition_id = self._get_transition_id(self.engine, transition)
@@ -245,7 +245,7 @@ class SqlEngineDatabase(_Database, SqlEngineDatabaseMixin):
 
     def transition_relative_weight(self, element, transition, reference=None):
         if not reference:
-            reference = self.default_references.get('transition_relative_weight')
+            reference = self.get_default_reference('transition_relative_weight')
 
         element_id = self._get_element_id(self.engine, element)
         transition_id = self._get_transition_id(self.engine, transition)
@@ -262,7 +262,7 @@ class SqlEngineDatabase(_Database, SqlEngineDatabaseMixin):
     def transitionset_notation(self, transitionset, notation,
                             encoding='utf16', reference=None):
         if not reference:
-            reference = self.default_references.get('transitionset_notation')
+            reference = self.get_default_reference('transitionset_notation')
 
         transitionset_id = self._get_transitionset_id(self.engine, transitionset)
         notation_id = self._get_notation_id(self.engine, notation)
@@ -278,7 +278,7 @@ class SqlEngineDatabase(_Database, SqlEngineDatabaseMixin):
 
     def transitionset_energy_eV(self, element, transitionset, reference=None):
         if not reference:
-            reference = self.default_references.get('transitionset_energy_eV')
+            reference = self.get_default_reference('transitionset_energy_eV')
 
         element_id = self._get_element_id(self.engine, element)
         transitionset_id = self._get_transitionset_id(self.engine, transitionset)
@@ -294,7 +294,7 @@ class SqlEngineDatabase(_Database, SqlEngineDatabaseMixin):
 
     def transitionset_relative_weight(self, element, transitionset, reference=None):
         if not reference:
-            reference = self.default_references.get('transitionset_relative_weight')
+            reference = self.get_default_reference('transitionset_relative_weight')
 
         element_id = self._get_element_id(self.engine, element)
         transitionset_id = self._get_transitionset_id(self.engine, transitionset)
