@@ -1,5 +1,5 @@
 """
-Parsers from JOEL.
+Parsers from JEOL.
 """
 
 # Standard library modules.
@@ -20,7 +20,7 @@ from pyxray.property import \
 
 # Globals and constants variables.
 
-JOEL = Reference('JEOL'
+JEOL = Reference('JEOL'
                  )
 
 K = AtomicSubshell(1, 0, 1)
@@ -167,12 +167,12 @@ class JEOLTransitionParser(_Parser):
             transition = Transition(*subshells)
             element = Element(z)
 
-            prop = TransitionEnergy(JOEL, element, transition, eV)
+            prop = TransitionEnergy(JEOL, element, transition, eV)
             logger.debug('Parsed: {0}'.format(prop))
             self.update(int((z - 1) / length * 100.0))
             yield prop
 
-            prop = TransitionRelativeWeight(JOEL, element, transition, probability)
+            prop = TransitionRelativeWeight(JEOL, element, transition, probability)
             logger.debug('Parsed: {0}'.format(prop))
             self.update(int((z - 1) / length * 100.0))
             yield prop
@@ -184,12 +184,12 @@ class JEOLTransitionParser(_Parser):
             transitionset = TransitionSet(transitions)
             element = Element(z)
 
-            prop = TransitionSetEnergy(JOEL, element, transitionset, eV)
+            prop = TransitionSetEnergy(JEOL, element, transitionset, eV)
             logger.debug('Parsed: {0}'.format(prop))
             self.update(int((z - 1) / length * 100.0))
             yield prop
 
-            prop = TransitionSetRelativeWeight(JOEL, element, transitionset, probability)
+            prop = TransitionSetRelativeWeight(JEOL, element, transitionset, probability)
             logger.debug('Parsed: {0}'.format(prop))
             self.update(int((z - 1) / length * 100.0))
             yield prop
