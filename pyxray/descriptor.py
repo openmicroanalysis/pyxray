@@ -2,6 +2,9 @@
 Definition of descriptors.
 """
 
+__all__ = ['Element', 'AtomicShell', 'AtomicSubshell', 'Transition',
+           'TransitionSet', 'Language', 'Notation', 'Reference']
+
 # Standard library modules.
 
 # Third party modules.
