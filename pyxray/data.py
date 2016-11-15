@@ -27,12 +27,74 @@ __all__ = [
 
 # Standard library modules.
 import os
+import logging
+logger = logging.getLogger(__name__)
 
 # Third party modules.
 
 # Local modules.
+from pyxray.base import _Database, NotFound
 
 # Globals and constants variables.
+
+class _EmptyDatabase(_Database):
+
+    def element_atomic_number(self, element):
+        raise NotFound
+
+    def element_symbol(self, element, reference=None):
+        raise NotFound
+
+    def element_name(self, element, language='en', reference=None):
+        raise NotFound
+
+    def element_atomic_weight(self, element, reference=None):
+        raise NotFound
+
+    def element_mass_density_kg_per_m3(self, element, reference=None):
+        raise NotFound
+
+    def element_mass_density_g_per_cm3(self, element, reference=None):
+        raise NotFound
+
+    def atomic_shell_notation(self, atomic_shell, notation, encoding='utf16', reference=None):
+        raise NotFound
+
+    def atomic_subshell_notation(self, atomic_subshell, notation, encoding='utf16', reference=None):
+        raise NotFound
+
+    def atomic_subshell_binding_energy_eV(self, element, atomic_subshell, reference=None):
+        raise NotFound
+
+    def atomic_subshell_radiative_width_eV(self, element, atomic_subshell, reference=None):
+        raise NotFound
+
+    def atomic_subshell_nonradiative_width_eV(self, element, atomic_subshell, reference=None):
+        raise NotFound
+
+    def atomic_subshell_occupancy(self, element, atomic_subshell, reference=None):
+        raise NotFound
+
+    def transition_notation(self, transition, notation, encoding='utf16', reference=None):
+        raise NotFound
+
+    def transition_energy_eV(self, element, transition, reference=None):
+        raise NotFound
+
+    def transition_probability(self, element, transition, reference=None):
+        raise NotFound
+
+    def transition_relative_weight(self, element, transition, reference=None):
+        raise NotFound
+
+    def transitionset_notation(self, transitionset, notation, encoding='utf16', reference=None):
+        raise NotFound
+
+    def transitionset_energy_eV(self, element, transitionset, reference=None):
+        raise NotFound
+
+    def transitionset_relative_weight(self, element, transitionset, reference=None):
+        raise NotFound
 
 def _init_sql_database():
     from sqlalchemy import create_engine
@@ -47,7 +109,11 @@ def _init_sql_database():
     engine = create_engine('sqlite:///' + filepath)
     return SqlEngineDatabase(engine)
 
-database = _init_sql_database()
+try:
+    database = _init_sql_database()
+except:
+    logger.exception("Cannot initialize SQL database")
+    database = _EmptyDatabase()
 
 set_default_reference = database.set_default_reference
 get_default_reference = database.get_default_reference
