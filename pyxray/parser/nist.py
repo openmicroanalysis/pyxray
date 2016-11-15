@@ -13,8 +13,9 @@ import requests
 
 try:
     import requests_cache
-    filepath = os.path.join(os.path.dirname(__file__),
-                            '..', 'data', 'cache', 'nist_element_atomic_weight')
+    dirpath = os.path.join(os.path.dirname(__file__), '..', 'data', 'cache')
+    os.makedirs(dirpath, exist_ok=True)
+    filepath = os.path.join(dirpath, 'nist_element_atomic_weight')
     requests_cache.install_cache(filepath)
 except ImportError:
     pass
