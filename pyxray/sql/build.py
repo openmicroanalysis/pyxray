@@ -54,15 +54,15 @@ class _DatabaseBuilder(metaclass=abc.ABCMeta):
         self._propfuncs[props.TransitionSetRelativeWeight] = self._add_transitionset_relative_weight_property
 
     @abc.abstractmethod
-    def _backup_existing_database(self):
+    def _backup_existing_database(self): #pragma: no cover
         raise NotImplementedError
 
     @abc.abstractmethod
-    def _create_database_engine(self):
+    def _create_database_engine(self): #pragma: no cover
         raise NotImplementedError
 
     @abc.abstractmethod
-    def _revert_to_backup_database(self):
+    def _revert_to_backup_database(self): #pragma: no cover
         raise NotImplementedError
 
     def _cleanup(self):
@@ -662,7 +662,7 @@ class SqliteDatabaseBuilder(SqlEngineDatabaseMixin, _DatabaseBuilder):
     def filepath(self):
         return self._filepath
 
-def main():
+def main(): #pragma: no cover
     parser = argparse.ArgumentParser(description='Build the SQL database')
     parser.add_argument('-v', '--verbose', action='store_true',
                         help='Show debug information')
@@ -676,5 +676,5 @@ def main():
     builder = SqliteDatabaseBuilder()
     builder.build()
 
-if __name__ == '__main__':
+if __name__ == '__main__': #pragma: no cover
     main()
