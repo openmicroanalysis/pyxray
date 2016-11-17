@@ -4,6 +4,7 @@ Base SQL engine
 
 # Standard library modules.
 from operator import itemgetter
+import collections
 
 # Third party modules.
 import sqlalchemy.sql as sql
@@ -126,7 +127,8 @@ class SqlEngineDatabaseMixin:
             azimuthal_quantum_number = atomic_subshell.azimuthal_quantum_number
             total_angular_momentum_nominator = atomic_subshell.total_angular_momentum_nominator
 
-        elif isinstance(atomic_subshell, tuple) and len(atomic_subshell) == 3:
+        elif isinstance(atomic_subshell, collections.Sequence) and \
+                len(atomic_subshell) == 3:
             principal_quantum_number = atomic_subshell[0]
             azimuthal_quantum_number = atomic_subshell[1]
             total_angular_momentum_nominator = atomic_subshell[2]
@@ -134,7 +136,7 @@ class SqlEngineDatabaseMixin:
         if principal_quantum_number > 0 and \
                 azimuthal_quantum_number >= 0 and \
                 total_angular_momentum_nominator > 0:
-            atomic_shell_id = self._get_atomic_shell_id(conn, atomic_subshell.atomic_shell)
+            atomic_shell_id = self._get_atomic_shell_id(conn, principal_quantum_number)
 
             tbl = table.atomic_subshell
             tbl.create(conn, checkfirst=True)
@@ -168,7 +170,8 @@ class SqlEngineDatabaseMixin:
             source_subshell = transition.source_subshell
             destination_subshell = transition.destination_subshell
             secondary_destination_subshell = transition.secondary_destination_subshell
-        elif isinstance(transition, tuple) and len(transition) >= 2:
+        elif isinstance(transition, collections.Sequence) and \
+                len(transition) >= 2:
             source_subshell = transition[0]
             destination_subshell = transition[1]
             if len(transition) == 3:
@@ -212,7 +215,7 @@ class SqlEngineDatabaseMixin:
         transitions = set()
         if isinstance(transitionset, TransitionSet):
             transitions.update(transitionset.transitions)
-        elif isinstance(transitionset, tuple):
+        elif isinstance(transitionset, collections.Sequence):
             transitions.update(transitionset)
 
         if transitions:
