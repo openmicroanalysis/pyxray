@@ -23,6 +23,7 @@ class MockParser(_Parser):
 
     def __iter__(self):
         reference = descriptor.Reference('lee1966')
+        reference2 = descriptor.Reference('doe2016')
         element = descriptor.Element(118)
         atomic_shell = descriptor.AtomicShell(1)
         K = descriptor.AtomicSubshell(1, 0, 1)
@@ -37,6 +38,7 @@ class MockParser(_Parser):
         yield property.ElementName(reference, element, language, 'Vibranium')
         yield property.ElementSymbol(reference, element, 'Vi')
         yield property.ElementAtomicWeight(reference, element, 999.1)
+        yield property.ElementAtomicWeight(reference2, element, 111.1)
         yield property.ElementMassDensity(reference, element, 999.2)
 
         yield property.AtomicShellNotation(reference, atomic_shell, notation,
