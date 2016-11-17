@@ -141,11 +141,11 @@ _append_element_columns(element_symbol)
 
 element_name = \
     Table('element_name', metadata,
-          Column('language_id', Integer, ForeignKey('language.id'), nullable=False),
           Column('name', Unicode(256, collation='NOCASE'), nullable=False))
 _append_primary_key_columns(element_name)
 _append_reference_columns(element_name)
 _append_element_columns(element_name)
+_append_language_columns(element_name)
 
 element_atomic_weight = \
     Table('element_atomic_weight', metadata,
