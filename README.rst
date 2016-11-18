@@ -39,13 +39,46 @@ For development installation from the git repository::
     $ git clone git@github.com:ppinard/pyxray.git
     $ cd pyxray
     $ pip install -e .
-    $ python3 setup.py build
+
+See development section below
+
+Methods
+-------
+
+All methods below are accessed by importing `pyxray`::
+
+    import pyxray
     
+Variables of the methods are defined as follows
+
+* `element`: either
+    * `Element` object
+    * atomic number
+    * symbol (case insensitive)
+    * name (in any language, case insensitive)
+    * object with attribute `atomic_number` or `z`
+
+* `reference`: reference to use to retrieve this value, either
+    * `Reference` object
+    * BibTeX key of a reference
+    * ``None``, the default reference will be used or the first reference found
+
+Element properties
+^^^^^^^^^^^^^^^^^^
+
+* `pyxray.element_atomic_number(element)`
+    Returns atomic number of an element.
+    
+
+* `pyxray.element_symbol(element, reference=None)`
+
+Development
+-----------
 The last instruction will build the SQL database and will take several minutes.
 The database is not provide in the source code, only in the distributed version.
 
-Examples
---------
+
+
 
 
 
