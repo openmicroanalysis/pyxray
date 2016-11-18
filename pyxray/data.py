@@ -112,7 +112,7 @@ def _init_sql_database():
 try:
     database = _init_sql_database()
 except:
-    logger.exception("Cannot initialize SQL database")
+    logger.error("No SQL database found")
     database = _EmptyDatabase()
 
 set_default_reference = database.set_default_reference
