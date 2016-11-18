@@ -1,20 +1,12 @@
-pyxray
-======
+# pyxray
 
-.. image:: https://badge.fury.io/py/pyxray.svg
-   :target: http://badge.fury.io/py/pyxray
-
-.. image:: https://readthedocs.org/projects/pyxray/badge/?version=latest
-   :target: https://readthedocs.org/projects/pyxray/
-
-.. image:: https://travis-ci.org/ppinard/pyxray.svg?branch=master
-   :target: https://travis-ci.org/ppinard/pyxray
+[![PyPI](https://badge.fury.io/py/pyxray.svg)](http://badge.fury.io/py/pyxray)
+[![Docs](https://readthedocs.io/projects/pyxray/badge/?version=latest)](https://readthedocs.io/projects/pyxray/)
+[![TravisCI](https://travis-ci.org/ppinard/pyxray.svg?branch=master)](https://travis-ci.org/ppinard/pyxray)
+[![Codecov](https://codecov.io/github/ppinard/pyxray/coverage.svg?branch=master)](https://codecov.io/github/ppinard/pyxray?branch=master)
    
-.. image:: https://codecov.io/github/ppinard/pyxray/coverage.svg?branch=master
-   :target: https://codecov.io/github/ppinard/pyxray?branch=master
-
 *pyxray* is a Python library that defines basic object to specify atomic 
-subshells and X-ray transitions.
+subshells and X-ray transitions. 
 The objects also provide critical information as the energy, existence and 
 different notations of the X-ray transitions.
 
@@ -27,28 +19,32 @@ Philippe T. Pinard at RWTH Aachen University (Aachen, Germany) under the
 supervision of Dr. Silvia Richter, in collaboration with Hendrix Demers 
 (McGill University, Canada).
 
-Installation
-------------
+## Installation
 
-Easiest way to install using ``pip``::
+Easiest way to install using ``pip``
 
-    $ pip install pyxray
-    
-For development installation from the git repository::
+```
+pip install pyxray
+```
 
-    $ git clone git@github.com:ppinard/pyxray.git
-    $ cd pyxray
-    $ pip install -e .
+For development installation from the git repository:
+
+```
+git clone git@github.com:ppinard/pyxray.git
+cd pyxray
+pip install -e .
+```
 
 See development section below
 
-Methods
--------
+## Methods
 
-All methods below are accessed by importing `pyxray`::
+All methods below are accessed by importing `pyxray`:
 
-    import pyxray
-    
+```
+import pyxray
+```
+
 Variables of the methods are defined as follows
 
 * `element`: either
@@ -63,8 +59,7 @@ Variables of the methods are defined as follows
     * BibTeX key of a reference
     * ``None``, the default reference will be used or the first reference found
 
-Element properties
-^^^^^^^^^^^^^^^^^^
+### Element properties
 
 * `pyxray.element_atomic_number(element)`
     Returns atomic number of an element.
@@ -72,8 +67,7 @@ Element properties
 
 * `pyxray.element_symbol(element, reference=None)`
 
-Development
------------
+## Development
 The last instruction will build the SQL database and will take several minutes.
 The database is not provide in the source code, only in the distributed version.
 
