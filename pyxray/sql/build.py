@@ -194,14 +194,11 @@ class _DatabaseBuilder(metaclass=abc.ABCMeta):
         transitionset_id = result.inserted_primary_key[0]
 
         # Populate association table
-        values = []
         for transition_id in transition_ids:
-            values.append({'transitionset_id': transitionset_id,
-                           'transition_id': transition_id})
-
-        command = sql.insert(table.transitionset_association)
-        command = command.values(values)
-        conn.execute(command)
+            command = sql.insert(table.transitionset_association)
+            command = command.values(transitionset_id=transitionset_id,
+                                     transition_id=transition_id)
+            conn.execute(command)
 
         return transitionset_id
 
