@@ -23,7 +23,7 @@ class build_py(_build_py.build_py):
 
         super().run()
 
-with open(os.path.join(BASEDIR, 'README.rst'), 'r') as fp:
+with open(os.path.join(BASEDIR, 'README.md'), 'r') as fp:
     LONG_DESCRIPTION = fp.read()
 
 CMDCLASS = versioneer.get_cmdclass()
