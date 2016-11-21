@@ -1,8 +1,8 @@
 # pyxray
 
-[![PyPI](https`//badge.fury.io/py/pyxray.svg)](http`//badge.fury.io/py/pyxray)
-[![TravisCI](https`//travis-ci.org/ppinard/pyxray.svg?branch=master)](https`//travis-ci.org/ppinard/pyxray)
-[![Codecov](https`//codecov.io/github/ppinard/pyxray/coverage.svg?branch=master)](https`//codecov.io/github/ppinard/pyxray?branch=master)
+[![PyPI](https://badge.fury.io/py/pyxray.svg)](http://badge.fury.io/py/pyxray)
+[![TravisCI](https://travis-ci.org/ppinard/pyxray.svg?branch=master)](https://travis-ci.org/ppinard/pyxray)
+[![Codecov](https://codecov.io/github/ppinard/pyxray/coverage.svg?branch=master)](https://codecov.io/github/ppinard/pyxray?branch=master)
    
 *pyxray* is a Python library that defines basic object to specify atomic 
 subshells and X-ray transitions. 
@@ -47,32 +47,32 @@ import pyxray
 Variables of the methods are defined as follows
 
 * `element`: either
-    * [Element](http://github.com/ppinard/pyxray/pyxray/descriptor.py) object
+    * [Element](http://github.com/ppinard/pyxray/blob/master/pyxray/descriptor.py) object
     * atomic number
     * symbol (case insensitive)
     * name (in any language, case insensitive)
     * object with attribute `atomic_number` or `z`
     
 * `atomic_shell`: either
-    * [AtomicShell](http://github.com/ppinard/pyxray/pyxray/descriptor.py) object
+    * [AtomicShell](http://github.com/ppinard/pyxray/blob/master/pyxray/descriptor.py) object
     * principal quantum number
     * any notation (case insensitive)
 
 * `atomic_subshell`: either
-    * [AtomicSubshell](http://github.com/ppinard/pyxray/pyxray/descriptor.py) object
+    * [AtomicSubshell](http://github.com/ppinard/pyxray/blob/master/pyxray/descriptor.py) object
     * a `tuple` of principal quantum number, azimuthal quantum number 
       and total angular momentum nominator (e.g. `(1, 0, 1)` for the atomic 
       subshell `1s^{0.5}`
     * any notation (case insensitive)
 
 * `transition`: either
-    * [Transition](http://github.com/ppinard/pyxray/pyxray/descriptor.py) object
+    * [Transition](http://github.com/ppinard/pyxray/blob/master/pyxray/descriptor.py) object
     * a `tuple` of source and destination subshells
       (or optionally secondary destination subshells)
     * any notation (case insensitive)
 
 * `transitionset`: either
-    * [TransitionSet](http://github.com/ppinard/pyxray/pyxray/descriptor.py) object
+    * [TransitionSet](http://github.com/ppinard/pyxray/blob/master/pyxray/descriptor.py) object
     * a `tuple` of transitions
     * any notation (case insensitive)
 
@@ -84,7 +84,7 @@ Variables of the methods are defined as follows
 * `encoding`: type of encoding, either `ascii`, `utf16`, `html` or `latex`
 
 * `reference`: reference to use to retrieve this value, either
-    * [Reference](http://github.com/ppinard/pyxray/pyxray/descriptor.py) object
+    * [Reference](http://github.com/ppinard/pyxray/blob/master/pyxray/descriptor.py) object
     * BibTeX key of a reference
     * `None`, the default reference will be used or the first reference found
 
@@ -124,7 +124,7 @@ where the number of protons equal the number of electrons.
 
 ### Atomic shell properties
 
-Properties associated with an [atomic shell](https`//en.wikipedia.org/wiki/Electron_shell), 
+Properties associated with an [atomic shell](https://en.wikipedia.org/wiki/Electron_shell), 
 defined by its principal quantum number.
 
 * `pyxray.atomic_shell_notation(atomic_shell, notation, encoding='utf16', reference=None)`
@@ -132,7 +132,7 @@ defined by its principal quantum number.
 
 ### Atomic subshell properties
 
-Properties associated with an [atomic subshell](https`//en.wikipedia.org/wiki/Electron_shell#Subshells),
+Properties associated with an [atomic subshell](https://en.wikipedia.org/wiki/Electron_shell#Subshells),
 a subdivision of atomic shells.
 
 * `pyxray.atomic_subshell_notation(atomic_subshell, notation, encoding='utf16', reference=None)`
