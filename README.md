@@ -40,7 +40,7 @@ See development section below
 
 All methods below are accessed by importing `pyxray`:
 
-```
+```python
 import pyxray
 ```
 
@@ -97,7 +97,7 @@ where the number of protons equal the number of electrons.
     Returns atomic number of an element.
     
     Examples:
-    ```
+    ```python
     pyxray.element.atomic_number('fe') #=> 26
     pyxray.element.atomic_number('Fe') #=> 26
     pyxray.element.atomic_number('iron') #=> 26
@@ -139,7 +139,7 @@ a subdivision of atomic shells.
     Returns notation of an atomic subshell.
     
     Examples:
-    ```
+    ```python
     pyxray.atomic_subshell_notation('L3', 'iupac', 'latex') #=> 'L$_{3}$'
     pyxray.atomic_subshell_notation('L3', 'orbital') #-> '2p3/2'
     ```
@@ -166,7 +166,7 @@ Coster-Kronig transitions.
     Returns notation of a transition.
     
     Examples:
-    ```
+    ```python
     pyxray.transition_notation('Ka1', 'iupac') #=> 'K-L3'
     pyxray.transition_notation('L3-M1', 'siegbahn', 'ascii') #=> 'Ll'
     ```
@@ -175,7 +175,7 @@ Coster-Kronig transitions.
     Returns energy of an element and transition (in eV).
     
     Examples:
-    ```
+    ```python
     pyxray.transition_energy_eV(14, 'Ka1') #=> 1740.0263764535946
     pyxray.transition_energy_eV(14, 'Ma1') #=> NotFound exception
     ```
