@@ -56,13 +56,13 @@ class CampbellAtomicSubshellRadiativeWidthParser(_Parser):
                 for s in range(1, 17):
                     s_w = line[6 * s:6 * s + 6].strip()
                     if s_w == '': continue
-                    shell_width.append([subshell_order[s - 1], float(s_w)])
+                    shell_width.append([z, subshell_order[s - 1], float(s_w)])
 
         length = len(shell_width)
-        for z, subshell, width in enumerate(shell_width, 1):
+        for z, subshell, width in shell_width:
             if width is None:
                 continue
-            subshell = AtomicSubshell(_SUBSHELL_LOOKUP[subshell])
+            subshell = AtomicSubshell(*_SUBSHELL_LOOKUP[subshell])
             element = Element(z)
             prop = AtomicSubshellRadiativeWidth(Campbell, element, subshell, width)
             logger.debug('Parsed: {0}'.format(prop))
