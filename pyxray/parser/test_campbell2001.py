@@ -8,7 +8,7 @@ import logging
 # Third party modules.
 
 # Local modules.
-from pyxray.parser.campbell import CampbellAtomicSubshellRadiativeWidthParser
+from pyxray.parser.campbell2001 import CampbellAtomicSubshellRadiativeWidthParser
 
 # Globals and constants variables.
 

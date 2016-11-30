@@ -70,6 +70,7 @@ setup(name="pyxray",
             'perkins1991 = pyxray.parser.perkins1991:Perkins1991Parser',
             'nist atomic weight = pyxray.parser.nist:NISTElementAtomicWeightParser',
             'jeol transition = pyxray.parser.jeol:JEOLTransitionParser',
+            'campbell2001 = pyxray.parser.campbell2001:CampbellAtomicSubshellRadiativeWidthParser',
              ],
                       },
 )

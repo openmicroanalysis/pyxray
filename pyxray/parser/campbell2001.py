@@ -17,13 +17,13 @@ from pyxray.property import AtomicSubshellRadiativeWidth
 
 # Globals and constants variables.
 
-Campbell = Reference('Campbell',
-                     author='Campbell, J.L. and Papp, T.',
-                     year=2001,
-                     title='WIDTHS OF THE ATOMIC K –N7 LEVELS',
-                     booktitle='Atomic Data and Nuclear Data Tables',
-                     pages='1-56',
-                     volume=77)
+CAMPBELL2001 = Reference('campbell2001',
+                         author='Campbell, J.L. and Papp, T.',
+                         year=2001,
+                         title='Widths of the atomic K-N7 levels',
+                         booktitle='Atomic Data and Nuclear Data Tables',
+                         pages='1-56',
+                         volume=77)
 
 _SUBSHELL_LOOKUP = {
     'K': (1, 0, 1),
@@ -64,7 +64,7 @@ class CampbellAtomicSubshellRadiativeWidthParser(_Parser):
                 continue
             subshell = AtomicSubshell(*_SUBSHELL_LOOKUP[subshell])
             element = Element(z)
-            prop = AtomicSubshellRadiativeWidth(Campbell, element, subshell, width)
+            prop = AtomicSubshellRadiativeWidth(CAMPBELL2001, element, subshell, width)
             logger.debug('Parsed: {0}'.format(prop))
             self.update(int((z - 1) / length * 100.0))
             yield prop
