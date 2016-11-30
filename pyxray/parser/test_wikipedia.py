@@ -24,7 +24,7 @@ class TestWikipediaElementNameParser(unittest.TestCase):
 
     def test__iter__(self):
         props = list(self.parser)
-        self.assertGreater(2500, len(props))
+        self.assertGreater(len(props), 2500)
 
 if __name__ == '__main__': #pragma: no cover
     logging.getLogger().setLevel(logging.DEBUG)
