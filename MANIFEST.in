@@ -1,5 +1,6 @@
 include versioneer.py
 include pyxray/_version.py
+include pyxray/data/*.asc
+include pyxray/data/*.csv
 exclude pyxray/data/cache
-exclude pyxray/data/pyxray.sql
-exclude pyxray/data/pyxray.sql.old
+exclude pyxray/data/*.sql
