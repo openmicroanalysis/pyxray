@@ -6,10 +6,10 @@ pyxray
    :target: https://pypi.python.org/pypi/pyxray
 
 .. image:: https://img.shields.io/travis/ppianrd/pyxray.svg
-   :target: https://travis-ci.org/ppinard/pyxray
+   :target: https://travis-ci.org/openmicroanalysis/pyxray
 
-.. image:: https://img.shields.io/codecov/c/github/ppinard/pyxray.svg
-   :target: https://codecov.io/github/ppinard/pyxray
+.. image:: https://img.shields.io/codecov/c/github/openmicroanalysis/pyxray.svg
+   :target: https://codecov.io/github/openmicroanalysis/pyxray
 
 *pyxray* is a Python library that defines basic object to specify atomic 
 subshells and X-ray transitions. 
@@ -34,7 +34,7 @@ Easiest way to install using ``pip``::
 
 For development installation from the git repository::
 
-    git clone git@github.com/ppinard/pyxray.git
+    git clone git@github.com/openmicroanalysis/pyxray.git
     cd pyxray
     pip install -e .
 
@@ -54,7 +54,7 @@ Variables of the methods are defined as follows
 * ``element``: 
     either
     
-    * `Element <http://github.com/ppinard/pyxray/blob/master/pyxray/descriptor.py>`_ object
+    * `Element <http://github.com/openmicroanalysis/pyxray/blob/master/pyxray/descriptor.py>`_ object
     * atomic number
     * symbol (case insensitive)
     * name (in any language, case insensitive)
@@ -63,14 +63,14 @@ Variables of the methods are defined as follows
 * ``atomic_shell``: 
     either
     
-    * `AtomicShell <http://github.com/ppinard/pyxray/blob/master/pyxray/descriptor.py>`_ object
+    * `AtomicShell <http://github.com/openmicroanalysis/pyxray/blob/master/pyxray/descriptor.py>`_ object
     * principal quantum number
     * any notation (case insensitive)
 
 * ``atomic_subshell``: 
     either
     
-    * `AtomicSubshell <http://github.com/ppinard/pyxray/blob/master/pyxray/descriptor.py>`_ object
+    * `AtomicSubshell <http://github.com/openmicroanalysis/pyxray/blob/master/pyxray/descriptor.py>`_ object
     * a ``tuple`` of principal quantum number, azimuthal quantum number 
       and total angular momentum nominator (e.g. ``(1, 0, 1)`` for the atomic 
       subshell ``1s^{0.5}``
@@ -79,7 +79,7 @@ Variables of the methods are defined as follows
 * ``transition``: 
     either
     
-    * `Transition <http://github.com/ppinard/pyxray/blob/master/pyxray/descriptor.py>`_ object
+    * `Transition <http://github.com/openmicroanalysis/pyxray/blob/master/pyxray/descriptor.py>`_ object
     * a ``tuple`` of source and destination subshells
       (or optionally secondary destination subshells)
     * any notation (case insensitive)
@@ -87,7 +87,7 @@ Variables of the methods are defined as follows
 * ``transitionset``:
     either
     
-    * `TransitionSet <http://github.com/ppinard/pyxray/blob/master/pyxray/descriptor.py>`_ object
+    * `TransitionSet <http://github.com/openmicroanalysis/pyxray/blob/master/pyxray/descriptor.py>`_ object
     * a ``tuple`` of transitions
     * any notation (case insensitive)
 
@@ -104,7 +104,7 @@ Variables of the methods are defined as follows
 * ``reference``: 
     reference to use to retrieve this value, either
     
-    * `Reference <http://github.com/ppinard/pyxray/blob/master/pyxray/descriptor.py>`_ object
+    * `Reference <http://github.com/openmicroanalysis/pyxray/blob/master/pyxray/descriptor.py>`_ object
     * BibTeX key of a reference
     * ``None``, the default reference will be used or the first reference found
 

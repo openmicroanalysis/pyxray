@@ -52,7 +52,7 @@ ENTRY_POINTS = {
 
 setup(name="pyxray",
       version=versioneer.get_version(),
-      url='https://github.com/ppinard/pyxray',
+      url='https://github.com/openmicroanalysis/pyxray',
       description="Definitions and properties of X-ray transitions",
       long_description=LONG_DESCRIPTION,
       author="Hendrix Demers and Philippe T. Pinard",

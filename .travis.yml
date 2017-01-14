@@ -25,5 +25,5 @@ deploy:
   distributions: sdist bdist_wheel
   on:
     tags: true
-    repo: ppinard/pyxray
+    repo: openmicroanalysis/pyxray
     condition: $DEPLOY = yes
