@@ -1,0 +1,2 @@
+[run]
+omit=pyxray/_version.py
