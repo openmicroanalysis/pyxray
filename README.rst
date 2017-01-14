@@ -84,9 +84,8 @@ Variables of the methods are defined as follows
       (or optionally secondary destination subshells)
     * any notation (case insensitive)
 
-* ``transitionset``: 
-
-    Either
+* ``transitionset``:
+    either
     
     * `TransitionSet <http://github.com/ppinard/pyxray/blob/master/pyxray/descriptor.py>`_ object
     * a ``tuple`` of transitions
