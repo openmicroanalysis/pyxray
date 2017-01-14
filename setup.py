@@ -23,11 +23,32 @@ class build_py(_build_py.build_py):
 
         super().run()
 
-with open(os.path.join(BASEDIR, 'README.md'), 'r') as fp:
+with open(os.path.join(BASEDIR, 'README.rst'), 'r') as fp:
     LONG_DESCRIPTION = fp.read()
+
+SETUP_REQUIRES = ['setuptools', 'nose', 'coverage']
+INSTALL_REQUIRES = ['sqlalchemy', 'requests', 'requests-cache', 'progressbar2']
 
 CMDCLASS = versioneer.get_cmdclass()
 CMDCLASS['build_py'] = build_py
+
+ENTRY_POINTS = {
+    'pyxray.parser':
+      [
+      'unattributed element symbol = pyxray.parser.unattributed:ElementSymbolPropertyParser',
+      'unattributed atomic shell notation = pyxray.parser.unattributed:AtomicShellNotationParser',
+      'unattributed atomic subshell notation = pyxray.parser.unattributed:AtomicSubshellNotationParser',
+      'unattributed transition notation = pyxray.parser.unattributed:TransitionNotationParser',
+      'wikipedia element name = pyxray.parser.wikipedia:WikipediaElementNameParser',
+      'sargent-welch element atomic weight = pyxray.parser.sargent_welch:SargentWelchElementAtomicWeightParser',
+      'sargent-welch element mass density = pyxray.parser.sargent_welch:SargentWelchElementMassDensityParser',
+      'jenkins1991 transition notation = pyxray.parser.jenkins1991:Jenkins1991TransitionNotationParser',
+      'perkins1991 = pyxray.parser.perkins1991:Perkins1991Parser',
+      'nist atomic weight = pyxray.parser.nist:NISTElementAtomicWeightParser',
+      'jeol transition = pyxray.parser.jeol:JEOLTransitionParser',
+      'campbell2001 = pyxray.parser.campbell2001:CampbellAtomicSubshellRadiativeWidthParser',
+       ],
+      }
 
 setup(name="pyxray",
       version=versioneer.get_version(),
@@ -49,29 +70,13 @@ setup(name="pyxray",
       packages=find_packages(),
       package_data={'pyxray': ['data/pyxray.sql']},
 
-      setup_requires=['setuptools', 'nose', 'coverage'],
-      install_requires=['sqlalchemy', 'requests', 'requests-cache', 'progressbar2'],
+      setup_requires=SETUP_REQUIRES,
+      install_requires=INSTALL_REQUIRES,
 
       test_suite='nose.collector',
 
       cmdclass=CMDCLASS,
 
-      entry_points={
-          'pyxray.parser':
-            [
-            'unattributed element symbol = pyxray.parser.unattributed:ElementSymbolPropertyParser',
-            'unattributed atomic shell notation = pyxray.parser.unattributed:AtomicShellNotationParser',
-            'unattributed atomic subshell notation = pyxray.parser.unattributed:AtomicSubshellNotationParser',
-            'unattributed transition notation = pyxray.parser.unattributed:TransitionNotationParser',
-            'wikipedia element name = pyxray.parser.wikipedia:WikipediaElementNameParser',
-            'sargent-welch element atomic weight = pyxray.parser.sargent_welch:SargentWelchElementAtomicWeightParser',
-            'sargent-welch element mass density = pyxray.parser.sargent_welch:SargentWelchElementMassDensityParser',
-            'jenkins1991 transition notation = pyxray.parser.jenkins1991:Jenkins1991TransitionNotationParser',
-            'perkins1991 = pyxray.parser.perkins1991:Perkins1991Parser',
-            'nist atomic weight = pyxray.parser.nist:NISTElementAtomicWeightParser',
-            'jeol transition = pyxray.parser.jeol:JEOLTransitionParser',
-            'campbell2001 = pyxray.parser.campbell2001:CampbellAtomicSubshellRadiativeWidthParser',
-             ],
-                      },
+      entry_points=ENTRY_POINTS,
 )
 
