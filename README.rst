@@ -43,50 +43,68 @@ See development section below
 Methods
 =======
 
-All methods below are accessed by importing ``pyxray``::
+All methods below are accessed by importing ``pyxray``:
+
+.. code:: python
 
     import pyxray
 
 Variables of the methods are defined as follows
 
-* ``element``: either
+* ``element``: 
+    either
+    
     * `Element <http://github.com/ppinard/pyxray/blob/master/pyxray/descriptor.py>`_ object
     * atomic number
     * symbol (case insensitive)
     * name (in any language, case insensitive)
     * object with attribute ``atomic_number`` or ``z``
     
-* ``atomic_shell``: either
+* ``atomic_shell``: 
+    either
+    
     * `AtomicShell <http://github.com/ppinard/pyxray/blob/master/pyxray/descriptor.py>`_ object
     * principal quantum number
     * any notation (case insensitive)
 
-* ``atomic_subshell``: either
+* ``atomic_subshell``: 
+    either
+    
     * `AtomicSubshell <http://github.com/ppinard/pyxray/blob/master/pyxray/descriptor.py>`_ object
     * a ``tuple`` of principal quantum number, azimuthal quantum number 
       and total angular momentum nominator (e.g. ``(1, 0, 1)`` for the atomic 
       subshell ``1s^{0.5}``
     * any notation (case insensitive)
 
-* ``transition``: either
+* ``transition``: 
+    either
+    
     * `Transition <http://github.com/ppinard/pyxray/blob/master/pyxray/descriptor.py>`_ object
     * a ``tuple`` of source and destination subshells
       (or optionally secondary destination subshells)
     * any notation (case insensitive)
 
-* ``transitionset``: either
+* ``transitionset``: 
+
+    Either
+    
     * `TransitionSet <http://github.com/ppinard/pyxray/blob/master/pyxray/descriptor.py>`_ object
     * a ``tuple`` of transitions
     * any notation (case insensitive)
 
-* ``language``: language code (e.g. ``en``, ``fr``, ``de``)
+* ``language``: 
+    language code (e.g. ``en``, ``fr``, ``de``)
 
-* ``notation``: name of a notation (case insensitive),
+* ``notation``: 
+    name of a notation (case insensitive),
     ``iupac``, ``siegbahn`` and ``orbital`` are usually supported
     
-* ``encoding``: type of encoding, either ``ascii``, ``utf16``, ``html`` or ``latex``
+* ``encoding``: 
+    type of encoding, either ``ascii``, ``utf16``, ``html`` or ``latex``
 
-* ``reference``: reference to use to retrieve this value, either
+* ``reference``: 
+    reference to use to retrieve this value, either
+    
     * `Reference <http://github.com/ppinard/pyxray/blob/master/pyxray/descriptor.py>`_ object
     * BibTeX key of a reference
     * ``None``, the default reference will be used or the first reference found
@@ -145,7 +163,7 @@ a subdivision of atomic shells.
 * ``pyxray.atomic_subshell_notation(atomic_subshell, notation, encoding='utf16', reference=None)``
     Returns notation of an atomic subshell.
     
-    Examples::
+    Examples:
         
     .. code:: python
     
@@ -174,7 +192,7 @@ Coster-Kronig transitions.
 * ``pyxray.transition_notation(transition, notation, encoding='utf16', reference=None)``
     Returns notation of a transition.
     
-    Examples::
+    Examples:
 
     .. code:: python
 
@@ -184,7 +202,7 @@ Coster-Kronig transitions.
 * ``pyxray.transition_energy_eV(element, transition, reference=None)``
     Returns energy of an element and transition (in eV).
     
-    Examples::
+    Examples:
         
     .. code:: python
         
