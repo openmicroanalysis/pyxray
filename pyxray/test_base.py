@@ -14,6 +14,9 @@ from pyxray.base import _Database
 
 class MockDatabase(_Database):
 
+    def element(self, element):
+        pass
+
     def element_atomic_number(self, element):
         pass
 
@@ -32,7 +35,13 @@ class MockDatabase(_Database):
     def element_mass_density_g_per_cm3(self, element, reference=None):
         pass
 
+    def atomic_shell(self, atomic_shell):
+        pass
+
     def atomic_shell_notation(self, atomic_shell, notation, encoding='utf16', reference=None):
+        pass
+
+    def atomic_subshell(self, atomic_subshell):
         pass
 
     def atomic_subshell_notation(self, atomic_subshell, notation, encoding='utf16', reference=None):
@@ -50,6 +59,9 @@ class MockDatabase(_Database):
     def atomic_subshell_occupancy(self, element, atomic_subshell, reference=None):
         pass
 
+    def transition(self, transition):
+        pass
+
     def transition_notation(self, transition, notation, encoding='utf16', reference=None):
         pass
 
@@ -60,6 +72,9 @@ class MockDatabase(_Database):
         pass
 
     def transition_relative_weight(self, element, transition, reference=None):
+        pass
+
+    def transitionset(self, transitionset):
         pass
 
     def transitionset_notation(self, transitionset, notation, encoding='utf16', reference=None):

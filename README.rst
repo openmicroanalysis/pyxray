@@ -114,6 +114,9 @@ Element properties
 Properties associated with an element, defined as the ground state of an atom 
 where the number of protons equal the number of electrons.
 
+* ``pyxray.element(element)``
+    Returns element descriptor.
+
 * ``pyxray.element_atomic_number(element)``
     Returns atomic number of an element.
     
@@ -150,6 +153,9 @@ Atomic shell properties
 Properties associated with an `atomic shell <https://en.wikipedia.org/wiki/Electron_shell>`_, 
 defined by its principal quantum number.
 
+* ``pyxray.atomic_shell(atomic_shell)``
+    Returns atomic shell descriptor.
+
 * ``pyxray.atomic_shell_notation(atomic_shell, notation, encoding='utf16', reference=None)``
     Returns notation of an atomic shell.
 
@@ -158,6 +164,9 @@ Atomic subshell properties
 
 Properties associated with an `atomic subshell <https://en.wikipedia.org/wiki/Electron_shell#Subshells>`_,
 a subdivision of atomic shells.
+
+* ``pyxray.atomic_subshell(atomic_subshell)``
+    Returns atomic subshell descriptor.
 
 * ``pyxray.atomic_subshell_notation(atomic_subshell, notation, encoding='utf16', reference=None)``
     Returns notation of an atomic subshell.
@@ -187,6 +196,9 @@ Transition properties
 Properties associated with an electron transition, relaxation process of an 
 electron between quantum states leading to X-rays emission, Auger electrons or 
 Coster-Kronig transitions.
+
+* ``pyxray.transition(transition)``
+    Returns transition descriptor.
 
 * ``pyxray.transition_notation(transition, notation, encoding='utf16', reference=None)``
     Returns notation of a transition.
@@ -219,6 +231,9 @@ Transition set properties
 
 Properties associated with a transition set, an indistinguishable transition 
 (e.g. Ka from Ka1/Ka2).
+
+* ``pyxray.transitionset(transitionset)``
+    Returns transition set descriptor.
 
 * ``pyxray.transitionset_notation(transitionset, notation, encoding='utf16', reference=None)``
     Returns notation of a transition set.

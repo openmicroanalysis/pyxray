@@ -5,22 +5,27 @@ Current implementation of the database
 __all__ = [
     'set_default_reference',
     'get_default_reference',
+    'element',
     'element_atomic_number',
     'element_symbol',
     'element_name',
     'element_atomic_weight',
     'element_mass_density_kg_per_m3',
     'element_mass_density_g_per_cm3',
+    'atomic_shell',
     'atomic_shell_notation',
+    'atomic_subshell',
     'atomic_subshell_notation',
     'atomic_subshell_binding_energy_eV',
     'atomic_subshell_radiative_width_eV',
     'atomic_subshell_nonradiative_width_eV',
     'atomic_subshell_occupancy',
+    'transition',
     'transition_notation',
     'transition_energy_eV',
     'transition_probability',
     'transition_relative_weight',
+    'transitionset',
     'transitionset_notation',
     'transitionset_energy_eV',
     'transitionset_relative_weight']
@@ -38,6 +43,9 @@ from pyxray.base import _Database, NotFound
 # Globals and constants variables.
 
 class _EmptyDatabase(_Database):
+
+    def element(self, element):
+        raise NotFound
 
     def element_atomic_number(self, element):
         raise NotFound
@@ -57,7 +65,13 @@ class _EmptyDatabase(_Database):
     def element_mass_density_g_per_cm3(self, element, reference=None):
         raise NotFound
 
+    def atomic_shell(self, atomic_shell):
+        raise NotFound
+
     def atomic_shell_notation(self, atomic_shell, notation, encoding='utf16', reference=None):
+        raise NotFound
+
+    def atomic_subshell(self, atomic_subshell):
         raise NotFound
 
     def atomic_subshell_notation(self, atomic_subshell, notation, encoding='utf16', reference=None):
@@ -75,6 +89,9 @@ class _EmptyDatabase(_Database):
     def atomic_subshell_occupancy(self, element, atomic_subshell, reference=None):
         raise NotFound
 
+    def transition(self, transition):
+        raise NotFound
+
     def transition_notation(self, transition, notation, encoding='utf16', reference=None):
         raise NotFound
 
@@ -85,6 +102,9 @@ class _EmptyDatabase(_Database):
         raise NotFound
 
     def transition_relative_weight(self, element, transition, reference=None):
+        raise NotFound
+
+    def transitionset(self, transitionset):
         raise NotFound
 
     def transitionset_notation(self, transitionset, notation, encoding='utf16', reference=None):
@@ -117,22 +137,27 @@ except:
 
 set_default_reference = database.set_default_reference
 get_default_reference = database.get_default_reference
+element = database.element
 element_atomic_number = database.element_atomic_number
 element_symbol = database.element_symbol
 element_name = database.element_name
 element_atomic_weight = database.element_atomic_weight
 element_mass_density_kg_per_m3 = database.element_mass_density_kg_per_m3
 element_mass_density_g_per_cm3 = database.element_mass_density_g_per_cm3
+atomic_shell = database.atomic_shell
 atomic_shell_notation = database.atomic_shell_notation
+atomic_subshell = database.atomic_subshell
 atomic_subshell_notation = database.atomic_subshell_notation
 atomic_subshell_binding_energy_eV = database.atomic_subshell_binding_energy_eV
 atomic_subshell_radiative_width_eV = database.atomic_subshell_radiative_width_eV
 atomic_subshell_nonradiative_width_eV = database.atomic_subshell_nonradiative_width_eV
 atomic_subshell_occupancy = database.atomic_subshell_occupancy
+transition = database.transition
 transition_notation = database.transition_notation
 transition_energy_eV = database.transition_energy_eV
 transition_probability = database.transition_probability
 transition_relative_weight = database.transition_relative_weight
+transitionset = database.transitionset
 transitionset_notation = database.transitionset_notation
 transitionset_energy_eV = database.transitionset_energy_eV
 transitionset_relative_weight = database.transitionset_relative_weight

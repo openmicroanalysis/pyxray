@@ -77,6 +77,16 @@ class SqlEngineDatabaseMixin:
 
         raise NotFound('Unknown element: {0}'.format(element))
 
+    def _get_element(self, conn, element_id):
+        tbl = table.element
+        tbl.create(conn, checkfirst=True)
+        command = sql.select([tbl.c.atomic_number])
+        command = command.where(tbl.c.id == element_id)
+        atomic_number = \
+            self._retrieve_first(conn, command, NotFound('No element found'))
+
+        return Element(atomic_number)
+
     def _get_atomic_shell_id(self, conn, atomic_shell):
         if isinstance(atomic_shell, str):
             tbl = table.atomic_shell_notation
@@ -106,6 +116,16 @@ class SqlEngineDatabaseMixin:
                 return out
 
         raise NotFound('Unknown atomic shell: {0}'.format(atomic_shell))
+
+    def _get_atomic_shell(self, conn, atomic_shell_id):
+        tbl = table.atomic_shell
+        tbl.create(conn, checkfirst=True)
+        command = sql.select([tbl.c.principal_quantum_number])
+        command = command.where(tbl.c.id == atomic_shell_id)
+        principal_quantum_number = \
+            self._retrieve_first(conn, command, NotFound('No atomic shell found'))
+
+        return AtomicShell(principal_quantum_number)
 
     def _get_atomic_subshell_id(self, conn, atomic_subshell):
         if isinstance(atomic_subshell, str):
@@ -150,6 +170,25 @@ class SqlEngineDatabaseMixin:
                 return out
 
         raise NotFound('Unknown atomic subshell: {0}'.format(atomic_subshell))
+
+    def _get_atomic_subshell(self, conn, atomic_subshell_id):
+        tbl = table.atomic_subshell
+        tbl.create(conn, checkfirst=True)
+        command = sql.select([tbl.c.atomic_shell_id,
+                              tbl.c.azimuthal_quantum_number,
+                              tbl.c.total_angular_momentum_nominator])
+        command = command.where(tbl.c.id == atomic_subshell_id)
+        result = conn.execute(command)
+        row = result.first()
+        if row is None:
+            raise NotFound('No atomic subshell found')
+        atomic_shell_id, azimuthal_quantum_number, total_angular_momentum_nominator = row
+
+        atomic_shell = self._get_atomic_shell(conn, atomic_shell_id)
+
+        return AtomicSubshell(atomic_shell,
+                              azimuthal_quantum_number,
+                              total_angular_momentum_nominator)
 
     def _get_transition_id(self, conn, transition):
         if isinstance(transition, str):
@@ -200,6 +239,30 @@ class SqlEngineDatabaseMixin:
 
         raise NotFound('Unknown transition: {0}'.format(transition))
 
+    def _get_transition(self, conn, transition_id):
+        tbl = table.transition
+        tbl.create(conn, checkfirst=True)
+        command = sql.select([tbl.c.source_subshell_id,
+                              tbl.c.destination_subshell_id,
+                              tbl.c.secondary_destination_subshell_id])
+        command = command.where(tbl.c.id == transition_id)
+        result = conn.execute(command)
+        row = result.first()
+        if row is None:
+            raise NotFound('No transition found')
+        source_subshell_id, destination_subshell_id, secondary_destination_subshell_id = row
+
+        source_subshell = self._get_atomic_subshell(conn, source_subshell_id)
+        destination_subshell = self._get_atomic_subshell(conn, destination_subshell_id)
+        if secondary_destination_subshell_id is not None:
+            secondary_destination_subshell = \
+                self._get_atomic_subshell(conn, secondary_destination_subshell_id)
+        else:
+            secondary_destination_subshell = None
+        return Transition(source_subshell,
+                          destination_subshell,
+                          secondary_destination_subshell)
+
     def _get_transitionset_id(self, conn, transitionset):
         if isinstance(transitionset, str):
             tbl = table.transitionset_notation
@@ -241,6 +304,20 @@ class SqlEngineDatabaseMixin:
                 return rows[0]['transitionset_id']
 
         raise NotFound('Unknown transition set: {0}'.format(transitionset))
+
+    def _get_transitionset(self, conn, transitionset_id):
+        tbl = table.transitionset_association
+        tbl.create(conn, checkfirst=True)
+        command = sql.select([tbl.c.transition_id])
+        command = command.where(tbl.c.transitionset_id == transitionset_id)
+        result = conn.execute(command)
+        rows = result.fetchall()
+        if not rows:
+            raise NotFound('No transition set found')
+
+        transitions = [self._get_transition(conn, row[0]) for row in rows]
+
+        return TransitionSet(transitions)
 
     def _get_language_id(self, conn, language):
         if isinstance(language, Language):

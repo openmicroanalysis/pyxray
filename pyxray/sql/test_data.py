@@ -43,6 +43,9 @@ class TestSqlEngineDatabase(unittest.TestCase):
     def tearDown(self):
         unittest.TestCase.tearDown(self)
 
+    def testelement(self):
+        self.assertEqual(descriptor.Element(118), self.db.element('Vi'))
+
     def testelement_atomic_number(self):
         self.assertEqual(118, self.db.element_atomic_number('Vi'))
 
@@ -65,6 +68,14 @@ class TestSqlEngineDatabase(unittest.TestCase):
 
     def testelement_mass_density_g_per_cm3(self):
         self.assertAlmostEqual(0.9992, self.db.element_mass_density_g_per_cm3(118), 4)
+
+    def testatomic_shell(self):
+        expected = descriptor.AtomicShell(1)
+        self.assertEqual(expected, self.db.atomic_shell('a'))
+
+    def testatomic_subshell(self):
+        expected = descriptor.AtomicSubshell(1, 0, 1)
+        self.assertEqual(expected, self.db.atomic_subshell('a'))
 
     def testatomic_shell_notation(self):
         self.assertEqual('a', self.db.atomic_shell_notation(1, 'mock', 'ascii'))
@@ -95,6 +106,12 @@ class TestSqlEngineDatabase(unittest.TestCase):
         ashell = descriptor.AtomicSubshell(1, 0, 1)
         self.assertEqual(1, self.db.atomic_subshell_occupancy(118, ashell))
 
+    def testtransition(self):
+        K = descriptor.AtomicSubshell(1, 0, 1)
+        L3 = descriptor.AtomicSubshell(2, 1, 3)
+        expected = descriptor.Transition(L3, K)
+        self.assertEqual(expected, self.db.transition('a'))
+
     def testtransition_notation(self):
         K = descriptor.AtomicSubshell(1, 0, 1)
         L3 = descriptor.AtomicSubshell(2, 1, 3)
@@ -121,6 +138,15 @@ class TestSqlEngineDatabase(unittest.TestCase):
         L3 = descriptor.AtomicSubshell(2, 1, 3)
         transition = descriptor.Transition(L3, K)
         self.assertAlmostEqual(0.002, self.db.transition_relative_weight(118, transition), 4)
+
+    def testtransitionset(self):
+        K = descriptor.AtomicSubshell(1, 0, 1)
+        L3 = descriptor.AtomicSubshell(2, 1, 3)
+        L2 = descriptor.AtomicSubshell(2, 1, 1)
+        transition = descriptor.Transition(L3, K)
+        transition2 = descriptor.Transition(L2, K, L3)
+        expected = descriptor.TransitionSet([transition, transition2])
+        self.assertEqual(expected, self.db.transitionset('a'))
 
     def testtransitionset_notation(self):
         K = descriptor.AtomicSubshell(1, 0, 1)

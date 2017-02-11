@@ -98,6 +98,20 @@ class _Database(object, metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     @formatdoc(**_docextras)
+    def element(self, element):
+        """
+        Returns element descriptor.
+
+        {element}
+        
+        :return: element descriptor
+        :rtype: :class:`Element`
+        {exception}
+        """
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    @formatdoc(**_docextras)
     def element_atomic_number(self, element):
         """
         Returns atomic number of an element.
@@ -189,6 +203,20 @@ class _Database(object, metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     @formatdoc(**_docextras)
+    def atomic_shell(self, atomic_shell):
+        """
+        Returns atomic shell descriptor.
+        
+        {atomic_shell}
+        
+        :return: atomic shell descriptor
+        :rtype: :class:`AtomicShell`
+        {exception}
+        """
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    @formatdoc(**_docextras)
     def atomic_shell_notation(self, atomic_shell, notation, encoding='utf16', reference=None):
         """
         Returns notation of an atomic shell.
@@ -200,6 +228,20 @@ class _Database(object, metaclass=abc.ABCMeta):
         
         :return: notation
         :rtype: :class:`str`
+        {exception}
+        """
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    @formatdoc(**_docextras)
+    def atomic_subshell(self, atomic_subshell):
+        """
+        Returns atomic subshell descriptor.
+        
+        {atomic_subshell}
+        
+        :return: atomic subshell descriptor
+        :rtype: :class:`AtomicSubshell`
         {exception}
         """
         raise NotImplementedError
@@ -287,6 +329,20 @@ class _Database(object, metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     @formatdoc(**_docextras)
+    def transition(self, transition):
+        """
+        Returns transition descriptor.
+        
+        {transition}
+        
+        :return: transition descriptor
+        :rtype: :class:`Transition`
+        {exception}
+        """
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    @formatdoc(**_docextras)
     def transition_notation(self, transition, notation, encoding='utf16', reference=None):
         """
         Returns notation of a transition.
@@ -346,6 +402,20 @@ class _Database(object, metaclass=abc.ABCMeta):
         
         :return: relative weight
         :rtype: :class:`float`
+        {exception}
+        """
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    @formatdoc(**_docextras)
+    def transitionset(self, transitionset):
+        """
+        Returns transition set descriptor.
+        
+        {transitionset}
+        
+        :return: transition set descriptor
+        :rtype: :class:`TransitionSet`
         {exception}
         """
         raise NotImplementedError

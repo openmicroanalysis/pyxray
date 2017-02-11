@@ -28,6 +28,10 @@ class SqlEngineDatabase(_Database, SqlEngineDatabaseMixin):
             command = command.order_by(table.c.reference_id)
         return command
 
+    def element(self, element):
+        element_id = self._get_element_id(self.engine, element)
+        return self._get_element(self.engine, element_id)
+
     def element_atomic_number(self, element):
         element_id = self._get_element_id(self.engine, element)
 
@@ -96,6 +100,10 @@ class SqlEngineDatabase(_Database, SqlEngineDatabaseMixin):
         return self._retrieve_first(self.engine, command,
                                     NotFound('No mass density found'))
 
+    def atomic_shell(self, atomic_shell):
+        atomic_shell_id = self._get_atomic_shell_id(self.engine, atomic_shell)
+        return self._get_atomic_shell(self.engine, atomic_shell_id)
+
     def atomic_shell_notation(self, atomic_shell, notation,
                               encoding='utf16', reference=None):
         if not reference:
@@ -112,6 +120,10 @@ class SqlEngineDatabase(_Database, SqlEngineDatabaseMixin):
         command = self._append_command_reference(command, tbl, reference)
         return self._retrieve_first(self.engine, command,
                                     NotFound('No atomic shell notation found'))
+
+    def atomic_subshell(self, atomic_subshell):
+        atomic_subshell_id = self._get_atomic_subshell_id(self.engine, atomic_subshell)
+        return self._get_atomic_subshell(self.engine, atomic_subshell_id)
 
     def atomic_subshell_notation(self, atomic_subshell, notation,
                                  encoding='utf16', reference=None):
@@ -194,6 +206,10 @@ class SqlEngineDatabase(_Database, SqlEngineDatabaseMixin):
         return self._retrieve_first(self.engine, command,
                                     NotFound('No atomic subshell occupancy found'))
 
+    def transition(self, transition):
+        transition_id = self._get_transition_id(self.engine, transition)
+        return self._get_transition(self.engine, transition_id)
+
     def transition_notation(self, transition, notation,
                             encoding='utf16', reference=None):
         if not reference:
@@ -258,6 +274,10 @@ class SqlEngineDatabase(_Database, SqlEngineDatabaseMixin):
         command = self._append_command_reference(command, tbl, reference)
         return self._retrieve_first(self.engine, command,
                                     NotFound('No transition relative weight found'))
+
+    def transitionset(self, transitionset):
+        transitionset_id = self._get_transitionset_id(self.engine, transitionset)
+        return self._get_transitionset(self.engine, transitionset_id)
 
     def transitionset_notation(self, transitionset, notation,
                             encoding='utf16', reference=None):
