@@ -12,6 +12,7 @@ __all__ = [
     'element_atomic_weight',
     'element_mass_density_kg_per_m3',
     'element_mass_density_g_per_cm3',
+    'element_transitions',
     'atomic_shell',
     'atomic_shell_notation',
     'atomic_subshell',
@@ -63,6 +64,9 @@ class _EmptyDatabase(_Database):
         raise NotFound
 
     def element_mass_density_g_per_cm3(self, element, reference=None):
+        raise NotFound
+
+    def element_transitions(self, element, reference=None):
         raise NotFound
 
     def atomic_shell(self, atomic_shell):
@@ -144,6 +148,7 @@ element_name = database.element_name
 element_atomic_weight = database.element_atomic_weight
 element_mass_density_kg_per_m3 = database.element_mass_density_kg_per_m3
 element_mass_density_g_per_cm3 = database.element_mass_density_g_per_cm3
+element_transitions = database.element_transitions
 atomic_shell = database.atomic_shell
 atomic_shell_notation = database.atomic_shell_notation
 atomic_subshell = database.atomic_subshell

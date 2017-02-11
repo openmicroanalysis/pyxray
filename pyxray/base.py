@@ -203,6 +203,21 @@ class _Database(object, metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     @formatdoc(**_docextras)
+    def element_transitions(self, element, reference=None):
+        """
+        Returns all transitions which have a probability greater than 0 for an element.
+
+        {element}
+        {reference}
+        
+        :return: transitions
+        :rtype: :class:`tuple` of :class:`Transition`
+        {exception}
+        """
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    @formatdoc(**_docextras)
     def atomic_shell(self, atomic_shell):
         """
         Returns atomic shell descriptor.

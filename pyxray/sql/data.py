@@ -100,6 +100,25 @@ class SqlEngineDatabase(_Database, SqlEngineDatabaseMixin):
         return self._retrieve_first(self.engine, command,
                                     NotFound('No mass density found'))
 
+    def element_transitions(self, element, reference=None):
+        if not reference:
+            reference = self.get_default_reference('transition_probability')
+
+        element_id = self._get_element_id(self.engine, element)
+
+        tbl = table.transition_probability
+        tbl.create(self.engine, checkfirst=True)
+        command = sql.select([tbl.c.transition_id])
+        command = command.where(tbl.c.element_id == element_id)
+        command = command.where(tbl.c.value > 0.0)
+        command = self._append_command_reference(command, tbl, reference)
+        result = self.engine.execute(command)
+        rows = result.fetchall()
+        if not rows:
+            raise NotFound('No transition found')
+
+        return tuple(self._get_transition(self.engine, row[0]) for row in rows)
+
     def atomic_shell(self, atomic_shell):
         atomic_shell_id = self._get_atomic_shell_id(self.engine, atomic_shell)
         return self._get_atomic_shell(self.engine, atomic_shell_id)

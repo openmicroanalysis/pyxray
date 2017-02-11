@@ -69,6 +69,15 @@ class TestSqlEngineDatabase(unittest.TestCase):
     def testelement_mass_density_g_per_cm3(self):
         self.assertAlmostEqual(0.9992, self.db.element_mass_density_g_per_cm3(118), 4)
 
+    def testelement_transitions(self):
+        transitions = self.db.element_transitions(118)
+        self.assertEqual(1, len(transitions))
+
+        K = descriptor.AtomicSubshell(1, 0, 1)
+        L3 = descriptor.AtomicSubshell(2, 1, 3)
+        expected = descriptor.Transition(L3, K)
+        self.assertEqual(expected, transitions[0])
+
     def testatomic_shell(self):
         expected = descriptor.AtomicShell(1)
         self.assertEqual(expected, self.db.atomic_shell('a'))

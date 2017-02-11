@@ -35,6 +35,9 @@ class MockDatabase(_Database):
     def element_mass_density_g_per_cm3(self, element, reference=None):
         pass
 
+    def element_transitions(self, element, reference=None):
+        pass
+
     def atomic_shell(self, atomic_shell):
         pass
 

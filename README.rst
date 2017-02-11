@@ -146,6 +146,9 @@ where the number of protons equal the number of electrons.
 
 * ``pyxray.element_mass_density_g_per_cm3(element, reference=None)``
     Returns mass density (in g/cm3) of an element.
+    
+* ``pyxray.element_transitions(element, reference=None)``
+    Returns all transitions which have a probability greater than 0 for an element.
 
 Atomic shell properties
 -----------------------
