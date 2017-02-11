@@ -11,9 +11,11 @@ logger = logging.getLogger(__name__)
 # Local modules.
 from pyxray.parser.parser import _Parser
 from pyxray.descriptor import \
-    Reference, Element, AtomicShell, Notation, AtomicSubshell, Transition
+    (Reference, Element, AtomicShell, Notation, AtomicSubshell, Transition,
+     TransitionSet)
 from pyxray.property import \
-    ElementSymbol, AtomicShellNotation, AtomicSubshellNotation, TransitionNotation
+    (ElementSymbol, AtomicShellNotation, AtomicSubshellNotation,
+     TransitionNotation, TransitionSetNotation)
 
 # Globals and constants variables.
 
@@ -33,6 +35,31 @@ def iter_subshells(max_n):
                 yield n, l, j_n, i
                 i += 1
                 nprev = n
+
+def iter_transitions(max_n):
+    for src_n, src_l, src_j_n, src_i in iter_subshells(max_n):
+        src = AtomicSubshell(src_n, src_l, src_j_n)
+
+        for dst_n, dst_l, dst_j_n, dst_i in iter_subshells(MAX_N):
+            # Cannot transition to itself
+            if src_n == dst_n and src_l == dst_l and src_j_n == dst_j_n:
+                continue
+
+            # Transition must be from more to less energytic shell or
+            # within the same shell
+            if src_n < dst_n:
+                continue
+
+            # Coster-Kroning transition must be from more to less energetic subshells
+            if src_n == dst_n and src_i <= dst_i:
+                continue
+
+            dest = AtomicSubshell(dst_n, dst_l, dst_j_n)
+            yield Transition(src, dest), src_i, dst_i
+
+NOTATION_SIEGBAHN = Notation('siegbahn')
+NOTATION_IUPAC = Notation('iupac')
+NOTATION_ORBITAL = Notation('orbital')
 
 class ElementSymbolPropertyParser(_Parser):
 
@@ -64,34 +91,67 @@ class ElementSymbolPropertyParser(_Parser):
 
 class AtomicShellNotationParser(_Parser):
 
-    NOTATIONS = {'siegbahn': ['K', 'L', 'M', 'N', 'O', 'P', 'Q'],
-                 'iupac': ['K', 'L', 'M', 'N', 'O', 'P', 'Q'],
-                 'orbital': ['1', '2', '3', '4', '5', '6', '7']}
+    SIEGBAHN_SHELLS = ['K', 'L', 'M', 'N', 'O', 'P', 'Q']
+    IUPAC_SHELLS = ['K', 'L', 'M', 'N', 'O', 'P', 'Q']
+    ORBITAL_SHELLS = ['1', '2', '3', '4', '5', '6', '7']
+
+    @classmethod
+    def _create_entry_siegbahn(cls, n):
+        s = cls.SIEGBAHN_SHELLS[n - 1]
+        return s, s, s, s
+
+    @classmethod
+    def _create_entry_iupac(cls, n):
+        s = cls.IUPAC_SHELLS[n - 1]
+        return s, s, s, s
+
+    @classmethod
+    def _create_entry_orbital(cls, n):
+        s = cls.ORBITAL_SHELLS[n - 1]
+        return s, s, s, s
 
     def __iter__(self):
-        length = len(self.NOTATIONS) * MAX_N
+        length = MAX_N * 3
         progress = 0
-        for notation_name, values in self.NOTATIONS.items():
-            notation = Notation(notation_name)
-            for n, value in enumerate(values, 1):
-                atomic_shell = AtomicShell(n)
-                prop = AtomicShellNotation(UNATTRIBUTED, atomic_shell, notation,
-                                           value, value, value, value)
-                logger.debug('Parsed: {0}'.format(prop))
-                self.update(int(progress / length * 100.0))
-                progress += 1
-                yield prop
+        for n in range(1, MAX_N + 1):
+            self.update(int(progress / length * 100.0))
+            progress += 1
+
+            atomic_shell = AtomicShell(n)
+
+            ascii, utf16, html, latex = self._create_entry_siegbahn(n)
+            prop = AtomicShellNotation(UNATTRIBUTED,
+                                       atomic_shell,
+                                       NOTATION_SIEGBAHN,
+                                       ascii, utf16, html, latex)
+            logger.debug('Parsed: {0}'.format(prop))
+            yield prop
+
+            ascii, utf16, html, latex = self._create_entry_iupac(n)
+            prop = AtomicShellNotation(UNATTRIBUTED,
+                                       atomic_shell,
+                                       NOTATION_IUPAC,
+                                       ascii, utf16, html, latex)
+            logger.debug('Parsed: {0}'.format(prop))
+            yield prop
+
+            ascii, utf16, html, latex = self._create_entry_orbital(n)
+            prop = AtomicShellNotation(UNATTRIBUTED,
+                                       atomic_shell,
+                                       NOTATION_ORBITAL,
+                                       ascii, utf16, html, latex)
+            logger.debug('Parsed: {0}'.format(prop))
+            yield prop
 
 class AtomicSubshellNotationParser(_Parser):
 
-    SHELLS = AtomicShellNotationParser.NOTATIONS
     SIEGBAHN_NUMBERS = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII',
                         'IX', 'X', 'XI', 'XII', 'XIII']
     ORBITAL_L = ['s', 'p', 'd', 'f', 'g', 'h', 'i']
 
     @classmethod
     def _create_entry_siegbahn(cls, n, l, j_n, i):
-        shell = cls.SHELLS['siegbahn'][n - 1]
+        shell = AtomicShellNotationParser.SIEGBAHN_SHELLS[n - 1]
         s = shell
         if n != 1: # No KI
             s += cls.SIEGBAHN_NUMBERS[i - 1]
@@ -99,7 +159,7 @@ class AtomicSubshellNotationParser(_Parser):
 
     @classmethod
     def _create_entry_iupac(cls, n, l, j_n, i):
-        shell = cls.SHELLS['iupac'][n - 1]
+        shell = AtomicShellNotationParser.IUPAC_SHELLS[n - 1]
         s = html = latex = shell
         if n != 1: # No K1
             s += str(i)
@@ -125,7 +185,7 @@ class AtomicSubshellNotationParser(_Parser):
                 self._create_entry_siegbahn(n, l, j_n, i)
             prop = AtomicSubshellNotation(UNATTRIBUTED,
                                           atomic_subshell,
-                                          Notation('siegbahn'),
+                                          NOTATION_SIEGBAHN,
                                           ascii, utf16, html, latex)
             logger.debug('Parsed: {0}'.format(prop))
             yield prop
@@ -134,7 +194,7 @@ class AtomicSubshellNotationParser(_Parser):
                 self._create_entry_iupac(n, l, j_n, i)
             prop = AtomicSubshellNotation(UNATTRIBUTED,
                                           atomic_subshell,
-                                          Notation('iupac'),
+                                          NOTATION_IUPAC,
                                           ascii, utf16, html, latex)
             logger.debug('Parsed: {0}'.format(prop))
             yield prop
@@ -143,7 +203,7 @@ class AtomicSubshellNotationParser(_Parser):
                 self._create_entry_orbital(n, l, j_n, i)
             prop = AtomicSubshellNotation(UNATTRIBUTED,
                                           atomic_subshell,
-                                          Notation('orbital'),
+                                          NOTATION_ORBITAL,
                                           ascii, utf16, html, latex)
             logger.debug('Parsed: {0}'.format(prop))
             yield prop
@@ -153,43 +213,91 @@ class TransitionNotationParser(_Parser):
     def __iter__(self):
         length = (MAX_N * MAX_N) ** 2
         progress = 0
-        for n0, l0, j0_n, i0 in iter_subshells(MAX_N):
-            src = AtomicSubshell(n0, l0, j0_n)
+        for transition, src_i, dst_i in iter_transitions(MAX_N):
+            progress += 1
+            self.update(int(progress / length * 100.0))
+
+            src = transition.source_subshell
+            dst = transition.destination_subshell
+
             ascii0, utf0, html0, latex0 = \
-                AtomicSubshellNotationParser._create_entry_iupac(n0, l0, j0_n, i0)
+                AtomicSubshellNotationParser._create_entry_iupac(src.n, src.l, src.j_n, src_i)
+            ascii1, utf1, html1, latex1 = \
+                AtomicSubshellNotationParser._create_entry_iupac(dst.n, dst.l, dst.j_n, dst_i)
 
-            for n1, l1, j1_n, i1 in iter_subshells(MAX_N):
-                progress += 1
-                self.update(int(progress / length * 100.0))
+            ascii = '{0}-{1}'.format(ascii1, ascii0)
+            utf = '{0}\u2013{1}'.format(utf1, utf0)
+            html = '{0}&ndash;{1}'.format(html1, html0)
+            latex = '{0}--{1}'.format(latex1, latex0)
 
-                # Cannot transition to itself
-                if n0 == n1 and l0 == l1 and j0_n == j1_n:
-                    continue
+            prop = TransitionNotation(UNATTRIBUTED,
+                                      transition,
+                                      NOTATION_IUPAC,
+                                      ascii, utf, html, latex)
+            logger.debug('Parsed: {0}'.format(prop))
+            yield prop
 
-                # Transition must be from more to less energytic shell or
-                # within the same shell
-                if n0 < n1:
-                    continue
+class TransitionSetFamilySeriesNotationParser(_Parser):
 
-                # Coster-Kroning transition must be from more to less energetic subshells
-                if n0 == n1 and i0 <= i1:
-                    continue
+    def __iter__(self):
+        series = {}
+        families = {}
 
-                dest = AtomicSubshell(n1, l1, j1_n)
-                transition = Transition(src, dest)
+        for transition, _src_i, dst_i in iter_transitions(MAX_N):
+            dst = transition.destination_subshell
 
-                ascii1, utf1, html1, latex1 = \
-                    AtomicSubshellNotationParser._create_entry_iupac(n1, l1, j1_n, i1)
+            series.setdefault(dst.atomic_shell, set()).add(transition)
+            families.setdefault((dst, dst_i), set()).add(transition)
 
-                ascii = '{0}-{1}'.format(ascii1, ascii0)
-                utf = '{0}\u2013{1}'.format(utf1, utf0)
-                html = '{0}&ndash;{1}'.format(html1, html0)
-                latex = '{0}--{1}'.format(latex1, latex0)
+        # Create series notation
+        for atomic_shell, transitions in series.items():
+            transitionset = TransitionSet(transitions)
 
-                prop = TransitionNotation(UNATTRIBUTED,
-                                          transition,
-                                          Notation('iupac'),
-                                          ascii, utf, html, latex)
-                logger.debug('Parsed: {0}'.format(prop))
-                yield prop
+            n = atomic_shell.n
 
+            ascii, utf16, html, latex = \
+                AtomicShellNotationParser._create_entry_siegbahn(n)
+            prop = TransitionSetNotation(UNATTRIBUTED,
+                                         transitionset,
+                                         NOTATION_SIEGBAHN,
+                                         ascii, utf16, html, latex)
+            logger.debug('Parsed: {0}'.format(prop))
+            yield prop
+
+            ascii, utf16, html, latex = \
+                AtomicShellNotationParser._create_entry_iupac(n)
+            prop = TransitionSetNotation(UNATTRIBUTED,
+                                         transitionset,
+                                         NOTATION_IUPAC,
+                                         ascii, utf16, html, latex)
+            logger.debug('Parsed: {0}'.format(prop))
+            yield prop
+
+        # Create family notations
+        for (atomic_subshell, i), transitions in families.items():
+            if i == 0: # Skip K, already a series
+                continue
+
+            transitionset = TransitionSet(transitions)
+
+            n = atomic_subshell.n
+            l = atomic_subshell.l
+            j_n = atomic_subshell.j_n
+
+            ascii, utf16, html, latex = \
+                AtomicSubshellNotationParser._create_entry_siegbahn(n, l, j_n, i)
+            prop = TransitionSetNotation(UNATTRIBUTED,
+                                         transitionset,
+                                         NOTATION_SIEGBAHN,
+                                         ascii, utf16, html, latex)
+            logger.debug('Parsed: {0}'.format(prop))
+            yield prop
+
+            ascii, utf16, html, latex = \
+                AtomicSubshellNotationParser._create_entry_iupac(n, l, j_n, i)
+            prop = TransitionSetNotation(UNATTRIBUTED,
+                                         transitionset,
+                                         NOTATION_IUPAC,
+                                         ascii, utf16, html, latex)
+            logger.debug('Parsed: {0}'.format(prop))
+            yield prop
