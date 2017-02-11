@@ -21,7 +21,10 @@ class build_py(_build_py.build_py):
         builder = pyxray.sql.build.SqliteDatabaseBuilder()
         builder.build()
 
-        del self.data_files # Force reinitialization of files to copy
+        try:
+            del self.data_files # Force reinitialization of files to copy
+        except AttributeError:
+            pass
 
         super().run()
 
