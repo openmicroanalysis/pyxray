@@ -237,7 +237,7 @@ class TransitionNotationParser(_Parser):
             logger.debug('Parsed: {0}'.format(prop))
             yield prop
 
-class TransitionSetFamilySeriesNotationParser(_Parser):
+class FamilySeriesTransitionSetNotationParser(_Parser):
 
     def __iter__(self):
         series = {}
