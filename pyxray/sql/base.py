@@ -3,7 +3,6 @@ Base SQL engine
 """
 
 # Standard library modules.
-from operator import itemgetter
 import collections
 
 # Third party modules.
@@ -13,7 +12,6 @@ import sqlalchemy.sql as sql
 from pyxray.descriptor import \
     (Element, Language, Reference, Notation, AtomicShell, AtomicSubshell,
      Transition, TransitionSet)
-import pyxray.cbook as cbook
 import pyxray.sql.table as table
 from pyxray.base import NotFound
 
@@ -291,17 +289,20 @@ class SqlEngineDatabaseMixin:
             table.transitionset_association.create(conn, checkfirst=True)
 
             tbl = table.transitionset_association
-            conditions = []
-            for transition_id in transition_ids:
-                conditions.append(tbl.c.transition_id == transition_id)
-
-            command = sql.select([table.transitionset_association])
-            command = command.where(sql.or_(*conditions))
-
+            command = sql.select([tbl.c.transitionset_id])
+            command = command.where(tbl.c.transition_id.in_(transition_ids))
+            command = command.distinct()
             result = conn.execute(command)
-            rows = result.fetchall()
-            if rows and cbook.allequal(map(itemgetter(0), rows)):
-                return rows[0]['transitionset_id']
+
+            for row in result:
+                command = sql.select([tbl.c.transitionset_id])
+                command = command.where(tbl.c.transitionset_id == row[0])
+                command = command.group_by(tbl.c.transitionset_id)
+                command = command.having(sql.func.count(tbl.c.transition_id) == len(transition_ids))
+
+                result = conn.execute(command)
+                if result.fetchone():
+                    return row[0]
 
         raise NotFound('Unknown transition set: {0}'.format(transitionset))
 

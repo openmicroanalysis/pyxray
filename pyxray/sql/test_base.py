@@ -120,6 +120,14 @@ class TestSqlEngineDatabase(unittest.TestCase):
         self.assertEqual(1, self.mock._get_transitionset_id(self.engine, [(L3, K), (L2, K, L3)]))
         self.assertEqual(1, self.mock._get_transitionset_id(self.engine, transitionset))
 
+    def test_get_transitionset_id_exception(self):
+        K = descriptor.AtomicSubshell(1, 0, 1)
+        L3 = descriptor.AtomicSubshell(2, 1, 3)
+        transition = descriptor.Transition(L3, K)
+        transitionset = descriptor.TransitionSet([transition])
+
+        self.assertRaises(NotFound, self.mock._get_transitionset_id, self.engine, transitionset)
+
     def test_get_notation_id(self):
         self.assertEqual(1, self.mock._get_notation_id(self.engine, 'mock'))
 

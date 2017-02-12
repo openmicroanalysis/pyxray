@@ -185,19 +185,6 @@ class ProgressReportMixin(ProgressMixin):
         for hook in getattr(self, '_reporthooks', []):
             hook(progress)
 
-def allequal(iterator):
-    """
-    Returns ``True`` if all elements are equal.
-    
-    From: http://stackoverflow.com/questions/3844801/check-if-all-elements-in-a-list-are-identical
-    """
-    try:
-        iterator = iter(iterator)
-        first = next(iterator)
-        return all(first == rest for rest in iterator)
-    except StopIteration:
-        return True
-
 def formatdoc(*formatargs, **formatkwargs):
     def decorate(func):
         func.__doc__ = func.__doc__.format(*formatargs, **formatkwargs)
