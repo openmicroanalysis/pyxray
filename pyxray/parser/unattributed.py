@@ -301,3 +301,88 @@ class FamilySeriesTransitionSetNotationParser(_Parser):
                                          ascii, utf16, html, latex)
             logger.debug('Parsed: {0}'.format(prop))
             yield prop
+
+class CommonTransitionSetNotationParser(_Parser):
+
+    def __iter__(self):
+        K = AtomicSubshell(1, 0, 1)
+        L2 = AtomicSubshell(2, 1, 1)
+        L3 = AtomicSubshell(2, 1, 3)
+        M2 = AtomicSubshell(3, 1, 1)
+        M3 = AtomicSubshell(3, 1, 3)
+        M4 = AtomicSubshell(3, 2, 3)
+        M5 = AtomicSubshell(3, 2, 5)
+        N2 = AtomicSubshell(4, 1, 1)
+        N3 = AtomicSubshell(4, 1, 3)
+        N6 = AtomicSubshell(4, 3, 5)
+        N7 = AtomicSubshell(4, 3, 7)
+
+        KA1 = Transition(L3, K)
+        KA2 = Transition(L2, K)
+        KA = TransitionSet([KA1, KA2])
+        yield TransitionSetNotation(UNATTRIBUTED, KA, NOTATION_SIEGBAHN,
+                                    'Ka',
+                                    'K\u03b1',
+                                    'K&alpha;',
+                                    '\\ensuremath{\\mathrm{K}\\alpha}')
+        yield TransitionSetNotation(UNATTRIBUTED, KA, NOTATION_IUPAC,
+                                    'K-L(2,3)',
+                                    'K\u2013L(2,3)',
+                                    'K&ndash;L<sub>2,3</sub>',
+                                    '\\ensuremath{\\mathrm{K}}--\\ensuremath{\\mathrm{L}}_{2,3}')
+
+        KB1 = Transition(M3, K)
+        KB3 = Transition(M2, K)
+        KB5_1 = Transition(M5, K)
+        KB5_2 = Transition(M4, K)
+        KB = TransitionSet([KB1, KB3, KB5_1, KB5_2])
+        yield TransitionSetNotation(UNATTRIBUTED, KB, NOTATION_SIEGBAHN,
+                                    'Kb',
+                                    'K\u03b2',
+                                    'K&beta;',
+                                    '\\ensuremath{\\mathrm{K}\\beta}')
+        yield TransitionSetNotation(UNATTRIBUTED, KB, NOTATION_IUPAC,
+                                    'K-M(2-5)',
+                                    'K\u2013M(2-5)',
+                                    'K&ndash;M<sub>2-5</sub>',
+                                    '\\ensuremath{\\mathrm{K}}--\\ensuremath{\\mathrm{M}}_{2-5}')
+
+        LA1 = Transition(M5, L3)
+        LA2 = Transition(M4, L3)
+        LA = TransitionSet([LA1, LA2])
+        yield TransitionSetNotation(UNATTRIBUTED, LA, NOTATION_SIEGBAHN,
+                                    'La',
+                                    'L\u03b1',
+                                    'L&alpha;',
+                                    '\\ensuremath{\\mathrm{L}\\alpha}')
+        yield TransitionSetNotation(UNATTRIBUTED, LA, NOTATION_IUPAC,
+                                    'L3-M(4,5)',
+                                    'L3\u2013M(4,5)',
+                                    'L<sub>3</sub>&ndash;M<sub>4,5</sub>',
+                                    '\\ensuremath{\\mathrm{L}}_{3}--\\ensuremath{\\mathrm{M}}_{4,5}')
+
+        MA1 = Transition(N7, M5)
+        MA2 = Transition(N6, M5)
+        MA = TransitionSet([MA1, MA2])
+        yield TransitionSetNotation(UNATTRIBUTED, MA, NOTATION_SIEGBAHN,
+                                    'Ma',
+                                    'M\u03b1',
+                                    'M&alpha;',
+                                    '\\ensuremath{\\mathrm{M}\\alpha}')
+        yield TransitionSetNotation(UNATTRIBUTED, MA, NOTATION_IUPAC,
+                                    'M5-N(6,7)',
+                                    'M5\u2013N(6,7)',
+                                    'M<sub>5</sub>&ndash;N<sub>6,7</sub>',
+                                    '\\ensuremath{\\mathrm{M}}_{5}--\\ensuremath{\\mathrm{N}}_{6,7}')
+
+        MZ = TransitionSet([(N2, M4), (N3, M5)])
+        yield TransitionSetNotation(UNATTRIBUTED, MZ, NOTATION_SIEGBAHN,
+                                    'Mz',
+                                    'M\u03b6',
+                                    'M&zeta;',
+                                    '\\ensuremath{\\mathrm{M}\\zeta}')
+        yield TransitionSetNotation(UNATTRIBUTED, MZ, NOTATION_IUPAC,
+                                    'M(4,5)-N(2,3)',
+                                    'M(4,5)\u2013N(2,3)',
+                                    'M<sub>4,5</sub>&ndash;N<sub>2,3</sub>',
+                                    '\\ensuremath{\\mathrm{M}}_{4,5}--\\ensuremath{\\mathrm{N}}_{2,3}')

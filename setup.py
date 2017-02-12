@@ -45,6 +45,7 @@ ENTRY_POINTS = {
         'unattributed atomic subshell notation = pyxray.parser.unattributed:AtomicSubshellNotationParser',
         'unattributed transition notation = pyxray.parser.unattributed:TransitionNotationParser',
         'unattributed family series transitionset notation = pyxray.parser.unattributed:FamilySeriesTransitionSetNotationParser',
+        'unattributed common transitionset notation = pyxray.parser.unattributed:CommonTransitionSetNotationParser',
         'wikipedia element name = pyxray.parser.wikipedia:WikipediaElementNameParser',
         'sargent-welch element atomic weight = pyxray.parser.sargent_welch:SargentWelchElementAtomicWeightParser',
         'sargent-welch element mass density = pyxray.parser.sargent_welch:SargentWelchElementMassDensityParser',
