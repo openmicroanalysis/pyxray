@@ -153,12 +153,14 @@ class Transition(metaclass=_Descriptor,
             delta_j_n = abs(j1_n - j0_n)
             if delta_j_n > 4:
                 return False
+            if j0_n == 1 and j1_n == 1:
+                return False
             assert delta_j_n == 0 or delta_j_n == 2 or delta_j_n == 4
 
             delta_l = abs(l1 - l0)
             return delta_l == 0 or delta_l == 2
 
-        if self.secondary_destination_subshell is None:
+        if self.secondary_destination_subshell is not None:
             return False
 
         n0 = self.source_subshell.n
