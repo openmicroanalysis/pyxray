@@ -9,6 +9,7 @@ import sqlalchemy.sql as sql
 
 # Local modules.
 from pyxray.base import _Database
+import pyxray.descriptor as descriptor
 import pyxray.sql.table as table
 from pyxray.sql.base import SqlEngineDatabaseMixin, NotFound
 
@@ -29,6 +30,8 @@ class SqlEngineDatabase(_Database, SqlEngineDatabaseMixin):
         return command
 
     def element(self, element):
+        if isinstance(element, descriptor.Element):
+            return element
         element_id = self._get_element_id(self.engine, element)
         return self._get_element(self.engine, element_id)
 
@@ -120,6 +123,8 @@ class SqlEngineDatabase(_Database, SqlEngineDatabaseMixin):
         return tuple(self._get_transition(self.engine, row[0]) for row in rows)
 
     def atomic_shell(self, atomic_shell):
+        if isinstance(atomic_shell, descriptor.AtomicShell):
+            return atomic_shell
         atomic_shell_id = self._get_atomic_shell_id(self.engine, atomic_shell)
         return self._get_atomic_shell(self.engine, atomic_shell_id)
 
@@ -141,6 +146,8 @@ class SqlEngineDatabase(_Database, SqlEngineDatabaseMixin):
                                     NotFound('No atomic shell notation found'))
 
     def atomic_subshell(self, atomic_subshell):
+        if isinstance(atomic_subshell, descriptor.AtomicSubshell):
+            return atomic_subshell
         atomic_subshell_id = self._get_atomic_subshell_id(self.engine, atomic_subshell)
         return self._get_atomic_subshell(self.engine, atomic_subshell_id)
 
@@ -226,6 +233,8 @@ class SqlEngineDatabase(_Database, SqlEngineDatabaseMixin):
                                     NotFound('No atomic subshell occupancy found'))
 
     def transition(self, transition):
+        if isinstance(transition, descriptor.Transition):
+            return transition
         transition_id = self._get_transition_id(self.engine, transition)
         return self._get_transition(self.engine, transition_id)
 
@@ -295,6 +304,8 @@ class SqlEngineDatabase(_Database, SqlEngineDatabaseMixin):
                                     NotFound('No transition relative weight found'))
 
     def transitionset(self, transitionset):
+        if isinstance(transitionset, descriptor.TransitionSet):
+            return transitionset
         transitionset_id = self._get_transitionset_id(self.engine, transitionset)
         return self._get_transitionset(self.engine, transitionset_id)
 
