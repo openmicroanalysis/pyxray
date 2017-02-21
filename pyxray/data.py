@@ -12,24 +12,25 @@ __all__ = [
     'element_atomic_weight',
     'element_mass_density_kg_per_m3',
     'element_mass_density_g_per_cm3',
-    'element_transitions',
+#    'element_transitions',
     'atomic_shell',
     'atomic_shell_notation',
     'atomic_subshell',
     'atomic_subshell_notation',
-    'atomic_subshell_binding_energy_eV',
-    'atomic_subshell_radiative_width_eV',
-    'atomic_subshell_nonradiative_width_eV',
-    'atomic_subshell_occupancy',
+#    'atomic_subshell_binding_energy_eV',
+#    'atomic_subshell_radiative_width_eV',
+#    'atomic_subshell_nonradiative_width_eV',
+#    'atomic_subshell_occupancy',
     'transition',
     'transition_notation',
     'transition_energy_eV',
-    'transition_probability',
-    'transition_relative_weight',
-    'transitionset',
-    'transitionset_notation',
-    'transitionset_energy_eV',
-    'transitionset_relative_weight']
+#    'transition_probability',
+#    'transition_relative_weight',
+#    'transitionset',
+#    'transitionset_notation',
+#    'transitionset_energy_eV',
+#    'transitionset_relative_weight'
+    ]
 
 # Standard library modules.
 import os
@@ -121,7 +122,7 @@ class _EmptyDatabase(_Database):
         raise NotFound
 
 def _init_sql_database():
-    from sqlalchemy import create_engine
+    import sqlite3
     from pyxray.sql.data import SqlEngineDatabase
 
     basedir = os.path.abspath(os.path.dirname(__file__))
@@ -130,8 +131,8 @@ def _init_sql_database():
         raise RuntimeError('Cannot find SQL database at location {0}'
                            .format(filepath))
 
-    engine = create_engine('sqlite:///' + filepath)
-    return SqlEngineDatabase(engine)
+    connection = sqlite3.connect(filepath)
+    return SqlEngineDatabase(connection)
 
 try:
     database = _init_sql_database()
@@ -148,21 +149,21 @@ element_name = database.element_name
 element_atomic_weight = database.element_atomic_weight
 element_mass_density_kg_per_m3 = database.element_mass_density_kg_per_m3
 element_mass_density_g_per_cm3 = database.element_mass_density_g_per_cm3
-element_transitions = database.element_transitions
+#element_transitions = database.element_transitions
 atomic_shell = database.atomic_shell
 atomic_shell_notation = database.atomic_shell_notation
 atomic_subshell = database.atomic_subshell
 atomic_subshell_notation = database.atomic_subshell_notation
-atomic_subshell_binding_energy_eV = database.atomic_subshell_binding_energy_eV
-atomic_subshell_radiative_width_eV = database.atomic_subshell_radiative_width_eV
-atomic_subshell_nonradiative_width_eV = database.atomic_subshell_nonradiative_width_eV
-atomic_subshell_occupancy = database.atomic_subshell_occupancy
+#atomic_subshell_binding_energy_eV = database.atomic_subshell_binding_energy_eV
+#atomic_subshell_radiative_width_eV = database.atomic_subshell_radiative_width_eV
+#atomic_subshell_nonradiative_width_eV = database.atomic_subshell_nonradiative_width_eV
+#atomic_subshell_occupancy = database.atomic_subshell_occupancy
 transition = database.transition
 transition_notation = database.transition_notation
 transition_energy_eV = database.transition_energy_eV
-transition_probability = database.transition_probability
-transition_relative_weight = database.transition_relative_weight
-transitionset = database.transitionset
-transitionset_notation = database.transitionset_notation
-transitionset_energy_eV = database.transitionset_energy_eV
-transitionset_relative_weight = database.transitionset_relative_weight
+#transition_probability = database.transition_probability
+#transition_relative_weight = database.transition_relative_weight
+#transitionset = database.transitionset
+#transitionset_notation = database.transitionset_notation
+#transitionset_energy_eV = database.transitionset_energy_eV
+#transitionset_relative_weight = database.transitionset_relative_weight

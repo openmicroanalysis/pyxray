@@ -117,7 +117,7 @@ class _Database(object, metaclass=abc.ABCMeta):
         Returns atomic number of an element.
 
         {element}
-        
+
         :return: atomic number
         :rtype: :class:`int`
         {exception}
@@ -132,7 +132,7 @@ class _Database(object, metaclass=abc.ABCMeta):
 
         {element}
         {reference}
-        
+
         :return: symbol
         :rtype: :class:`str`
         """
@@ -147,7 +147,7 @@ class _Database(object, metaclass=abc.ABCMeta):
         {element}
         {language}
         {reference}
-            
+
         :return: name
         :rtype: :class:`str`
         {exception}
@@ -159,13 +159,13 @@ class _Database(object, metaclass=abc.ABCMeta):
     def element_atomic_weight(self, element, reference=None):
         """
         Returns atomic weight of an element.
-        The atomic weight is defined by the CIAAW as it is the ratio of 
-        the average atomic mass of an element over 1/12 of the mass of the 
+        The atomic weight is defined by the CIAAW as it is the ratio of
+        the average atomic mass of an element over 1/12 of the mass of the
         carbon-12 atom.
-        
+
         {element}
         {reference}
-            
+
         :return: atomic weight
         :rtype: :class:`float`
         {exception}
@@ -180,7 +180,7 @@ class _Database(object, metaclass=abc.ABCMeta):
 
         {element}
         {reference}
-        
+
         :return: mass density (in kg/m3)
         :rtype: :class:`float`
         {exception}
@@ -191,39 +191,39 @@ class _Database(object, metaclass=abc.ABCMeta):
     def element_mass_density_g_per_cm3(self, element, reference=None):
         """
         Returns mass density (in g/cm3) of an element.
-        
+
         {element}
         {reference}
-            
+
         :return: mass density (in g/cm3)
         :rtype: :class:`float`
         {exception}
         """
         return self.element_mass_density_kg_per_m3(element, reference) / 1e3
-
-    @abc.abstractmethod
-    @formatdoc(**_docextras)
-    def element_transitions(self, element, reference=None):
-        """
-        Returns all transitions which have a probability greater than 0 for an element.
-
-        {element}
-        {reference}
-        
-        :return: transitions
-        :rtype: :class:`tuple` of :class:`Transition`
-        {exception}
-        """
-        raise NotImplementedError
-
+#
+#    @abc.abstractmethod
+#    @formatdoc(**_docextras)
+#    def element_transitions(self, element, reference=None):
+#        """
+#        Returns all transitions which have a probability greater than 0 for an element.
+#
+#        {element}
+#        {reference}
+#
+#        :return: transitions
+#        :rtype: :class:`tuple` of :class:`Transition`
+#        {exception}
+#        """
+#        raise NotImplementedError
+#
     @abc.abstractmethod
     @formatdoc(**_docextras)
     def atomic_shell(self, atomic_shell):
         """
         Returns atomic shell descriptor.
-        
+
         {atomic_shell}
-        
+
         :return: atomic shell descriptor
         :rtype: :class:`AtomicShell`
         {exception}
@@ -235,12 +235,12 @@ class _Database(object, metaclass=abc.ABCMeta):
     def atomic_shell_notation(self, atomic_shell, notation, encoding='utf16', reference=None):
         """
         Returns notation of an atomic shell.
-        
+
         {atomic_shell}
         {notation}
         {encoding}
         {reference}
-        
+
         :return: notation
         :rtype: :class:`str`
         {exception}
@@ -252,9 +252,9 @@ class _Database(object, metaclass=abc.ABCMeta):
     def atomic_subshell(self, atomic_subshell):
         """
         Returns atomic subshell descriptor.
-        
+
         {atomic_subshell}
-        
+
         :return: atomic subshell descriptor
         :rtype: :class:`AtomicSubshell`
         {exception}
@@ -266,90 +266,90 @@ class _Database(object, metaclass=abc.ABCMeta):
     def atomic_subshell_notation(self, atomic_subshell, notation, encoding='utf16', reference=None):
         """
         Returns notation of an atomic subshell.
-        
+
         {atomic_subshell}
         {notation}
         {encoding}
         {reference}
-        
+
         :return: notation
         :rtype: :class:`str`
         {exception}
         """
         raise NotImplementedError
-
-    @abc.abstractmethod
-    @formatdoc(**_docextras)
-    def atomic_subshell_binding_energy_eV(self, element, atomic_subshell, reference=None):
-        """
-        Returns binding energy of an element and atomic subshell (in eV).
-        
-        {element}
-        {atomic_subshell}
-        {reference}
-        
-        :return: binding energy (in eV)
-        :rtype: :class:`float`
-        {exception}
-        """
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    @formatdoc(**_docextras)
-    def atomic_subshell_radiative_width_eV(self, element, atomic_subshell, reference=None):
-        """
-        Returns radiative width of an element and atomic subshell (in eV).
-        
-        {element}
-        {atomic_subshell}
-        {reference}
-        
-        :return: radiative width (in eV)
-        :rtype: :class:`float`
-        {exception}
-        """
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    @formatdoc(**_docextras)
-    def atomic_subshell_nonradiative_width_eV(self, element, atomic_subshell, reference=None):
-        """
-        Returns nonradiative width of an element and atomic subshell (in eV).
-        
-        {element}
-        {atomic_subshell}
-        {reference}
-        
-        :return: nonradiative width (in eV)
-        :rtype: :class:`float`
-        {exception}
-        """
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    @formatdoc(**_docextras)
-    def atomic_subshell_occupancy(self, element, atomic_subshell, reference=None):
-        """
-        Returns occupancy of an element and atomic subshell.
-        
-        {element}
-        {atomic_subshell}
-        {reference}
-        
-        :return: occupancy
-        :rtype: :class:`int`
-        {exception}
-        """
-        raise NotImplementedError
-
+#
+#    @abc.abstractmethod
+#    @formatdoc(**_docextras)
+#    def atomic_subshell_binding_energy_eV(self, element, atomic_subshell, reference=None):
+#        """
+#        Returns binding energy of an element and atomic subshell (in eV).
+#
+#        {element}
+#        {atomic_subshell}
+#        {reference}
+#
+#        :return: binding energy (in eV)
+#        :rtype: :class:`float`
+#        {exception}
+#        """
+#        raise NotImplementedError
+#
+#    @abc.abstractmethod
+#    @formatdoc(**_docextras)
+#    def atomic_subshell_radiative_width_eV(self, element, atomic_subshell, reference=None):
+#        """
+#        Returns radiative width of an element and atomic subshell (in eV).
+#
+#        {element}
+#        {atomic_subshell}
+#        {reference}
+#
+#        :return: radiative width (in eV)
+#        :rtype: :class:`float`
+#        {exception}
+#        """
+#        raise NotImplementedError
+#
+#    @abc.abstractmethod
+#    @formatdoc(**_docextras)
+#    def atomic_subshell_nonradiative_width_eV(self, element, atomic_subshell, reference=None):
+#        """
+#        Returns nonradiative width of an element and atomic subshell (in eV).
+#
+#        {element}
+#        {atomic_subshell}
+#        {reference}
+#
+#        :return: nonradiative width (in eV)
+#        :rtype: :class:`float`
+#        {exception}
+#        """
+#        raise NotImplementedError
+#
+#    @abc.abstractmethod
+#    @formatdoc(**_docextras)
+#    def atomic_subshell_occupancy(self, element, atomic_subshell, reference=None):
+#        """
+#        Returns occupancy of an element and atomic subshell.
+#
+#        {element}
+#        {atomic_subshell}
+#        {reference}
+#
+#        :return: occupancy
+#        :rtype: :class:`int`
+#        {exception}
+#        """
+#        raise NotImplementedError
+#
     @abc.abstractmethod
     @formatdoc(**_docextras)
     def transition(self, transition):
         """
         Returns transition descriptor.
-        
+
         {transition}
-        
+
         :return: transition descriptor
         :rtype: :class:`Transition`
         {exception}
@@ -361,12 +361,12 @@ class _Database(object, metaclass=abc.ABCMeta):
     def transition_notation(self, transition, notation, encoding='utf16', reference=None):
         """
         Returns notation of a transition.
-        
+
         {transition}
         {notation}
         {encoding}
         {reference}
-        
+
         :return: notation
         :rtype: :class:`str`
         {exception}
@@ -378,109 +378,109 @@ class _Database(object, metaclass=abc.ABCMeta):
     def transition_energy_eV(self, element, transition, reference=None):
         """
         Returns energy of an element and transition (in eV).
-        
+
         {element}
         {transition}
         {reference}
-        
+
         :return: energy (in eV)
         :rtype: :class:`float`
         {exception}
         """
         raise NotImplementedError
-
-    @abc.abstractmethod
-    @formatdoc(**_docextras)
-    def transition_probability(self, element, transition, reference=None):
-        """
-        Returns probability of an element and transition.
-        
-        {element}
-        {transition}
-        {reference}
-        
-        :return: probability
-        :rtype: :class:`float`
-        {exception}
-        """
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    @formatdoc(**_docextras)
-    def transition_relative_weight(self, element, transition, reference=None):
-        """
-        Returns relative weight of an element and transition.
-        
-        {element}
-        {transition}
-        {reference}
-        
-        :return: relative weight
-        :rtype: :class:`float`
-        {exception}
-        """
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    @formatdoc(**_docextras)
-    def transitionset(self, transitionset):
-        """
-        Returns transition set descriptor.
-        
-        {transitionset}
-        
-        :return: transition set descriptor
-        :rtype: :class:`TransitionSet`
-        {exception}
-        """
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    @formatdoc(**_docextras)
-    def transitionset_notation(self, transitionset, notation, encoding='utf16', reference=None):
-        """
-        Returns notation of a transition set.
-        
-        {transitionset}
-        {notation}
-        {encoding}
-        {reference}
-        
-        :return: notation
-        :rtype: :class:`str`
-        {exception}
-        """
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    @formatdoc(**_docextras)
-    def transitionset_energy_eV(self, element, transitionset, reference=None):
-        """
-        Returns energy of an element and transition set (in eV).
-        
-        {element}
-        {transitionset}
-        {reference}
-        
-        :return: energy (in eV)
-        :rtype: :class:`float`
-        {exception}
-        """
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    @formatdoc(**_docextras)
-    def transitionset_relative_weight(self, element, transitionset, reference=None):
-        """
-        Returns relative weight of an element and transition set.
-        
-        {element}
-        {transitionset}
-        {reference}
-        
-        :return: relative weight
-        :rtype: :class:`float`
-        {exception}
-        """
-        raise NotImplementedError
+#
+#    @abc.abstractmethod
+#    @formatdoc(**_docextras)
+#    def transition_probability(self, element, transition, reference=None):
+#        """
+#        Returns probability of an element and transition.
+#
+#        {element}
+#        {transition}
+#        {reference}
+#
+#        :return: probability
+#        :rtype: :class:`float`
+#        {exception}
+#        """
+#        raise NotImplementedError
+#
+#    @abc.abstractmethod
+#    @formatdoc(**_docextras)
+#    def transition_relative_weight(self, element, transition, reference=None):
+#        """
+#        Returns relative weight of an element and transition.
+#
+#        {element}
+#        {transition}
+#        {reference}
+#
+#        :return: relative weight
+#        :rtype: :class:`float`
+#        {exception}
+#        """
+#        raise NotImplementedError
+#
+#    @abc.abstractmethod
+#    @formatdoc(**_docextras)
+#    def transitionset(self, transitionset):
+#        """
+#        Returns transition set descriptor.
+#
+#        {transitionset}
+#
+#        :return: transition set descriptor
+#        :rtype: :class:`TransitionSet`
+#        {exception}
+#        """
+#        raise NotImplementedError
+#
+#    @abc.abstractmethod
+#    @formatdoc(**_docextras)
+#    def transitionset_notation(self, transitionset, notation, encoding='utf16', reference=None):
+#        """
+#        Returns notation of a transition set.
+#
+#        {transitionset}
+#        {notation}
+#        {encoding}
+#        {reference}
+#
+#        :return: notation
+#        :rtype: :class:`str`
+#        {exception}
+#        """
+#        raise NotImplementedError
+#
+#    @abc.abstractmethod
+#    @formatdoc(**_docextras)
+#    def transitionset_energy_eV(self, element, transitionset, reference=None):
+#        """
+#        Returns energy of an element and transition set (in eV).
+#
+#        {element}
+#        {transitionset}
+#        {reference}
+#
+#        :return: energy (in eV)
+#        :rtype: :class:`float`
+#        {exception}
+#        """
+#        raise NotImplementedError
+#
+#    @abc.abstractmethod
+#    @formatdoc(**_docextras)
+#    def transitionset_relative_weight(self, element, transitionset, reference=None):
+#        """
+#        Returns relative weight of an element and transition set.
+#
+#        {element}
+#        {transitionset}
+#        {reference}
+#
+#        :return: relative weight
+#        :rtype: :class:`float`
+#        {exception}
+#        """
+#        raise NotImplementedError
 

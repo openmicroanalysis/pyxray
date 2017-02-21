@@ -8,6 +8,8 @@ import collections
 # Third party modules.
 import sqlalchemy.sql as sql
 
+import more_itertools
+
 # Local modules.
 from pyxray.descriptor import \
     (Element, Language, Reference, Notation, AtomicShell, AtomicSubshell,
@@ -17,7 +19,79 @@ from pyxray.base import NotFound
 
 # Globals and constants variables.
 
+class SelectBuilder:
+
+    def __init__(self):
+        self.selects = []
+        self.froms = []
+        self.joins = []
+        self.wheres = []
+        self.orderbys = []
+
+    def add_select(self, table, column):
+        self.selects.append((table, column))
+
+    def add_from(self, table):
+        self.froms.append(table)
+
+    def add_join(self, table1, column1, table2, column2, alias1=None):
+        self.joins.append((table1, column1, table2, column2, alias1))
+
+    def add_where(self, table, column, variable, *args):
+        where = [(table, column, variable)]
+        for table, column, variable in more_itertools.chunked(args, 3):
+            where.append((table, column, variable))
+        self.wheres.append(where)
+
+    def add_orderby(self, table, column, order='ASC'):
+        self.orderbys.append((table, column, order))
+
+    def build(self):
+        sql = []
+
+        # Select
+        sql += ['SELECT ' + ', '.join('{}.{}'.format(table, column)
+                                      for table, column in self.selects)]
+
+        # From
+        tables = [table1 for table1, _, table2, _, alias1 in self.joins
+                  if not alias1 and table1 != table2]
+        sql += ['FROM ' + ', '.join(set(self.froms) - set(tables))]
+
+        # Join
+        for table1, column1, table2, column2, alias1 in self.joins:
+            if table1 == table2:
+                continue
+
+            if alias1:
+                fmt = 'JOIN {0} AS {4} ON {4}.{1} = {2}.{3}'
+            else:
+                fmt = 'JOIN {0} ON {0}.{1} = {2}.{3}'
+            sql += [fmt.format(table1, column1, table2, column2, alias1)]
+
+        # Where
+        if self.wheres:
+            subsql = []
+            for conditions in self.wheres:
+                subsql += ['(' + \
+                           ' OR '.join('{}.{} = :{}'.format(table, column, variable)
+                                       for table, column, variable in conditions) + \
+                           ')']
+
+            sql += ['WHERE ' + ' AND '.join(subsql)]
+
+        # Order by
+        if self.orderbys:
+            sql += ['ORDER BY ' + \
+                    ', '.join('{}.{} {}'.format(table, column, order)
+                              for table, column, order in self.orderbys)]
+
+        return '\n'.join(sql)
+
 class SqlEngineDatabaseMixin:
+
+    def _create_sql(self, select, joins, wheres):
+        return '\n'.join([select, '\n'.join(joins), '\n'.join(wheres)])
 
     def _retrieve_first(self, conn, command, exc=None):
         result = conn.execute(command)
