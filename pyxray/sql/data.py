@@ -97,33 +97,33 @@ class SqlEngineDatabase(_Database, SqlEngineDatabaseMixin):
         else:
             raise NotFound('Cannot parse atomic subshell: {}'.format(atomic_subshell))
 
-    def _append_transition(self, builder, table, column, transition):
+    def _append_xray_transition(self, builder, table, column, xraytransition):
         src_n = 0; src_l = -1; src_j_n = 0
         dst_n = 0; dst_l = -1; dst_j_n = 0
 
-        if hasattr(transition, 'source_subshell') and \
-                hasattr(transition, 'destination_subshell'):
+        if hasattr(xraytransition, 'source_subshell') and \
+                hasattr(xraytransition, 'destination_subshell'):
             src_n, src_l, src_j_n = \
-                self._expand_atomic_subshell(transition.source_subshell)
+                self._expand_atomic_subshell(xraytransition.source_subshell)
             dst_n, dst_l, dst_j_n = \
-                self._expand_atomic_subshell(transition.destination_subshell)
+                self._expand_atomic_subshell(xraytransition.destination_subshell)
 
-        elif isinstance(transition, collections.Sequence) and \
-                len(transition) >= 2:
-            src_n, src_l, src_j_n = self._expand_atomic_subshell(transition[0])
-            dst_n, dst_l, dst_j_n = self._expand_atomic_subshell(transition[1])
+        elif isinstance(xraytransition, collections.Sequence) and \
+                len(xraytransition) >= 2:
+            src_n, src_l, src_j_n = self._expand_atomic_subshell(xraytransition[0])
+            dst_n, dst_l, dst_j_n = self._expand_atomic_subshell(xraytransition[1])
 
-        builder.add_join('transition', 'id', table, column)
-        builder.add_join('atomic_subshell', 'id', 'transition', 'source_subshell_id', 'srcsubshell')
-        builder.add_join('atomic_subshell', 'id', 'transition', 'destination_subshell_id', 'dstsubshell')
+        builder.add_join('xray_transition', 'id', table, column)
+        builder.add_join('atomic_subshell', 'id', 'xray_transition', 'source_subshell_id', 'srcsubshell')
+        builder.add_join('atomic_subshell', 'id', 'xray_transition', 'destination_subshell_id', 'dstsubshell')
         builder.add_join('atomic_shell', 'id', 'srcsubshell', 'atomic_shell_id', 'srcshell')
         builder.add_join('atomic_shell', 'id', 'dstsubshell', 'atomic_shell_id', 'dstshell')
 
-        if isinstance(transition, str):
-            builder.add_join('transition_notation', 'transition_id', table, column)
-            builder.add_where('transition_notation', 'ascii', 'transition',
-                              'transition_notation', 'utf16', 'transition')
-            return {'transition': transition}
+        if isinstance(xraytransition, str):
+            builder.add_join('xray_transition_notation', 'xray_transition_id', table, column)
+            builder.add_where('xray_transition_notation', 'ascii', 'xraytransition',
+                              'xray_transition_notation', 'utf16', 'xraytransition')
+            return {'xraytransition': xraytransition}
 
         elif src_n > 0 and src_l >= 0 and src_j_n > 0 and \
                 dst_n > 0 and dst_l >= 0 and dst_j_n > 0:
@@ -138,7 +138,7 @@ class SqlEngineDatabase(_Database, SqlEngineDatabaseMixin):
                     'dst_n': dst_n, 'dst_l': dst_l, 'dst_j_n': dst_j_n}
 
         else:
-            raise NotFound('Cannot parse transition: {}'.format(transition))
+            raise NotFound('Cannot parse X-ray transition: {}'.format(xraytransition))
 
     def _append_language(self, builder, table, language):
         if isinstance(language, descriptor.Language):
@@ -302,25 +302,25 @@ class SqlEngineDatabase(_Database, SqlEngineDatabaseMixin):
         value_kg_per_m3, = row
         return value_kg_per_m3
 
-#    def element_transitions(self, element, reference=None):
+#    def element_xray_transitions(self, element, reference=None):
 #        if not reference:
-#            reference = self.get_default_reference('transition_probability')
+#            reference = self.get_default_reference('xray_transition_probability')
 #
 #        element_id = self._get_element_id(self.engine, element)
 #
-#        tbl = table.transition_probability
+#        tbl = table.xray_transition_probability
 #        tbl.create(self.engine, checkfirst=True)
-#        command = sql.select([tbl.c.transition_id])
+#        command = sql.select([tbl.c.xray_transition_id])
 #        command = command.where(tbl.c.element_id == element_id)
 #        command = command.where(tbl.c.value > 0.0)
 #        command = self._append_command_reference(command, tbl, reference)
 #        result = self.engine.execute(command)
 #        rows = result.fetchall()
 #        if not rows:
-#            raise NotFound('No transition found')
+#            raise NotFound('No X-ray transition found')
 #
-#        return tuple(self._get_transition(self.engine, row[0]) for row in rows)
-#
+#        return tuple(self._get_xray_transition(self.engine, row[0]) for row in rows)
+
     def atomic_shell(self, atomic_shell):
         table = 'atomic_shell'
         params = {}
@@ -475,8 +475,8 @@ class SqlEngineDatabase(_Database, SqlEngineDatabaseMixin):
 #        return self._retrieve_first(self.engine, command,
 #                                    NotFound('No atomic subshell occupancy found'))
 #
-    def transition(self, transition):
-        table = 'transition'
+    def xray_transition(self, xraytransition):
+        table = 'xray_transition'
         params = {}
         builder = SelectBuilder()
         builder.add_select('srcshell', 'principal_quantum_number')
@@ -486,7 +486,7 @@ class SqlEngineDatabase(_Database, SqlEngineDatabaseMixin):
         builder.add_select('dstsubshell', 'azimuthal_quantum_number')
         builder.add_select('dstsubshell', 'total_angular_momentum_nominator')
         builder.add_from(table)
-        params.update(self._append_transition(builder, table, 'id', transition))
+        params.update(self._append_xray_transition(builder, table, 'id', xraytransition))
         sql = builder.build()
 
         cur = self.connection.cursor()
@@ -494,24 +494,24 @@ class SqlEngineDatabase(_Database, SqlEngineDatabaseMixin):
         row = cur.fetchone()
         cur.close()
         if row is None:
-            raise NotFound('No transition found')
+            raise NotFound('No X-ray transition found')
 
         src_n, src_l, src_j_n, dst_n, dst_l, dst_j_n = row
         src = descriptor.AtomicSubshell(src_n, src_l, src_j_n)
         dst = descriptor.AtomicSubshell(dst_n, dst_l, dst_j_n)
-        return descriptor.Transition(src, dst)
+        return descriptor.XrayTransition(src, dst)
 
-    def transition_notation(self, transition, notation,
-                            encoding='utf16', reference=None):
+    def xray_transition_notation(self, xraytransition, notation,
+                                 encoding='utf16', reference=None):
         if not reference:
-            reference = self.get_default_reference('transition_notation')
+            reference = self.get_default_reference('xray_transition_notation')
 
-        table = 'transition_notation'
+        table = 'xray_transition_notation'
         params = {}
         builder = SelectBuilder()
         builder.add_select(table, encoding)
         builder.add_from(table)
-        params.update(self._append_transition(builder, table, 'transition_id', transition))
+        params.update(self._append_xray_transition(builder, table, 'xray_transition_id', xraytransition))
         params.update(self._append_notation(builder, table, notation))
         params.update(self._append_reference(builder, table, reference))
         sql = builder.build()
@@ -521,22 +521,22 @@ class SqlEngineDatabase(_Database, SqlEngineDatabaseMixin):
         row = cur.fetchone()
         cur.close()
         if row is None:
-            raise NotFound('No transition notation found')
+            raise NotFound('No X-ray transition notation found')
 
         value, = row
         return value
 
-    def transition_energy_eV(self, element, transition, reference=None):
+    def xray_transition_energy_eV(self, element, xraytransition, reference=None):
         if not reference:
-            reference = self.get_default_reference('transition_energy_eV')
+            reference = self.get_default_reference('xray_transition_energy_eV')
 
-        table = 'transition_energy'
+        table = 'xray_transition_energy'
         params = {}
         builder = SelectBuilder()
         builder.add_select(table, 'value_eV')
         builder.add_from(table)
         params.update(self._append_element(builder, table, 'element_id', element))
-        params.update(self._append_transition(builder, table, 'transition_id', transition))
+        params.update(self._append_xray_transition(builder, table, 'xray_transition_id', xraytransition))
         params.update(self._append_reference(builder, table, reference))
         sql = builder.build()
 
@@ -545,94 +545,94 @@ class SqlEngineDatabase(_Database, SqlEngineDatabaseMixin):
         row = cur.fetchone()
         cur.close()
         if row is None:
-            raise NotFound('No transition energy found')
+            raise NotFound('No X-ray transition energy found')
 
         value_eV, = row
         return value_eV
 
-#    def transition_probability(self, element, transition, reference=None):
+#    def xray_transition_probability(self, element, xraytransition, reference=None):
 #        if not reference:
-#            reference = self.get_default_reference('transition_probability')
+#            reference = self.get_default_reference('xray_transition_probability')
 #
 #        element_id = self._get_element_id(self.engine, element)
-#        transition_id = self._get_transition_id(self.engine, transition)
+#        xray_transition_id = self._get_xray_transition_id(self.engine, xraytransition)
 #
-#        tbl = table.transition_probability
+#        tbl = table.xray_transition_probability
 #        tbl.create(self.engine, checkfirst=True)
 #        command = sql.select([tbl.c.value])
 #        command = command.where(tbl.c.element_id == element_id)
-#        command = command.where(tbl.c.transition_id == transition_id)
+#        command = command.where(tbl.c.xray_transition_id == xray_transition_id)
 #        command = self._append_command_reference(command, tbl, reference)
 #        return self._retrieve_first(self.engine, command,
-#                                    NotFound('No transition probability found'))
+#                                    NotFound('No X-ray transition probability found'))
 #
-#    def transition_relative_weight(self, element, transition, reference=None):
+#    def xray_transition_relative_weight(self, element, xraytransition, reference=None):
 #        if not reference:
-#            reference = self.get_default_reference('transition_relative_weight')
+#            reference = self.get_default_reference('xray_transition_relative_weight')
 #
 #        element_id = self._get_element_id(self.engine, element)
-#        transition_id = self._get_transition_id(self.engine, transition)
+#        xray_transition_id = self._get_xray_transition_id(self.engine, xraytransition)
 #
-#        tbl = table.transition_relative_weight
+#        tbl = table.xray_transition_relative_weight
 #        tbl.create(self.engine, checkfirst=True)
 #        command = sql.select([tbl.c.value])
 #        command = command.where(tbl.c.element_id == element_id)
-#        command = command.where(tbl.c.transition_id == transition_id)
+#        command = command.where(tbl.c.xray_transition_id == xray_transition_id)
 #        command = self._append_command_reference(command, tbl, reference)
 #        return self._retrieve_first(self.engine, command,
-#                                    NotFound('No transition relative weight found'))
+#                                    NotFound('No X-ray transition relative weight found'))
 #
-#    def transitionset(self, transitionset):
-#        if isinstance(transitionset, descriptor.TransitionSet):
-#            return transitionset
-#        transitionset_id = self._get_transitionset_id(self.engine, transitionset)
-#        return self._get_transitionset(self.engine, transitionset_id)
+#    def xray_transitionset(self, xraytransitionset):
+#        if isinstance(xraytransitionset, descriptor.XrayTransitionSet):
+#            return xraytransitionset
+#        xray_transitionset_id = self._get_xray_transitionset_id(self.engine, xraytransitionset)
+#        return self._get_xray_transitionset(self.engine, xray_transitionset_id)
 #
-#    def transitionset_notation(self, transitionset, notation,
-#                            encoding='utf16', reference=None):
+#    def xray_transitionset_notation(self, xraytransitionset, notation,
+#                                    encoding='utf16', reference=None):
 #        if not reference:
-#            reference = self.get_default_reference('transitionset_notation')
+#            reference = self.get_default_reference('xray_transitionset_notation')
 #
-#        transitionset_id = self._get_transitionset_id(self.engine, transitionset)
+#        xray_transitionset_id = self._get_xray_transitionset_id(self.engine, xraytransitionset)
 #        notation_id = self._get_notation_id(self.engine, notation)
 #
-#        tbl = table.transitionset_notation
+#        tbl = table.xray_transitionset_notation
 #        tbl.create(self.engine, checkfirst=True)
 #        command = sql.select([getattr(tbl.c, encoding)])
-#        command = command.where(tbl.c.transitionset_id == transitionset_id)
+#        command = command.where(tbl.c.xray_transitionset_id == xray_transitionset_id)
 #        command = command.where(tbl.c.notation_id == notation_id)
 #        command = self._append_command_reference(command, tbl, reference)
 #        return self._retrieve_first(self.engine, command,
-#                                    NotFound('No transition set notation found'))
+#                                    NotFound('No X-ray transition set notation found'))
 #
-#    def transitionset_energy_eV(self, element, transitionset, reference=None):
+#    def xray_transitionset_energy_eV(self, element, xraytransitionset, reference=None):
 #        if not reference:
-#            reference = self.get_default_reference('transitionset_energy_eV')
+#            reference = self.get_default_reference('xray_transitionset_energy_eV')
 #
 #        element_id = self._get_element_id(self.engine, element)
-#        transitionset_id = self._get_transitionset_id(self.engine, transitionset)
+#        xray_transitionset_id = self._get_xray_transitionset_id(self.engine, xraytransitionset)
 #
-#        tbl = table.transitionset_energy
+#        tbl = table.xray_transitionset_energy
 #        tbl.create(self.engine, checkfirst=True)
 #        command = sql.select([tbl.c.value_eV])
 #        command = command.where(tbl.c.element_id == element_id)
-#        command = command.where(tbl.c.transitionset_id == transitionset_id)
+#        command = command.where(tbl.c.xray_transitionset_id == xray_transitionset_id)
 #        command = self._append_command_reference(command, tbl, reference)
 #        return self._retrieve_first(self.engine, command,
-#                                    NotFound('No transition set energy found'))
+#                                    NotFound('No X-ray transition set energy found'))
 #
-#    def transitionset_relative_weight(self, element, transitionset, reference=None):
+#    def xray_transitionset_relative_weight(self, element, xraytransitionset, reference=None):
 #        if not reference:
-#            reference = self.get_default_reference('transitionset_relative_weight')
+#            reference = self.get_default_reference('xray_transitionset_relative_weight')
 #
 #        element_id = self._get_element_id(self.engine, element)
-#        transitionset_id = self._get_transitionset_id(self.engine, transitionset)
+#        xray_transitionset_id = self._get_xray_transitionset_id(self.engine, xraytransitionset)
 #
-#        tbl = table.transitionset_relative_weight
+#        tbl = table.xray_transitionset_relative_weight
 #        tbl.create(self.engine, checkfirst=True)
 #        command = sql.select([tbl.c.value])
 #        command = command.where(tbl.c.element_id == element_id)
-#        command = command.where(tbl.c.transitionset_id == transitionset_id)
+#        command = command.where(tbl.c.xray_transitionset_id == xray_transitionset_id)
 #        command = self._append_command_reference(command, tbl, reference)
 #        return self._retrieve_first(self.engine, command,
-#                                    NotFound('No transition set relative weight found'))
+#                                    NotFound('No X-ray transition set relative weight found'))

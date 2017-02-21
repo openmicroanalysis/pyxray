@@ -35,7 +35,7 @@ class MockDatabase(_Database):
     def element_mass_density_g_per_cm3(self, element, reference=None):
         pass
 
-    def element_transitions(self, element, reference=None):
+    def element_xray_transitions(self, element, reference=None):
         pass
 
     def atomic_shell(self, atomic_shell):
@@ -62,31 +62,31 @@ class MockDatabase(_Database):
     def atomic_subshell_occupancy(self, element, atomic_subshell, reference=None):
         pass
 
-    def transition(self, transition):
+    def xray_transition(self, xraytransition):
         pass
 
-    def transition_notation(self, transition, notation, encoding='utf16', reference=None):
+    def xray_transition_notation(self, xraytransition, notation, encoding='utf16', reference=None):
         pass
 
-    def transition_energy_eV(self, element, transition, reference=None):
+    def xray_transition_energy_eV(self, element, xraytransition, reference=None):
         pass
 
-    def transition_probability(self, element, transition, reference=None):
+    def xray_transition_probability(self, element, xraytransition, reference=None):
         pass
 
-    def transition_relative_weight(self, element, transition, reference=None):
+    def xray_transition_relative_weight(self, element, xraytransition, reference=None):
         pass
 
-    def transitionset(self, transitionset):
+    def xray_transitionset(self, xraytransitionset):
         pass
 
-    def transitionset_notation(self, transitionset, notation, encoding='utf16', reference=None):
+    def xray_transitionset_notation(self, xraytransitionset, notation, encoding='utf16', reference=None):
         pass
 
-    def transitionset_energy_eV(self, element, transitionset, reference=None):
+    def xray_transitionset_energy_eV(self, element, xraytransitionset, reference=None):
         pass
 
-    def transitionset_relative_weight(self, element, transitionset, reference=None):
+    def xray_transitionset_relative_weight(self, element, xraytransitionset, reference=None):
         pass
 
 class Test_Database(unittest.TestCase):

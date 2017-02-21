@@ -29,9 +29,9 @@ class MockParser(_Parser):
         K = descriptor.AtomicSubshell(1, 0, 1)
         L3 = descriptor.AtomicSubshell(2, 1, 3)
         L2 = descriptor.AtomicSubshell(2, 1, 1)
-        transition = descriptor.Transition(L3, K)
-        transition2 = descriptor.Transition(L2, K, L3)
-        transitionset = descriptor.TransitionSet([transition, transition2])
+        transition = descriptor.XrayTransition(L3, K)
+        transition2 = descriptor.XrayTransition(L2, K)
+        transitionset = descriptor.XrayTransitionSet([transition, transition2])
         notation = descriptor.Notation('mock')
         language = descriptor.Language('en')
 
@@ -51,16 +51,16 @@ class MockParser(_Parser):
         yield property.AtomicSubshellNonRadiativeWidth(reference, element, K, 0.001)
         yield property.AtomicSubshellOccupancy(reference, element, K, 1)
 
-        yield property.TransitionNotation(reference, transition, notation,
-                                          'a', 'b', 'c', 'd')
-        yield property.TransitionEnergy(reference, element, transition, 0.2)
-        yield property.TransitionProbability(reference, element, transition, 0.02)
-        yield property.TransitionRelativeWeight(reference, element, transition, 0.002)
+        yield property.XrayTransitionNotation(reference, transition, notation,
+                                              'a', 'b', 'c', 'd')
+        yield property.XrayTransitionEnergy(reference, element, transition, 0.2)
+        yield property.XrayTransitionProbability(reference, element, transition, 0.02)
+        yield property.XrayTransitionRelativeWeight(reference, element, transition, 0.002)
 
-        yield property.TransitionSetNotation(reference, transitionset, notation,
-                                             'a', 'b', 'c', 'd')
-        yield property.TransitionSetEnergy(reference, element, transitionset, 0.3)
-        yield property.TransitionSetRelativeWeight(reference, element, transitionset, 0.003)
+        yield property.XrayTransitionSetNotation(reference, transitionset, notation,
+                                                 'a', 'b', 'c', 'd')
+        yield property.XrayTransitionSetEnergy(reference, element, transitionset, 0.3)
+        yield property.XrayTransitionSetRelativeWeight(reference, element, transitionset, 0.003)
 
 class MockBadParser(_Parser):
 

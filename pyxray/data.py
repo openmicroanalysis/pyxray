@@ -12,7 +12,7 @@ __all__ = [
     'element_atomic_weight',
     'element_mass_density_kg_per_m3',
     'element_mass_density_g_per_cm3',
-#    'element_transitions',
+#    'element_xray_transitions',
     'atomic_shell',
     'atomic_shell_notation',
     'atomic_subshell',
@@ -21,15 +21,15 @@ __all__ = [
 #    'atomic_subshell_radiative_width_eV',
 #    'atomic_subshell_nonradiative_width_eV',
 #    'atomic_subshell_occupancy',
-    'transition',
-    'transition_notation',
-    'transition_energy_eV',
-#    'transition_probability',
-#    'transition_relative_weight',
-#    'transitionset',
-#    'transitionset_notation',
-#    'transitionset_energy_eV',
-#    'transitionset_relative_weight'
+    'xray_transition',
+    'xray_transition_notation',
+    'xray_transition_energy_eV',
+#    'xray_transition_probability',
+#    'xray_transition_relative_weight',
+#    'xray_transitionset',
+#    'xray_transitionset_notation',
+#    'xray_transitionset_energy_eV',
+#    'xray_transitionset_relative_weight'
     ]
 
 # Standard library modules.
@@ -67,7 +67,7 @@ class _EmptyDatabase(_Database):
     def element_mass_density_g_per_cm3(self, element, reference=None):
         raise NotFound
 
-    def element_transitions(self, element, reference=None):
+    def element_xray_transitions(self, element, reference=None):
         raise NotFound
 
     def atomic_shell(self, atomic_shell):
@@ -94,31 +94,31 @@ class _EmptyDatabase(_Database):
     def atomic_subshell_occupancy(self, element, atomic_subshell, reference=None):
         raise NotFound
 
-    def transition(self, transition):
+    def xray_transition(self, xraytransition):
         raise NotFound
 
-    def transition_notation(self, transition, notation, encoding='utf16', reference=None):
+    def xray_transition_notation(self, xraytransition, notation, encoding='utf16', reference=None):
         raise NotFound
 
-    def transition_energy_eV(self, element, transition, reference=None):
+    def xray_transition_energy_eV(self, element, xraytransition, reference=None):
         raise NotFound
 
-    def transition_probability(self, element, transition, reference=None):
+    def xray_transition_probability(self, element, xraytransition, reference=None):
         raise NotFound
 
-    def transition_relative_weight(self, element, transition, reference=None):
+    def xray_transition_relative_weight(self, element, xraytransition, reference=None):
         raise NotFound
 
-    def transitionset(self, transitionset):
+    def xray_transitionset(self, xraytransitionset):
         raise NotFound
 
-    def transitionset_notation(self, transitionset, notation, encoding='utf16', reference=None):
+    def xray_transitionset_notation(self, xraytransitionset, notation, encoding='utf16', reference=None):
         raise NotFound
 
-    def transitionset_energy_eV(self, element, transitionset, reference=None):
+    def xray_transitionset_energy_eV(self, element, xraytransitionset, reference=None):
         raise NotFound
 
-    def transitionset_relative_weight(self, element, transitionset, reference=None):
+    def xray_transitionset_relative_weight(self, element, xraytransitionset, reference=None):
         raise NotFound
 
 def _init_sql_database():
@@ -149,7 +149,7 @@ element_name = database.element_name
 element_atomic_weight = database.element_atomic_weight
 element_mass_density_kg_per_m3 = database.element_mass_density_kg_per_m3
 element_mass_density_g_per_cm3 = database.element_mass_density_g_per_cm3
-#element_transitions = database.element_transitions
+#element_xray_transitions = database.element_xray_transitions
 atomic_shell = database.atomic_shell
 atomic_shell_notation = database.atomic_shell_notation
 atomic_subshell = database.atomic_subshell
@@ -158,12 +158,12 @@ atomic_subshell_notation = database.atomic_subshell_notation
 #atomic_subshell_radiative_width_eV = database.atomic_subshell_radiative_width_eV
 #atomic_subshell_nonradiative_width_eV = database.atomic_subshell_nonradiative_width_eV
 #atomic_subshell_occupancy = database.atomic_subshell_occupancy
-transition = database.transition
-transition_notation = database.transition_notation
-transition_energy_eV = database.transition_energy_eV
-#transition_probability = database.transition_probability
-#transition_relative_weight = database.transition_relative_weight
-#transitionset = database.transitionset
-#transitionset_notation = database.transitionset_notation
-#transitionset_energy_eV = database.transitionset_energy_eV
-#transitionset_relative_weight = database.transitionset_relative_weight
+xray_transition = database.xray_transition
+xray_transition_notation = database.xray_transition_notation
+xray_transition_energy_eV = database.xray_transition_energy_eV
+#xray_transition_probability = database.xray_transition_probability
+#xray_transition_relative_weight = database.xray_transition_relative_weight
+#xray_transitionset = database.xray_transitionset
+#xray_transitionset_notation = database.xray_transitionset_notation
+#xray_transitionset_energy_eV = database.xray_transitionset_energy_eV
+#xray_transitionset_relative_weight = database.xray_transitionset_relative_weight

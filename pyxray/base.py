@@ -33,15 +33,14 @@ _docextras = {'element': """:arg element: either
                 azimuthal quantum number and total angular momentum_nominator
             * any notation (case insensitive)""",
 
-            'transition': """:arg transition: either
-            * :class:`Transition <pyxray.descriptor.Transition>` object
+            'xraytransition': """:arg xraytransition: either
+            * :class:`XrayTransition <pyxray.descriptor.XrayTransition>` object
             * a :class:`tuple` of source and destination subshells 
-                (or optionally secondary destination subshells)
             * any notation (case insensitive)""",
 
-            'transitionset': """:arg transitionset: either
-            * :class:`TransitionSet <pyxray.descriptor.TransitionSet>` object
-            * a :class:`tuple` of transitions
+            'xraytransitionset': """:arg xraytransitionset: either
+            * :class:`XrayTransitionSet <pyxray.descriptor.XrayTransitionSet>` object
+            * a :class:`tuple` of x-ray transitions
             * any notation (case insensitive)""",
 
             'language': """:arg language: language code (e.g. ``en``, ``fr``, ``de``)""",
@@ -200,22 +199,23 @@ class _Database(object, metaclass=abc.ABCMeta):
         {exception}
         """
         return self.element_mass_density_kg_per_m3(element, reference) / 1e3
-#
+
 #    @abc.abstractmethod
 #    @formatdoc(**_docextras)
-#    def element_transitions(self, element, reference=None):
+#    def element_xray_transitions(self, element, reference=None):
 #        """
-#        Returns all transitions which have a probability greater than 0 for an element.
+#        Returns all x-ray transitions which have a probability greater
+#        than 0 for an element.
 #
 #        {element}
 #        {reference}
 #
-#        :return: transitions
-#        :rtype: :class:`tuple` of :class:`Transition`
+#        :return: x-ray transitions
+#        :rtype: :class:`tuple` of :class:`XrayTransition`
 #        {exception}
 #        """
 #        raise NotImplementedError
-#
+
     @abc.abstractmethod
     @formatdoc(**_docextras)
     def atomic_shell(self, atomic_shell):
@@ -344,25 +344,25 @@ class _Database(object, metaclass=abc.ABCMeta):
 #
     @abc.abstractmethod
     @formatdoc(**_docextras)
-    def transition(self, transition):
+    def xray_transition(self, xraytransition):
         """
-        Returns transition descriptor.
-
-        {transition}
-
-        :return: transition descriptor
-        :rtype: :class:`Transition`
+        Returns x-ray transition descriptor.
+        
+        {xraytransition}
+        
+        :return: x-ray transition descriptor
+        :rtype: :class:`XrayTransition`
         {exception}
         """
         raise NotImplementedError
 
     @abc.abstractmethod
     @formatdoc(**_docextras)
-    def transition_notation(self, transition, notation, encoding='utf16', reference=None):
+    def xray_transition_notation(self, xraytransition, notation, encoding='utf16', reference=None):
         """
-        Returns notation of a transition.
-
-        {transition}
+        Returns notation of an x-ray transition.
+        
+        {xraytransition}
         {notation}
         {encoding}
         {reference}
@@ -375,12 +375,12 @@ class _Database(object, metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     @formatdoc(**_docextras)
-    def transition_energy_eV(self, element, transition, reference=None):
+    def xray_transition_energy_eV(self, element, xraytransition, reference=None):
         """
-        Returns energy of an element and transition (in eV).
+        Returns energy of an element and X-ray transition (in eV).
 
         {element}
-        {transition}
+        {xraytransition}
         {reference}
 
         :return: energy (in eV)
@@ -391,12 +391,12 @@ class _Database(object, metaclass=abc.ABCMeta):
 #
 #    @abc.abstractmethod
 #    @formatdoc(**_docextras)
-#    def transition_probability(self, element, transition, reference=None):
+#    def xray_transition_probability(self, element, xraytransition, reference=None):
 #        """
-#        Returns probability of an element and transition.
+#        Returns probability of an element and X-ray transition.
 #
 #        {element}
-#        {transition}
+#        {xraytransition}
 #        {reference}
 #
 #        :return: probability
@@ -407,12 +407,12 @@ class _Database(object, metaclass=abc.ABCMeta):
 #
 #    @abc.abstractmethod
 #    @formatdoc(**_docextras)
-#    def transition_relative_weight(self, element, transition, reference=None):
+#    def xray_transition_relative_weight(self, element, xraytransition, reference=None):
 #        """
-#        Returns relative weight of an element and transition.
+#        Returns relative weight of an element and X-ray transition.
 #
 #        {element}
-#        {transition}
+#        {xraytransition}
 #        {reference}
 #
 #        :return: relative weight
@@ -423,25 +423,25 @@ class _Database(object, metaclass=abc.ABCMeta):
 #
 #    @abc.abstractmethod
 #    @formatdoc(**_docextras)
-#    def transitionset(self, transitionset):
+#    def xray_transitionset(self, xraytransitionset):
 #        """
-#        Returns transition set descriptor.
+#        Returns X-ray transition set descriptor.
 #
-#        {transitionset}
+#        {xraytransitionset}
 #
-#        :return: transition set descriptor
-#        :rtype: :class:`TransitionSet`
+#        :return: X-ray transition set descriptor
+#        :rtype: :class:`XrayTransitionSet`
 #        {exception}
 #        """
 #        raise NotImplementedError
 #
 #    @abc.abstractmethod
 #    @formatdoc(**_docextras)
-#    def transitionset_notation(self, transitionset, notation, encoding='utf16', reference=None):
+#    def xray_transitionset_notation(self, xraytransitionset, notation, encoding='utf16', reference=None):
 #        """
-#        Returns notation of a transition set.
+#        Returns notation of an X-ray transition set.
 #
-#        {transitionset}
+#        {xraytransitionset}
 #        {notation}
 #        {encoding}
 #        {reference}
@@ -454,12 +454,12 @@ class _Database(object, metaclass=abc.ABCMeta):
 #
 #    @abc.abstractmethod
 #    @formatdoc(**_docextras)
-#    def transitionset_energy_eV(self, element, transitionset, reference=None):
+#    def xray_transitionset_energy_eV(self, element, xraytransitionset, reference=None):
 #        """
-#        Returns energy of an element and transition set (in eV).
+#        Returns energy of an element and X-ray transition set (in eV).
 #
 #        {element}
-#        {transitionset}
+#        {xraytransitionset}
 #        {reference}
 #
 #        :return: energy (in eV)
@@ -470,12 +470,12 @@ class _Database(object, metaclass=abc.ABCMeta):
 #
 #    @abc.abstractmethod
 #    @formatdoc(**_docextras)
-#    def transitionset_relative_weight(self, element, transitionset, reference=None):
+#    def xray_transitionset_relative_weight(self, element, xraytransitionset, reference=None):
 #        """
-#        Returns relative weight of an element and transition set.
+#        Returns relative weight of an element and X-ray transition set.
 #
 #        {element}
-#        {transitionset}
+#        {xraytransitionset}
 #        {reference}
 #
 #        :return: relative weight
@@ -483,4 +483,3 @@ class _Database(object, metaclass=abc.ABCMeta):
 #        {exception}
 #        """
 #        raise NotImplementedError
-

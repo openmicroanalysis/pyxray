@@ -95,16 +95,16 @@ class TestSqlEngineDatabase(unittest.TestCase):
         self.assertAlmostEqual(0.9992, self.db.element_mass_density_g_per_cm3('Vi'), 4)
         self.assertAlmostEqual(0.9992, self.db.element_mass_density_g_per_cm3(118), 4)
         self.assertAlmostEqual(0.9992, self.db.element_mass_density_g_per_cm3('Vibranium'), 4)
-#
-#    def testelement_transitions(self):
-#        transitions = self.db.element_transitions(118)
+
+#    def testelement_xray_transitions(self):
+#        transitions = self.db.element_xray_transitions(118)
 #        self.assertEqual(1, len(transitions))
 #
 #        K = descriptor.AtomicSubshell(1, 0, 1)
 #        L3 = descriptor.AtomicSubshell(2, 1, 3)
-#        expected = descriptor.Transition(L3, K)
+#        expected = descriptor.XrayTransition(L3, K)
 #        self.assertEqual(expected, transitions[0])
-#
+
     def testatomic_shell(self):
         expected = descriptor.AtomicShell(1)
         self.assertEqual(expected, self.db.atomic_shell('a'))
@@ -153,28 +153,29 @@ class TestSqlEngineDatabase(unittest.TestCase):
 #        ashell = descriptor.AtomicSubshell(1, 0, 1)
 #        self.assertEqual(1, self.db.atomic_subshell_occupancy(118, ashell))
 #
-    def testtransition(self):
-        K = descriptor.AtomicSubshell(1, 0, 1)
-        L3 = descriptor.AtomicSubshell(2, 1, 3)
-        expected = descriptor.Transition(L3, K)
-        self.assertEqual(expected, self.db.transition('a'))
-        self.assertEqual(expected, self.db.transition((L3, K)))
-        self.assertEqual(expected, self.db.transition(descriptor.Transition(L3, K)))
 
-    def testtransition_notation(self):
+    def testxray_transition(self):
         K = descriptor.AtomicSubshell(1, 0, 1)
         L3 = descriptor.AtomicSubshell(2, 1, 3)
-        transition = descriptor.Transition(L3, K)
-        self.assertEqual('a', self.db.transition_notation(transition, 'mock', 'ascii'))
-        self.assertEqual('b', self.db.transition_notation(transition, 'mock', 'utf16'))
-        self.assertEqual('c', self.db.transition_notation(transition, 'mock', 'html'))
-        self.assertEqual('d', self.db.transition_notation(transition, 'mock', 'latex'))
+        expected = descriptor.XrayTransition(L3, K)
+        self.assertEqual(expected, self.db.xray_transition('a'))
+        self.assertEqual(expected, self.db.xray_transition((L3, K)))
+        self.assertEqual(expected, self.db.xray_transition(descriptor.XrayTransition(L3, K)))
 
-    def testtransition_energy_eV(self):
+    def testxray_transition_notation(self):
         K = descriptor.AtomicSubshell(1, 0, 1)
         L3 = descriptor.AtomicSubshell(2, 1, 3)
-        transition = descriptor.Transition(L3, K)
-        self.assertAlmostEqual(0.2, self.db.transition_energy_eV(118, transition), 4)
+        transition = descriptor.XrayTransition(L3, K)
+        self.assertEqual('a', self.db.xray_transition_notation(transition, 'mock', 'ascii'))
+        self.assertEqual('b', self.db.xray_transition_notation(transition, 'mock', 'utf16'))
+        self.assertEqual('c', self.db.xray_transition_notation(transition, 'mock', 'html'))
+        self.assertEqual('d', self.db.xray_transition_notation(transition, 'mock', 'latex'))
+
+    def testxray_transition_energy_eV(self):
+        K = descriptor.AtomicSubshell(1, 0, 1)
+        L3 = descriptor.AtomicSubshell(2, 1, 3)
+        transition = descriptor.XrayTransition(L3, K)
+        self.assertAlmostEqual(0.2, self.db.xray_transition_energy_eV(118, transition), 4)
 #
 #    def testtransition_probability(self):
 #        K = descriptor.AtomicSubshell(1, 0, 1)

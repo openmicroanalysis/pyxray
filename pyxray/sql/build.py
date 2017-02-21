@@ -44,14 +44,14 @@ class _DatabaseBuilder(metaclass=abc.ABCMeta):
         self._propfuncs[props.AtomicSubshellNonRadiativeWidth] = self._add_atomic_subshell_nonradiative_width_property
         self._propfuncs[props.AtomicSubshellOccupancy] = self._add_atomic_subshell_occupancy_property
 
-        self._propfuncs[props.TransitionNotation] = self._add_transition_notation_property
-        self._propfuncs[props.TransitionEnergy] = self._add_transition_energy_property
-        self._propfuncs[props.TransitionProbability] = self._add_transition_propability_property
-        self._propfuncs[props.TransitionRelativeWeight] = self._add_transition_relative_weight_property
+        self._propfuncs[props.XrayTransitionNotation] = self._add_xray_transition_notation_property
+        self._propfuncs[props.XrayTransitionEnergy] = self._add_xray_transition_energy_property
+        self._propfuncs[props.XrayTransitionProbability] = self._add_xray_transition_propability_property
+        self._propfuncs[props.XrayTransitionRelativeWeight] = self._add_xray_transition_relative_weight_property
 
-        self._propfuncs[props.TransitionSetNotation] = self._add_transitionset_notation_property
-        self._propfuncs[props.TransitionSetEnergy] = self._add_transitionset_energy_property
-        self._propfuncs[props.TransitionSetRelativeWeight] = self._add_transitionset_relative_weight_property
+        self._propfuncs[props.XrayTransitionSetNotation] = self._add_xray_transitionset_notation_property
+        self._propfuncs[props.XrayTransitionSetEnergy] = self._add_xray_transitionset_energy_property
+        self._propfuncs[props.XrayTransitionSetRelativeWeight] = self._add_xray_transitionset_relative_weight_property
 
     @abc.abstractmethod
     def _backup_existing_database(self): #pragma: no cover
@@ -158,49 +158,43 @@ class _DatabaseBuilder(metaclass=abc.ABCMeta):
         result = conn.execute(command)
         return result.inserted_primary_key[0]
 
-    def _insert_transition(self, conn, transition):
+    def _insert_xray_transition(self, conn, xraytransition):
         source_subshell_id = \
-            self._require_atomic_subshell(conn, transition.source_subshell)
+            self._require_atomic_subshell(conn, xraytransition.source_subshell)
         destination_subshell_id = \
-            self._require_atomic_subshell(conn, transition.destination_subshell)
-        if transition.secondary_destination_subshell:
-            secondary_destination_subshell_id = \
-                self._require_atomic_subshell(conn, transition.secondary_destination_subshell)
-        else:
-            secondary_destination_subshell_id = None
+            self._require_atomic_subshell(conn, xraytransition.destination_subshell)
 
-        tbl = table.transition
+        tbl = table.xray_transition
         tbl.create(conn, checkfirst=True)
 
         command = sql.insert(tbl)
         command = command.values(source_subshell_id=source_subshell_id,
-                                 destination_subshell_id=destination_subshell_id,
-                                 secondary_destination_subshell_id=secondary_destination_subshell_id)
+                                 destination_subshell_id=destination_subshell_id)
         result = conn.execute(command)
         return result.inserted_primary_key[0]
 
-    def _insert_transitionset(self, conn, transitionset):
-        transition_ids = set()
-        for transition in transitionset.transitions:
-            transition_id = self._require_transition(conn, transition)
-            transition_ids.add(transition_id)
+    def _insert_xray_transitionset(self, conn, xraytransitionset):
+        xray_transition_ids = set()
+        for xraytransition in xraytransitionset.transitions:
+            xray_transition_id = self._require_xray_transition(conn, xraytransition)
+            xray_transition_ids.add(xray_transition_id)
 
-        table.transitionset.create(conn, checkfirst=True)
-        table.transitionset_association.create(conn, checkfirst=True)
+        table.xray_transitionset.create(conn, checkfirst=True)
+        table.xray_transitionset_association.create(conn, checkfirst=True)
 
-        # Create empty transitionset row
-        command = sql.insert(table.transitionset)
+        # Create empty row
+        command = sql.insert(table.xray_transitionset)
         result = conn.execute(command)
-        transitionset_id = result.inserted_primary_key[0]
+        xray_transitionset_id = result.inserted_primary_key[0]
 
         # Populate association table
-        for transition_id in transition_ids:
-            command = sql.insert(table.transitionset_association)
-            command = command.values(transitionset_id=transitionset_id,
-                                     transition_id=transition_id)
+        for xray_transition_id in xray_transition_ids:
+            command = sql.insert(table.xray_transitionset_association)
+            command = command.values(xray_transitionset_id=xray_transitionset_id,
+                                     xray_transition_id=xray_transition_id)
             conn.execute(command)
 
-        return transitionset_id
+        return xray_transitionset_id
 
     def _insert_language(self, conn, language):
         code = language.code
@@ -275,27 +269,25 @@ class _DatabaseBuilder(metaclass=abc.ABCMeta):
         except NotFound:
             return self._insert_atomic_subshell(conn, atomic_subshell)
 
-    def _require_transition(self, conn, transition):
+    def _require_xray_transition(self, conn, xraytransition):
         # Ensure atomic subshells exist
-        self._require_atomic_subshell(conn, transition.source_subshell)
-        self._require_atomic_subshell(conn, transition.destination_subshell)
-        if transition.secondary_destination_subshell:
-            self._require_atomic_subshell(conn, transition.secondary_destination_subshell)
+        self._require_atomic_subshell(conn, xraytransition.source_subshell)
+        self._require_atomic_subshell(conn, xraytransition.destination_subshell)
 
         try:
-            return self._get_transition_id(conn, transition)
+            return self._get_xray_transition_id(conn, xraytransition)
         except NotFound:
-            return self._insert_transition(conn, transition)
+            return self._insert_xray_transition(conn, xraytransition)
 
-    def _require_transitionset(self, conn, transitionset):
+    def _require_xray_transitionset(self, conn, xraytransitionset):
         # Ensure transitions exist
-        for transition in transitionset.transitions:
-            self._require_transition(conn, transition)
+        for xraytransition in xraytransitionset.transitions:
+            self._require_xray_transition(conn, xraytransition)
 
         try:
-            return self._get_transitionset_id(conn, transitionset)
+            return self._get_xray_transitionset_id(conn, xraytransitionset)
         except NotFound:
-            return self._insert_transitionset(conn, transitionset)
+            return self._insert_xray_transitionset(conn, xraytransitionset)
 
     def _require_language(self, conn, language):
         try:
@@ -491,21 +483,21 @@ class _DatabaseBuilder(metaclass=abc.ABCMeta):
         result = conn.execute(command)
         return result.inserted_primary_key[0]
 
-    def _add_transition_notation_property(self, conn, prop):
+    def _add_xray_transition_notation_property(self, conn, prop):
         reference_id = self._require_reference(conn, prop.reference)
-        transition_id = self._require_transition(conn, prop.transition)
+        xray_transition_id = self._require_xray_transition(conn, prop.xraytransition)
         notation_id = self._require_notation(conn, prop.notation)
         ascii = prop.ascii
         utf16 = prop.utf16
         html = prop.html
         latex = prop.latex
 
-        tbl = table.transition_notation
+        tbl = table.xray_transition_notation
         tbl.create(conn, checkfirst=True)
 
         command = sql.insert(tbl)
         command = command.values(reference_id=reference_id,
-                                 transition_id=transition_id,
+                                 xray_transition_id=xray_transition_id,
                                  notation_id=notation_id,
                                  ascii=ascii,
                                  utf16=utf16,
@@ -514,72 +506,72 @@ class _DatabaseBuilder(metaclass=abc.ABCMeta):
         result = conn.execute(command)
         return result.inserted_primary_key[0]
 
-    def _add_transition_energy_property(self, conn, prop):
+    def _add_xray_transition_energy_property(self, conn, prop):
         reference_id = self._require_reference(conn, prop.reference)
         element_id = self._require_element(conn, prop.element)
-        transition_id = self._require_transition(conn, prop.transition)
+        xray_transition_id = self._require_xray_transition(conn, prop.xraytransition)
         value_eV = prop.value_eV
 
-        tbl = table.transition_energy
+        tbl = table.xray_transition_energy
         tbl.create(conn, checkfirst=True)
 
         command = sql.insert(tbl)
         command = command.values(reference_id=reference_id,
                                  element_id=element_id,
-                                 transition_id=transition_id,
+                                 xray_transition_id=xray_transition_id,
                                  value_eV=value_eV)
         result = conn.execute(command)
         return result.inserted_primary_key[0]
 
-    def _add_transition_propability_property(self, conn, prop):
+    def _add_xray_transition_propability_property(self, conn, prop):
         reference_id = self._require_reference(conn, prop.reference)
         element_id = self._require_element(conn, prop.element)
-        transition_id = self._require_transition(conn, prop.transition)
+        xray_transition_id = self._require_xray_transition(conn, prop.xraytransition)
         value = prop.value
 
-        tbl = table.transition_probability
+        tbl = table.xray_transition_probability
         tbl.create(conn, checkfirst=True)
 
         command = sql.insert(tbl)
         command = command.values(reference_id=reference_id,
                                  element_id=element_id,
-                                 transition_id=transition_id,
+                                 xray_transition_id=xray_transition_id,
                                  value=value)
         result = conn.execute(command)
         return result.inserted_primary_key[0]
 
-    def _add_transition_relative_weight_property(self, conn, prop):
+    def _add_xray_transition_relative_weight_property(self, conn, prop):
         reference_id = self._require_reference(conn, prop.reference)
         element_id = self._require_element(conn, prop.element)
-        transition_id = self._require_transition(conn, prop.transition)
+        xray_transition_id = self._require_xray_transition(conn, prop.xraytransition)
         value = prop.value
 
-        tbl = table.transition_relative_weight
+        tbl = table.xray_transition_relative_weight
         tbl.create(conn, checkfirst=True)
 
         command = sql.insert(tbl)
         command = command.values(reference_id=reference_id,
                                  element_id=element_id,
-                                 transition_id=transition_id,
+                                 xray_transition_id=xray_transition_id,
                                  value=value)
         result = conn.execute(command)
         return result.inserted_primary_key[0]
 
-    def _add_transitionset_notation_property(self, conn, prop):
+    def _add_xray_transitionset_notation_property(self, conn, prop):
         reference_id = self._require_reference(conn, prop.reference)
-        transitionset_id = self._require_transitionset(conn, prop.transitionset)
+        xray_transitionset_id = self._require_xray_transitionset(conn, prop.xraytransitionset)
         notation_id = self._require_notation(conn, prop.notation)
         ascii = prop.ascii
         utf16 = prop.utf16
         html = prop.html
         latex = prop.latex
 
-        tbl = table.transitionset_notation
+        tbl = table.xray_transitionset_notation
         tbl.create(conn, checkfirst=True)
 
         command = sql.insert(tbl)
         command = command.values(reference_id=reference_id,
-                                 transitionset_id=transitionset_id,
+                                 xray_transitionset_id=xray_transitionset_id,
                                  notation_id=notation_id,
                                  ascii=ascii,
                                  utf16=utf16,
@@ -588,36 +580,36 @@ class _DatabaseBuilder(metaclass=abc.ABCMeta):
         result = conn.execute(command)
         return result.inserted_primary_key[0]
 
-    def _add_transitionset_energy_property(self, conn, prop):
+    def _add_xray_transitionset_energy_property(self, conn, prop):
         reference_id = self._require_reference(conn, prop.reference)
         element_id = self._require_element(conn, prop.element)
-        transitionset_id = self._require_transitionset(conn, prop.transitionset)
+        xray_transitionset_id = self._require_xray_transitionset(conn, prop.xraytransitionset)
         value_eV = prop.value_eV
 
-        tbl = table.transitionset_energy
+        tbl = table.xray_transitionset_energy
         tbl.create(conn, checkfirst=True)
 
         command = sql.insert(tbl)
         command = command.values(reference_id=reference_id,
                                  element_id=element_id,
-                                 transitionset_id=transitionset_id,
+                                 xray_transitionset_id=xray_transitionset_id,
                                  value_eV=value_eV)
         result = conn.execute(command)
         return result.inserted_primary_key[0]
 
-    def _add_transitionset_relative_weight_property(self, conn, prop):
+    def _add_xray_transitionset_relative_weight_property(self, conn, prop):
         reference_id = self._require_reference(conn, prop.reference)
         element_id = self._require_element(conn, prop.element)
-        transitionset_id = self._require_transitionset(conn, prop.transitionset)
+        xray_transitionset_id = self._require_xray_transitionset(conn, prop.xraytransitionset)
         value = prop.value
 
-        tbl = table.transitionset_relative_weight
+        tbl = table.xray_transitionset_relative_weight
         tbl.create(conn, checkfirst=True)
 
         command = sql.insert(tbl)
         command = command.values(reference_id=reference_id,
                                  element_id=element_id,
-                                 transitionset_id=transitionset_id,
+                                 xray_transitionset_id=xray_transitionset_id,
                                  value=value)
         result = conn.execute(command)
         return result.inserted_primary_key[0]

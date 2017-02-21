@@ -2,8 +2,8 @@
 Definition of descriptors.
 """
 
-__all__ = ['Element', 'AtomicShell', 'AtomicSubshell', 'Transition',
-           'TransitionSet', 'Language', 'Notation', 'Reference']
+__all__ = ['Element', 'AtomicShell', 'AtomicSubshell', 'XrayTransition',
+           'XrayTransitionSet', 'Language', 'Notation', 'Reference']
 
 # Standard library modules.
 
@@ -107,38 +107,12 @@ class AtomicSubshell(metaclass=_Descriptor,
     def j(self):
         return self.total_angular_momentum
 
-class Transition(metaclass=_Descriptor,
-                 attrs=('source_subshell',
-                        'destination_subshell',
-                        'secondary_destination_subshell')):
+class XrayTransition(metaclass=_Descriptor,
+                     attrs=('source_subshell',
+                            'destination_subshell')):
 
     @classmethod
-    def validate(cls,
-                 source_subshell,
-                 destination_subshell,
-                 secondary_destination_subshell=None):
-        if not isinstance(source_subshell, AtomicSubshell):
-            source_subshell = AtomicSubshell(source_subshell)
-        if not isinstance(destination_subshell, AtomicSubshell):
-            destination_subshell = AtomicSubshell(destination_subshell)
-        if secondary_destination_subshell and \
-                not isinstance(secondary_destination_subshell, AtomicSubshell):
-            secondary_destination_subshell = AtomicSubshell(secondary_destination_subshell)
-
-        return (source_subshell,
-                destination_subshell,
-                secondary_destination_subshell)
-
-    def _repr_inner(self):
-        r = '[n={src.n}, l={src.l}, j={src.j:.1f}]'
-        r += ' -> [n={dest.n}, l={dest.l}, j={dest.j:.1f}]'
-        if self.secondary_destination_subshell is not None:
-            r += ' -> [n={dest2.n}, l={dest2.l}, j={dest2.j:.1f}]'
-        return r.format(src=self.source_subshell,
-                        dest=self.destination_subshell,
-                        dest2=self.secondary_destination_subshell)
-
-    def is_radiative(self):
+    def is_radiative(cls, source_subshell, destination_subshell):
         """
         Inspired from NIST EPQ library by Nicholas Ritchie.
         """
@@ -160,15 +134,12 @@ class Transition(metaclass=_Descriptor,
             delta_l = abs(l1 - l0)
             return delta_l == 0 or delta_l == 2
 
-        if self.secondary_destination_subshell is not None:
-            return False
-
-        n0 = self.source_subshell.n
-        l0 = self.source_subshell.l
-        j0_n = self.source_subshell.j_n
-        n1 = self.destination_subshell.n
-        l1 = self.destination_subshell.l
-        j1_n = self.destination_subshell.j_n
+        n0 = source_subshell.n
+        l0 = source_subshell.l
+        j0_n = source_subshell.j_n
+        n1 = destination_subshell.n
+        l1 = destination_subshell.l
+        j1_n = destination_subshell.j_n
 
         if n0 == n1:
             return False
@@ -179,21 +150,30 @@ class Transition(metaclass=_Descriptor,
 
         return True
 
-    def is_nonradiative(self):
-        return not self.is_radiative()
+    @classmethod
+    def validate(cls, source_subshell, destination_subshell):
+        if not isinstance(source_subshell, AtomicSubshell):
+            source_subshell = AtomicSubshell(source_subshell)
+        if not isinstance(destination_subshell, AtomicSubshell):
+            destination_subshell = AtomicSubshell(destination_subshell)
 
-    def is_coster_kronig(self):
-        return self.source_subshell.n == self.destination_subshell.n
+        return (source_subshell, destination_subshell)
 
-class TransitionSet(metaclass=_Descriptor,
-                    attrs=('transitions',)):
+    def _repr_inner(self):
+        r = '[n={src.n}, l={src.l}, j={src.j:.1f}]'
+        r += ' -> [n={dest.n}, l={dest.l}, j={dest.j:.1f}]'
+        return r.format(src=self.source_subshell,
+                        dest=self.destination_subshell)
+
+class XrayTransitionSet(metaclass=_Descriptor,
+                        attrs=('transitions',)):
 
     @classmethod
     def validate(cls, transitions):
         transitions2 = set()
         for transition in transitions:
-            if not isinstance(transition, Transition):
-                transition = Transition(*transition)
+            if not isinstance(transition, XrayTransition):
+                transition = XrayTransition(*transition)
             transitions2.add(transition)
         return (frozenset(transitions2),)
 

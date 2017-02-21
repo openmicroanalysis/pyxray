@@ -29,13 +29,13 @@ def _append_atomic_subshell_columns(table):
     table.append_column(Column('atomic_subshell_id', Integer,
                                ForeignKey('atomic_subshell.id'), nullable=False))
 
-def _append_transition_columns(table):
-    table.append_column(Column('transition_id', Integer,
-                               ForeignKey('transition.id'), nullable=False))
+def _append_xray_transition_columns(table):
+    table.append_column(Column('xray_transition_id', Integer,
+                               ForeignKey('xray_transition.id'), nullable=False))
 
-def _append_transitionset_columns(table):
-    table.append_column(Column('transitionset_id', Integer,
-                               ForeignKey('transitionset.id'), nullable=False))
+def _append_xray_transitionset_columns(table):
+    table.append_column(Column('xray_transitionset_id', Integer,
+                               ForeignKey('xray_transitionset.id'), nullable=False))
 
 def _append_language_columns(table):
     table.append_column(Column('language_id', Integer,
@@ -77,22 +77,21 @@ atomic_subshell = \
 _append_primary_key_columns(atomic_subshell)
 _append_atomic_shell_columns(atomic_subshell)
 
-transition = \
-    Table('transition', metadata,
+xray_transition = \
+    Table('xray_transition', metadata,
           Column('source_subshell_id', Integer, ForeignKey('atomic_shell.id'), nullable=False),
-          Column('destination_subshell_id', Integer, ForeignKey('atomic_shell.id'), nullable=False),
-          Column('secondary_destination_subshell_id', Integer, ForeignKey('atomic_shell.id')))
-_append_primary_key_columns(transition)
+          Column('destination_subshell_id', Integer, ForeignKey('atomic_shell.id'), nullable=False))
+_append_primary_key_columns(xray_transition)
 
-transitionset_association = \
-    Table('transitionset_association', metadata,
-          Column('transitionset_id', Integer, ForeignKey('transitionset.id'), nullable=False),
-          Column('transition_id', Integer, ForeignKey('transition.id'), nullable=False))
-_append_primary_key_columns(transitionset_association)
+xray_transitionset_association = \
+    Table('xray_transitionset_association', metadata,
+          Column('xray_transitionset_id', Integer, ForeignKey('xray_transitionset.id'), nullable=False),
+          Column('xray_transition_id', Integer, ForeignKey('xray_transition.id'), nullable=False))
+_append_primary_key_columns(xray_transitionset_association)
 
-transitionset = \
-    Table('transitionset', metadata)
-_append_primary_key_columns(transitionset)
+xray_transitionset = \
+    Table('xray_transitionset', metadata)
+_append_primary_key_columns(xray_transitionset)
 
 language = \
     Table('language', metadata,
@@ -209,58 +208,58 @@ _append_reference_columns(atomic_subshell_occupancy)
 _append_element_columns(atomic_subshell_occupancy)
 _append_atomic_subshell_columns(atomic_subshell_occupancy)
 
-transition_notation = \
-    Table('transition_notation', metadata)
-_append_primary_key_columns(transition_notation)
-_append_reference_columns(transition_notation)
-_append_transition_columns(transition_notation)
-_append_notation_columns(transition_notation)
-_append_notation_property_columns(transition_notation)
+xray_transition_notation = \
+    Table('xray_transition_notation', metadata)
+_append_primary_key_columns(xray_transition_notation)
+_append_reference_columns(xray_transition_notation)
+_append_xray_transition_columns(xray_transition_notation)
+_append_notation_columns(xray_transition_notation)
+_append_notation_property_columns(xray_transition_notation)
 
-transition_energy = \
-    Table('transition_energy', metadata)
-_append_primary_key_columns(transition_energy)
-_append_reference_columns(transition_energy)
-_append_element_columns(transition_energy)
-_append_transition_columns(transition_energy)
-_append_energy_property_columns(transition_energy)
+xray_transition_energy = \
+    Table('xray_transition_energy', metadata)
+_append_primary_key_columns(xray_transition_energy)
+_append_reference_columns(xray_transition_energy)
+_append_element_columns(xray_transition_energy)
+_append_xray_transition_columns(xray_transition_energy)
+_append_energy_property_columns(xray_transition_energy)
 
-transition_probability = \
-    Table('transition_probability', metadata,
+xray_transition_probability = \
+    Table('xray_transition_probability', metadata,
           Column('value', Float, nullable=False))
-_append_primary_key_columns(transition_probability)
-_append_reference_columns(transition_probability)
-_append_element_columns(transition_probability)
-_append_transition_columns(transition_probability)
+_append_primary_key_columns(xray_transition_probability)
+_append_reference_columns(xray_transition_probability)
+_append_element_columns(xray_transition_probability)
+_append_xray_transition_columns(xray_transition_probability)
 
-transition_relative_weight = \
-    Table('transition_relative_weight', metadata,
+xray_transition_relative_weight = \
+    Table('xray_transition_relative_weight', metadata,
           Column('value', Float, nullable=False))
-_append_primary_key_columns(transition_relative_weight)
-_append_reference_columns(transition_relative_weight)
-_append_element_columns(transition_relative_weight)
-_append_transition_columns(transition_relative_weight)
+_append_primary_key_columns(xray_transition_relative_weight)
+_append_reference_columns(xray_transition_relative_weight)
+_append_element_columns(xray_transition_relative_weight)
+_append_xray_transition_columns(xray_transition_relative_weight)
 
-transitionset_notation = \
-    Table('transitionset_notation', metadata)
-_append_primary_key_columns(transitionset_notation)
-_append_reference_columns(transitionset_notation)
-_append_transitionset_columns(transitionset_notation)
-_append_notation_columns(transitionset_notation)
-_append_notation_property_columns(transitionset_notation)
+xray_transitionset_notation = \
+    Table('xray_transitionset_notation', metadata)
+_append_primary_key_columns(xray_transitionset_notation)
+_append_reference_columns(xray_transitionset_notation)
+_append_xray_transitionset_columns(xray_transitionset_notation)
+_append_notation_columns(xray_transitionset_notation)
+_append_notation_property_columns(xray_transitionset_notation)
 
-transitionset_energy = \
-    Table('transitionset_energy', metadata)
-_append_primary_key_columns(transitionset_energy)
-_append_reference_columns(transitionset_energy)
-_append_element_columns(transitionset_energy)
-_append_transitionset_columns(transitionset_energy)
-_append_energy_property_columns(transitionset_energy)
+xray_transitionset_energy = \
+    Table('xray_transitionset_energy', metadata)
+_append_primary_key_columns(xray_transitionset_energy)
+_append_reference_columns(xray_transitionset_energy)
+_append_element_columns(xray_transitionset_energy)
+_append_xray_transitionset_columns(xray_transitionset_energy)
+_append_energy_property_columns(xray_transitionset_energy)
 
-transitionset_relative_weight = \
-    Table('transitionset_relative_weight', metadata,
+xray_transitionset_relative_weight = \
+    Table('xray_transitionset_relative_weight', metadata,
           Column('value', Float, nullable=False))
-_append_primary_key_columns(transitionset_relative_weight)
-_append_reference_columns(transitionset_relative_weight)
-_append_element_columns(transitionset_relative_weight)
-_append_transitionset_columns(transitionset_relative_weight)
+_append_primary_key_columns(xray_transitionset_relative_weight)
+_append_reference_columns(xray_transitionset_relative_weight)
+_append_element_columns(xray_transitionset_relative_weight)
+_append_xray_transitionset_columns(xray_transitionset_relative_weight)

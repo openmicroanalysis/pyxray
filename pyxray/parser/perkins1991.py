@@ -23,13 +23,13 @@ except ImportError:
 
 # Local modules.
 from pyxray.parser.parser import _Parser
-from pyxray.descriptor import Reference, Element, AtomicSubshell, Transition
+from pyxray.descriptor import Reference, Element, AtomicSubshell, XrayTransition
 from pyxray.property import \
     (ElementAtomicWeight,
      AtomicSubshellBindingEnergy,
      AtomicSubshellRadiativeWidth, AtomicSubshellNonRadiativeWidth,
      AtomicSubshellOccupancy,
-     TransitionEnergy, TransitionProbability)
+     XrayTransitionEnergy, XrayTransitionProbability)
 
 # Globals and constants variables.
 
@@ -337,52 +337,52 @@ class Perkins1991Parser(_Parser):
 
         for row in rows[2:]:
             source_subshell = self._extract_source_subshell([row])
-            transition = Transition(source_subshell, destination_subshell)
+            transition = XrayTransition(source_subshell, destination_subshell)
 
             value = float_(row[11:22])
-            prop = TransitionProbability(PERKINS1991, element, transition, value)
+            prop = XrayTransitionProbability(PERKINS1991, element, transition, value)
             logger.debug('Parsed: {0}'.format(prop))
             yield prop
 
             value_eV = float_(row[22:33]) * 1e6
-            prop = TransitionEnergy(PERKINS1991, element, transition, value_eV)
+            prop = XrayTransitionEnergy(PERKINS1991, element, transition, value_eV)
             logger.debug('Parsed: {0}'.format(prop))
             yield prop
 
-    def _parse_nonradiative_transition(self, rows):
-        reaction_descriptor = self._extract_reaction_descriptor(rows)
-        if reaction_descriptor != REACTION_DESCRIPTOR_TRANSITION:
-            return
-
-        reaction_modifier = self._extract_reaction_modifier(rows)
-        if reaction_modifier != REACTION_MODIFIER_EXTRA:
-            return
-
-        outgoing_particle = self._extract_outgoing_particle(rows)
-        if outgoing_particle != OUTGOING_PARTICLE_ELECTRON:
-            return
-
-        reaction_property = self._extract_reaction_property(rows)
-        if reaction_property != REACTION_PROPERTY_NONRADIATIVE_PROBABILITY:
-            return
-
-        element = self._extract_element(rows)
-
-        destination_subshell = self._extract_destination_subshell(rows)
-
-        for row in rows[2:]:
-            source_subshell = self._extract_source_subshell([row])
-            secondary_destination_subshell = \
-                self._extract_secondary_destination_subshell([row])
-            transition = Transition(source_subshell, destination_subshell,
-                                    secondary_destination_subshell)
-
-            value = float_(row[22:33])
-            prop = TransitionProbability(PERKINS1991, element, transition, value)
-            logger.debug('Parsed: {0}'.format(prop))
-            yield prop
-
-            value_eV = float_(row[33:44]) * 1e6
-            prop = TransitionEnergy(PERKINS1991, element, transition, value_eV)
-            logger.debug('Parsed: {0}'.format(prop))
-            yield prop
+#    def _parse_nonradiative_transition(self, rows):
+#        reaction_descriptor = self._extract_reaction_descriptor(rows)
+#        if reaction_descriptor != REACTION_DESCRIPTOR_TRANSITION:
+#            return
+#
+#        reaction_modifier = self._extract_reaction_modifier(rows)
+#        if reaction_modifier != REACTION_MODIFIER_EXTRA:
+#            return
+#
+#        outgoing_particle = self._extract_outgoing_particle(rows)
+#        if outgoing_particle != OUTGOING_PARTICLE_ELECTRON:
+#            return
+#
+#        reaction_property = self._extract_reaction_property(rows)
+#        if reaction_property != REACTION_PROPERTY_NONRADIATIVE_PROBABILITY:
+#            return
+#
+#        element = self._extract_element(rows)
+#
+#        destination_subshell = self._extract_destination_subshell(rows)
+#
+#        for row in rows[2:]:
+#            source_subshell = self._extract_source_subshell([row])
+#            secondary_destination_subshell = \
+#                self._extract_secondary_destination_subshell([row])
+#            transition = Transition(source_subshell, destination_subshell,
+#                                    secondary_destination_subshell)
+#
+#            value = float_(row[22:33])
+#            prop = TransitionProbability(PERKINS1991, element, transition, value)
+#            logger.debug('Parsed: {0}'.format(prop))
+#            yield prop
+#
+#            value_eV = float_(row[33:44]) * 1e6
+#            prop = TransitionEnergy(PERKINS1991, element, transition, value_eV)
+#            logger.debug('Parsed: {0}'.format(prop))
+#            yield prop

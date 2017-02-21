@@ -91,42 +91,42 @@ class TestSqlEngineDatabase(unittest.TestCase):
 
         self.assertRaises(NotFound, self.mock._get_atomic_subshell_id, self.engine, (7, 0, 1))
 
-    def test_get_transition_id(self):
-        self.assertEqual(1, self.mock._get_transition_id(self.engine, 'a'))
-        self.assertEqual(1, self.mock._get_transition_id(self.engine, 'b'))
+    def test_get_xray_transition_id(self):
+        self.assertEqual(1, self.mock._get_xray_transition_id(self.engine, 'a'))
+        self.assertEqual(1, self.mock._get_xray_transition_id(self.engine, 'b'))
 
         K = descriptor.AtomicSubshell(1, 0, 1)
         L2 = descriptor.AtomicSubshell(2, 1, 1)
         L3 = descriptor.AtomicSubshell(2, 1, 3)
-        self.assertEqual(1, self.mock._get_transition_id(self.engine, (L3, K)))
-        self.assertEqual(2, self.mock._get_transition_id(self.engine, (L2, K, L3)))
+        self.assertEqual(1, self.mock._get_xray_transition_id(self.engine, (L3, K)))
+        self.assertEqual(2, self.mock._get_xray_transition_id(self.engine, (L2, K)))
 
-        transition = descriptor.Transition(L3, K)
-        transition2 = descriptor.Transition(L2, K, L3)
-        self.assertEqual(1, self.mock._get_transition_id(self.engine, transition))
-        self.assertEqual(2, self.mock._get_transition_id(self.engine, transition2))
+        transition = descriptor.XrayTransition(L3, K)
+        transition2 = descriptor.XrayTransition(L2, K)
+        self.assertEqual(1, self.mock._get_xray_transition_id(self.engine, transition))
+        self.assertEqual(2, self.mock._get_xray_transition_id(self.engine, transition2))
 
-    def test_get_transitionset_id(self):
-        self.assertEqual(1, self.mock._get_transitionset_id(self.engine, 'a'))
-        self.assertEqual(1, self.mock._get_transitionset_id(self.engine, 'b'))
+    def test_get_xray_transitionset_id(self):
+        self.assertEqual(1, self.mock._get_xray_transitionset_id(self.engine, 'a'))
+        self.assertEqual(1, self.mock._get_xray_transitionset_id(self.engine, 'b'))
 
         K = descriptor.AtomicSubshell(1, 0, 1)
         L2 = descriptor.AtomicSubshell(2, 1, 1)
         L3 = descriptor.AtomicSubshell(2, 1, 3)
-        transition = descriptor.Transition(L3, K)
-        transition2 = descriptor.Transition(L2, K, L3)
-        transitionset = descriptor.TransitionSet([transition, transition2])
+        transition = descriptor.XrayTransition(L3, K)
+        transition2 = descriptor.XrayTransition(L2, K)
+        transitionset = descriptor.XrayTransitionSet([transition, transition2])
 
-        self.assertEqual(1, self.mock._get_transitionset_id(self.engine, [(L3, K), (L2, K, L3)]))
-        self.assertEqual(1, self.mock._get_transitionset_id(self.engine, transitionset))
+        self.assertEqual(1, self.mock._get_xray_transitionset_id(self.engine, [(L3, K), (L2, K)]))
+        self.assertEqual(1, self.mock._get_xray_transitionset_id(self.engine, transitionset))
 
-    def test_get_transitionset_id_exception(self):
+    def test_get_xray_transitionset_id_exception(self):
         K = descriptor.AtomicSubshell(1, 0, 1)
         L3 = descriptor.AtomicSubshell(2, 1, 3)
-        transition = descriptor.Transition(L3, K)
-        transitionset = descriptor.TransitionSet([transition])
+        transition = descriptor.XrayTransition(L3, K)
+        transitionset = descriptor.XrayTransitionSet([transition])
 
-        self.assertRaises(NotFound, self.mock._get_transitionset_id, self.engine, transitionset)
+        self.assertRaises(NotFound, self.mock._get_xray_transitionset_id, self.engine, transitionset)
 
     def test_get_notation_id(self):
         self.assertEqual(1, self.mock._get_notation_id(self.engine, 'mock'))
