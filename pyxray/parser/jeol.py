@@ -13,10 +13,10 @@ import pkg_resources
 # Local modules.
 from pyxray.parser.parser import _Parser
 from pyxray.descriptor import \
-    Reference, Element, Transition, TransitionSet, AtomicSubshell
+    Reference, Element, XrayTransition, XrayTransitionSet, AtomicSubshell
 from pyxray.property import \
-    (TransitionEnergy, TransitionSetEnergy,
-     TransitionRelativeWeight, TransitionSetRelativeWeight)
+    (XrayTransitionEnergy, XrayTransitionSetEnergy,
+     XrayTransitionRelativeWeight, XrayTransitionSetRelativeWeight)
 
 # Globals and constants variables.
 
@@ -164,15 +164,15 @@ class JEOLTransitionParser(_Parser):
         for z, subshells, probability, eV in transition_energy:
             if eV is None:
                 continue
-            transition = Transition(*subshells)
+            transition = XrayTransition(*subshells)
             element = Element(z)
 
-            prop = TransitionEnergy(JEOL, element, transition, eV)
+            prop = XrayTransitionEnergy(JEOL, element, transition, eV)
             logger.debug('Parsed: {0}'.format(prop))
             self.update(int((z - 1) / length * 100.0))
             yield prop
 
-            prop = TransitionRelativeWeight(JEOL, element, transition, probability)
+            prop = XrayTransitionRelativeWeight(JEOL, element, transition, probability)
             logger.debug('Parsed: {0}'.format(prop))
             self.update(int((z - 1) / length * 100.0))
             yield prop
@@ -181,15 +181,15 @@ class JEOLTransitionParser(_Parser):
         for z, transitions, probability, eV in transition_set_energy:
             if eV is None:
                 continue
-            transitionset = TransitionSet(transitions)
+            transitionset = XrayTransitionSet(transitions)
             element = Element(z)
 
-            prop = TransitionSetEnergy(JEOL, element, transitionset, eV)
+            prop = XrayTransitionSetEnergy(JEOL, element, transitionset, eV)
             logger.debug('Parsed: {0}'.format(prop))
             self.update(int((z - 1) / length * 100.0))
             yield prop
 
-            prop = TransitionSetRelativeWeight(JEOL, element, transitionset, probability)
+            prop = XrayTransitionSetRelativeWeight(JEOL, element, transitionset, probability)
             logger.debug('Parsed: {0}'.format(prop))
             self.update(int((z - 1) / length * 100.0))
             yield prop

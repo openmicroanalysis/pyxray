@@ -11,7 +11,7 @@ import sqlalchemy.sql as sql
 # Local modules.
 from pyxray.descriptor import \
     (Element, Language, Reference, Notation, AtomicShell, AtomicSubshell,
-     Transition, TransitionSet)
+     XrayTransition, XrayTransitionSet)
 import pyxray.sql.table as table
 from pyxray.base import NotFound
 
@@ -188,137 +188,120 @@ class SqlEngineDatabaseMixin:
                               azimuthal_quantum_number,
                               total_angular_momentum_nominator)
 
-    def _get_transition_id(self, conn, transition):
-        if isinstance(transition, str):
-            tbl = table.transition_notation
+    def _get_xray_transition_id(self, conn, xraytransition):
+        if isinstance(xraytransition, str):
+            tbl = table.xray_transition_notation
             tbl.create(conn, checkfirst=True)
 
-            command = sql.select([tbl.c.transition_id])
-            command = command.where(sql.or_(tbl.c.ascii == transition,
-                                            tbl.c.utf16 == transition))
+            command = sql.select([tbl.c.xray_transition_id])
+            command = command.where(sql.or_(tbl.c.ascii == xraytransition,
+                                            tbl.c.utf16 == xraytransition))
             out = self._retrieve_first(conn, command)
             if out is not None:
                 return out
 
         source_subshell = None
         destination_subshell = None
-        secondary_destination_subshell = None
-        if isinstance(transition, Transition):
-            source_subshell = transition.source_subshell
-            destination_subshell = transition.destination_subshell
-            secondary_destination_subshell = transition.secondary_destination_subshell
-        elif isinstance(transition, collections.Sequence) and \
-                len(transition) >= 2:
-            source_subshell = transition[0]
-            destination_subshell = transition[1]
-            if len(transition) == 3:
-                secondary_destination_subshell = transition[2]
+        if isinstance(xraytransition, XrayTransition):
+            source_subshell = xraytransition.source_subshell
+            destination_subshell = xraytransition.destination_subshell
+        elif isinstance(xraytransition, collections.Sequence) and \
+                len(xraytransition) == 2:
+            source_subshell = xraytransition[0]
+            destination_subshell = xraytransition[1]
 
         if source_subshell is not None and \
                 destination_subshell is not None:
             source_subshell_id = self._get_atomic_subshell_id(conn, source_subshell)
             destination_subshell_id = self._get_atomic_subshell_id(conn, destination_subshell)
-            if secondary_destination_subshell:
-                secondary_destination_subshell_id = \
-                    self._get_atomic_subshell_id(conn, secondary_destination_subshell)
-            else:
-                secondary_destination_subshell_id = None
 
-            tbl = table.transition
+            tbl = table.xray_transition
             tbl.create(conn, checkfirst=True)
 
             command = sql.select([tbl.c.id])
             command = command.where(sql.and_(tbl.c.source_subshell_id == source_subshell_id,
-                                             tbl.c.destination_subshell_id == destination_subshell_id,
-                                             tbl.c.secondary_destination_subshell_id == secondary_destination_subshell_id))
+                                             tbl.c.destination_subshell_id == destination_subshell_id))
             out = self._retrieve_first(conn, command)
             if out is not None:
                 return out
 
-        raise NotFound('Unknown transition: {0}'.format(transition))
+        raise NotFound('Unknown transition: {0}'.format(xraytransition))
 
-    def _get_transition(self, conn, transition_id):
-        tbl = table.transition
+    def _get_xray_transition(self, conn, xray_transition_id):
+        tbl = table.xray_transition
         tbl.create(conn, checkfirst=True)
         command = sql.select([tbl.c.source_subshell_id,
-                              tbl.c.destination_subshell_id,
-                              tbl.c.secondary_destination_subshell_id])
-        command = command.where(tbl.c.id == transition_id)
+                              tbl.c.destination_subshell_id])
+        command = command.where(tbl.c.id == xray_transition_id)
         result = conn.execute(command)
         row = result.first()
         if row is None:
             raise NotFound('No transition found')
-        source_subshell_id, destination_subshell_id, secondary_destination_subshell_id = row
+        source_subshell_id, destination_subshell_id = row
 
         source_subshell = self._get_atomic_subshell(conn, source_subshell_id)
         destination_subshell = self._get_atomic_subshell(conn, destination_subshell_id)
-        if secondary_destination_subshell_id is not None:
-            secondary_destination_subshell = \
-                self._get_atomic_subshell(conn, secondary_destination_subshell_id)
-        else:
-            secondary_destination_subshell = None
-        return Transition(source_subshell,
-                          destination_subshell,
-                          secondary_destination_subshell)
+        return XrayTransition(source_subshell,
+                              destination_subshell)
 
-    def _get_transitionset_id(self, conn, transitionset):
-        if isinstance(transitionset, str):
-            tbl = table.transitionset_notation
+    def _get_xray_transitionset_id(self, conn, xraytransitionset):
+        if isinstance(xraytransitionset, str):
+            tbl = table.xray_transitionset_notation
             tbl.create(conn, checkfirst=True)
 
-            command = sql.select([tbl.c.transitionset_id])
-            command = command.where(sql.or_(tbl.c.ascii == transitionset,
-                                            tbl.c.utf16 == transitionset))
+            command = sql.select([tbl.c.xray_transitionset_id])
+            command = command.where(sql.or_(tbl.c.ascii == xraytransitionset,
+                                            tbl.c.utf16 == xraytransitionset))
             out = self._retrieve_first(conn, command)
             if out is not None:
                 return out
 
-        transitions = set()
-        if isinstance(transitionset, TransitionSet):
-            transitions.update(transitionset.transitions)
-        elif isinstance(transitionset, collections.Sequence):
-            transitions.update(transitionset)
+        xraytransitions = set()
+        if isinstance(xraytransitionset, XrayTransitionSet):
+            xraytransitions.update(xraytransitionset.transitions)
+        elif isinstance(xraytransitionset, collections.Sequence):
+            xraytransitions.update(xraytransitionset)
 
-        if transitions:
-            transition_ids = set()
-            for transition in transitions:
-                transition_id = self._get_transition_id(conn, transition)
-                transition_ids.add(transition_id)
+        if xraytransitions:
+            xraytransition_ids = set()
+            for xraytransition in xraytransitions:
+                xraytransition_id = self._get_xray_transition_id(conn, xraytransition)
+                xraytransition_ids.add(xraytransition_id)
 
-            table.transitionset.create(conn, checkfirst=True)
-            table.transitionset_association.create(conn, checkfirst=True)
+            table.xray_transitionset.create(conn, checkfirst=True)
+            table.xray_transitionset_association.create(conn, checkfirst=True)
 
-            tbl = table.transitionset_association
-            command = sql.select([tbl.c.transitionset_id])
-            command = command.where(tbl.c.transition_id.in_(transition_ids))
+            tbl = table.xray_transitionset_association
+            command = sql.select([tbl.c.xray_transitionset_id])
+            command = command.where(tbl.c.xray_transition_id.in_(xraytransition_ids))
             command = command.distinct()
             result = conn.execute(command)
 
             for row in result:
-                command = sql.select([tbl.c.transitionset_id])
-                command = command.where(tbl.c.transitionset_id == row[0])
-                command = command.group_by(tbl.c.transitionset_id)
-                command = command.having(sql.func.count(tbl.c.transition_id) == len(transition_ids))
+                command = sql.select([tbl.c.xray_transitionset_id])
+                command = command.where(tbl.c.xray_transitionset_id == row[0])
+                command = command.group_by(tbl.c.xray_transitionset_id)
+                command = command.having(sql.func.count(tbl.c.xray_transition_id) == len(xraytransition_ids))
 
                 result = conn.execute(command)
                 if result.fetchone():
                     return row[0]
 
-        raise NotFound('Unknown transition set: {0}'.format(transitionset))
+        raise NotFound('Unknown transition set: {0}'.format(xraytransitionset))
 
-    def _get_transitionset(self, conn, transitionset_id):
-        tbl = table.transitionset_association
+    def _get_xray_transitionset(self, conn, xray_transitionset_id):
+        tbl = table.xray_transitionset_association
         tbl.create(conn, checkfirst=True)
-        command = sql.select([tbl.c.transition_id])
-        command = command.where(tbl.c.transitionset_id == transitionset_id)
+        command = sql.select([tbl.c.xray_transition_id])
+        command = command.where(tbl.c.xray_transitionset_id == xray_transitionset_id)
         result = conn.execute(command)
         rows = result.fetchall()
         if not rows:
             raise NotFound('No transition set found')
 
-        transitions = [self._get_transition(conn, row[0]) for row in rows]
+        transitions = [self._get_xray_transition(conn, row[0]) for row in rows]
 
-        return TransitionSet(transitions)
+        return XrayTransitionSet(transitions)
 
     def _get_language_id(self, conn, language):
         if isinstance(language, Language):

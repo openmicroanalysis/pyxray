@@ -99,57 +99,57 @@ class AtomicSubshellOccupancy(metaclass=_Property,
     def validate(cls, reference, element, atomic_subshell, value_eV):
         pass
 
-class TransitionNotation(metaclass=_Property,
-                         attrs=('reference', 'transition', 'notation',
-                                'ascii', 'utf16', 'html', 'latex')):
+class XrayTransitionNotation(metaclass=_Property,
+                             attrs=('reference', 'xraytransition', 'notation',
+                                    'ascii', 'utf16', 'html', 'latex')):
 
     @classmethod
-    def validate(cls, reference, transition, notation,
+    def validate(cls, reference, xraytransition, notation,
                  ascii, utf16=None, html=None, latex=None):
         pass
 
-class TransitionEnergy(metaclass=_Property,
-                       attrs=('reference', 'element', 'transition', 'value_eV')):
+class XrayTransitionEnergy(metaclass=_Property,
+                           attrs=('reference', 'element', 'xraytransition', 'value_eV')):
 
     @classmethod
-    def validate(cls, reference, element, transition, value_eV):
+    def validate(cls, reference, element, xraytransition, value_eV):
         pass
 
-class TransitionProbability(metaclass=_Property,
-                            attrs=('reference', 'element', 'transition', 'value')):
+class XrayTransitionProbability(metaclass=_Property,
+                                attrs=('reference', 'element', 'xraytransition', 'value')):
 
     @classmethod
-    def validate(cls, reference, element, transition, value):
+    def validate(cls, reference, element, xraytransition, value):
         pass
 
-class TransitionRelativeWeight(metaclass=_Property,
-                            attrs=('reference', 'element', 'transition', 'value')):
+class XrayTransitionRelativeWeight(metaclass=_Property,
+                                   attrs=('reference', 'element', 'xraytransition', 'value')):
 
     @classmethod
-    def validate(cls, reference, element, transition, value):
+    def validate(cls, reference, element, xraytransition, value):
         pass
 
-class TransitionSetNotation(metaclass=_Property,
-                            attrs=('reference', 'transitionset', 'notation',
-                                   'ascii', 'utf16', 'html', 'latex')):
+class XrayTransitionSetNotation(metaclass=_Property,
+                                attrs=('reference', 'xraytransitionset', 'notation',
+                                       'ascii', 'utf16', 'html', 'latex')):
 
     @classmethod
-    def validate(cls, reference, transitionset, notation,
+    def validate(cls, reference, xraytransitionset, notation,
                  ascii, utf16=None, html=None, latex=None):
         pass
 
-class TransitionSetEnergy(metaclass=_Property,
-                          attrs=('reference', 'element', 'transitionset',
-                                 'value_eV')):
+class XrayTransitionSetEnergy(metaclass=_Property,
+                              attrs=('reference', 'element', 'xraytransitionset',
+                                     'value_eV')):
 
     @classmethod
-    def validate(cls, reference, element, transitionset, value_eV):
+    def validate(cls, reference, element, xraytransitionset, value_eV):
         pass
 
-class TransitionSetRelativeWeight(metaclass=_Property,
-                          attrs=('reference', 'element', 'transitionset',
-                                 'value')):
+class XrayTransitionSetRelativeWeight(metaclass=_Property,
+                                      attrs=('reference', 'element', 'xraytransitionset',
+                                             'value')):
 
     @classmethod
-    def validate(cls, reference, element, transitionset, value):
+    def validate(cls, reference, element, xraytransitionset, value):
         pass

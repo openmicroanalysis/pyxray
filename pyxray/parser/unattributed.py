@@ -11,11 +11,11 @@ logger = logging.getLogger(__name__)
 # Local modules.
 from pyxray.parser.parser import _Parser
 from pyxray.descriptor import \
-    (Reference, Element, AtomicShell, Notation, AtomicSubshell, Transition,
-     TransitionSet)
+    (Reference, Element, AtomicShell, Notation, AtomicSubshell, XrayTransition,
+     XrayTransitionSet)
 from pyxray.property import \
     (ElementSymbol, AtomicShellNotation, AtomicSubshellNotation,
-     TransitionNotation, TransitionSetNotation)
+     XrayTransitionNotation, XrayTransitionSetNotation)
 
 # Globals and constants variables.
 
@@ -55,7 +55,7 @@ def iter_transitions(max_n):
                 continue
 
             dest = AtomicSubshell(dst_n, dst_l, dst_j_n)
-            yield Transition(src, dest), src_i, dst_i
+            yield XrayTransition(src, dest), src_i, dst_i
 
 NOTATION_SIEGBAHN = Notation('siegbahn')
 NOTATION_IUPAC = Notation('iupac')
@@ -230,10 +230,10 @@ class TransitionNotationParser(_Parser):
             html = '{0}&ndash;{1}'.format(html1, html0)
             latex = '{0}--{1}'.format(latex1, latex0)
 
-            prop = TransitionNotation(UNATTRIBUTED,
-                                      transition,
-                                      NOTATION_IUPAC,
-                                      ascii, utf, html, latex)
+            prop = XrayTransitionNotation(UNATTRIBUTED,
+                                          transition,
+                                          NOTATION_IUPAC,
+                                          ascii, utf, html, latex)
             logger.debug('Parsed: {0}'.format(prop))
             yield prop
 
@@ -251,25 +251,25 @@ class FamilySeriesTransitionSetNotationParser(_Parser):
 
         # Create series notation
         for atomic_shell, transitions in series.items():
-            transitionset = TransitionSet(transitions)
+            transitionset = XrayTransitionSet(transitions)
 
             n = atomic_shell.n
 
             ascii, utf16, html, latex = \
                 AtomicShellNotationParser._create_entry_siegbahn(n)
-            prop = TransitionSetNotation(UNATTRIBUTED,
-                                         transitionset,
-                                         NOTATION_SIEGBAHN,
-                                         ascii, utf16, html, latex)
+            prop = XrayTransitionSetNotation(UNATTRIBUTED,
+                                             transitionset,
+                                             NOTATION_SIEGBAHN,
+                                             ascii, utf16, html, latex)
             logger.debug('Parsed: {0}'.format(prop))
             yield prop
 
             ascii, utf16, html, latex = \
                 AtomicShellNotationParser._create_entry_iupac(n)
-            prop = TransitionSetNotation(UNATTRIBUTED,
-                                         transitionset,
-                                         NOTATION_IUPAC,
-                                         ascii, utf16, html, latex)
+            prop = XrayTransitionSetNotation(UNATTRIBUTED,
+                                             transitionset,
+                                             NOTATION_IUPAC,
+                                             ascii, utf16, html, latex)
             logger.debug('Parsed: {0}'.format(prop))
             yield prop
 
@@ -278,7 +278,7 @@ class FamilySeriesTransitionSetNotationParser(_Parser):
             if i == 0: # Skip K, already a series
                 continue
 
-            transitionset = TransitionSet(transitions)
+            transitionset = XrayTransitionSet(transitions)
 
             n = atomic_subshell.n
             l = atomic_subshell.l
@@ -286,19 +286,19 @@ class FamilySeriesTransitionSetNotationParser(_Parser):
 
             ascii, utf16, html, latex = \
                 AtomicSubshellNotationParser._create_entry_siegbahn(n, l, j_n, i)
-            prop = TransitionSetNotation(UNATTRIBUTED,
-                                         transitionset,
-                                         NOTATION_SIEGBAHN,
-                                         ascii, utf16, html, latex)
+            prop = XrayTransitionSetNotation(UNATTRIBUTED,
+                                             transitionset,
+                                             NOTATION_SIEGBAHN,
+                                             ascii, utf16, html, latex)
             logger.debug('Parsed: {0}'.format(prop))
             yield prop
 
             ascii, utf16, html, latex = \
                 AtomicSubshellNotationParser._create_entry_iupac(n, l, j_n, i)
-            prop = TransitionSetNotation(UNATTRIBUTED,
-                                         transitionset,
-                                         NOTATION_IUPAC,
-                                         ascii, utf16, html, latex)
+            prop = XrayTransitionSetNotation(UNATTRIBUTED,
+                                             transitionset,
+                                             NOTATION_IUPAC,
+                                             ascii, utf16, html, latex)
             logger.debug('Parsed: {0}'.format(prop))
             yield prop
 
@@ -317,72 +317,72 @@ class CommonTransitionSetNotationParser(_Parser):
         N6 = AtomicSubshell(4, 3, 5)
         N7 = AtomicSubshell(4, 3, 7)
 
-        KA1 = Transition(L3, K)
-        KA2 = Transition(L2, K)
-        KA = TransitionSet([KA1, KA2])
-        yield TransitionSetNotation(UNATTRIBUTED, KA, NOTATION_SIEGBAHN,
-                                    'Ka',
-                                    'K\u03b1',
-                                    'K&alpha;',
-                                    '\\ensuremath{\\mathrm{K}\\alpha}')
-        yield TransitionSetNotation(UNATTRIBUTED, KA, NOTATION_IUPAC,
-                                    'K-L(2,3)',
-                                    'K\u2013L(2,3)',
-                                    'K&ndash;L<sub>2,3</sub>',
-                                    '\\ensuremath{\\mathrm{K}}--\\ensuremath{\\mathrm{L}}_{2,3}')
+        KA1 = XrayTransition(L3, K)
+        KA2 = XrayTransition(L2, K)
+        KA = XrayTransitionSet([KA1, KA2])
+        yield XrayTransitionSetNotation(UNATTRIBUTED, KA, NOTATION_SIEGBAHN,
+                                        'Ka',
+                                        'K\u03b1',
+                                        'K&alpha;',
+                                        '\\ensuremath{\\mathrm{K}\\alpha}')
+        yield XrayTransitionSetNotation(UNATTRIBUTED, KA, NOTATION_IUPAC,
+                                        'K-L(2,3)',
+                                        'K\u2013L(2,3)',
+                                        'K&ndash;L<sub>2,3</sub>',
+                                        '\\ensuremath{\\mathrm{K}}--\\ensuremath{\\mathrm{L}}_{2,3}')
 
-        KB1 = Transition(M3, K)
-        KB3 = Transition(M2, K)
-        KB5_1 = Transition(M5, K)
-        KB5_2 = Transition(M4, K)
-        KB = TransitionSet([KB1, KB3, KB5_1, KB5_2])
-        yield TransitionSetNotation(UNATTRIBUTED, KB, NOTATION_SIEGBAHN,
-                                    'Kb',
-                                    'K\u03b2',
-                                    'K&beta;',
-                                    '\\ensuremath{\\mathrm{K}\\beta}')
-        yield TransitionSetNotation(UNATTRIBUTED, KB, NOTATION_IUPAC,
-                                    'K-M(2-5)',
-                                    'K\u2013M(2-5)',
-                                    'K&ndash;M<sub>2-5</sub>',
-                                    '\\ensuremath{\\mathrm{K}}--\\ensuremath{\\mathrm{M}}_{2-5}')
+        KB1 = XrayTransition(M3, K)
+        KB3 = XrayTransition(M2, K)
+        KB5_1 = XrayTransition(M5, K)
+        KB5_2 = XrayTransition(M4, K)
+        KB = XrayTransitionSet([KB1, KB3, KB5_1, KB5_2])
+        yield XrayTransitionSetNotation(UNATTRIBUTED, KB, NOTATION_SIEGBAHN,
+                                        'Kb',
+                                        'K\u03b2',
+                                        'K&beta;',
+                                        '\\ensuremath{\\mathrm{K}\\beta}')
+        yield XrayTransitionSetNotation(UNATTRIBUTED, KB, NOTATION_IUPAC,
+                                        'K-M(2-5)',
+                                        'K\u2013M(2-5)',
+                                        'K&ndash;M<sub>2-5</sub>',
+                                        '\\ensuremath{\\mathrm{K}}--\\ensuremath{\\mathrm{M}}_{2-5}')
 
-        LA1 = Transition(M5, L3)
-        LA2 = Transition(M4, L3)
-        LA = TransitionSet([LA1, LA2])
-        yield TransitionSetNotation(UNATTRIBUTED, LA, NOTATION_SIEGBAHN,
-                                    'La',
-                                    'L\u03b1',
-                                    'L&alpha;',
-                                    '\\ensuremath{\\mathrm{L}\\alpha}')
-        yield TransitionSetNotation(UNATTRIBUTED, LA, NOTATION_IUPAC,
-                                    'L3-M(4,5)',
-                                    'L3\u2013M(4,5)',
-                                    'L<sub>3</sub>&ndash;M<sub>4,5</sub>',
-                                    '\\ensuremath{\\mathrm{L}}_{3}--\\ensuremath{\\mathrm{M}}_{4,5}')
+        LA1 = XrayTransition(M5, L3)
+        LA2 = XrayTransition(M4, L3)
+        LA = XrayTransitionSet([LA1, LA2])
+        yield XrayTransitionSetNotation(UNATTRIBUTED, LA, NOTATION_SIEGBAHN,
+                                        'La',
+                                        'L\u03b1',
+                                        'L&alpha;',
+                                        '\\ensuremath{\\mathrm{L}\\alpha}')
+        yield XrayTransitionSetNotation(UNATTRIBUTED, LA, NOTATION_IUPAC,
+                                        'L3-M(4,5)',
+                                        'L3\u2013M(4,5)',
+                                        'L<sub>3</sub>&ndash;M<sub>4,5</sub>',
+                                        '\\ensuremath{\\mathrm{L}}_{3}--\\ensuremath{\\mathrm{M}}_{4,5}')
 
-        MA1 = Transition(N7, M5)
-        MA2 = Transition(N6, M5)
-        MA = TransitionSet([MA1, MA2])
-        yield TransitionSetNotation(UNATTRIBUTED, MA, NOTATION_SIEGBAHN,
-                                    'Ma',
-                                    'M\u03b1',
-                                    'M&alpha;',
-                                    '\\ensuremath{\\mathrm{M}\\alpha}')
-        yield TransitionSetNotation(UNATTRIBUTED, MA, NOTATION_IUPAC,
-                                    'M5-N(6,7)',
-                                    'M5\u2013N(6,7)',
-                                    'M<sub>5</sub>&ndash;N<sub>6,7</sub>',
-                                    '\\ensuremath{\\mathrm{M}}_{5}--\\ensuremath{\\mathrm{N}}_{6,7}')
+        MA1 = XrayTransition(N7, M5)
+        MA2 = XrayTransition(N6, M5)
+        MA = XrayTransitionSet([MA1, MA2])
+        yield XrayTransitionSetNotation(UNATTRIBUTED, MA, NOTATION_SIEGBAHN,
+                                        'Ma',
+                                        'M\u03b1',
+                                        'M&alpha;',
+                                        '\\ensuremath{\\mathrm{M}\\alpha}')
+        yield XrayTransitionSetNotation(UNATTRIBUTED, MA, NOTATION_IUPAC,
+                                        'M5-N(6,7)',
+                                        'M5\u2013N(6,7)',
+                                        'M<sub>5</sub>&ndash;N<sub>6,7</sub>',
+                                        '\\ensuremath{\\mathrm{M}}_{5}--\\ensuremath{\\mathrm{N}}_{6,7}')
 
-        MZ = TransitionSet([(N2, M4), (N3, M5)])
-        yield TransitionSetNotation(UNATTRIBUTED, MZ, NOTATION_SIEGBAHN,
-                                    'Mz',
-                                    'M\u03b6',
-                                    'M&zeta;',
-                                    '\\ensuremath{\\mathrm{M}\\zeta}')
-        yield TransitionSetNotation(UNATTRIBUTED, MZ, NOTATION_IUPAC,
-                                    'M(4,5)-N(2,3)',
-                                    'M(4,5)\u2013N(2,3)',
-                                    'M<sub>4,5</sub>&ndash;N<sub>2,3</sub>',
-                                    '\\ensuremath{\\mathrm{M}}_{4,5}--\\ensuremath{\\mathrm{N}}_{2,3}')
+        MZ = XrayTransitionSet([(N2, M4), (N3, M5)])
+        yield XrayTransitionSetNotation(UNATTRIBUTED, MZ, NOTATION_SIEGBAHN,
+                                        'Mz',
+                                        'M\u03b6',
+                                        'M&zeta;',
+                                        '\\ensuremath{\\mathrm{M}\\zeta}')
+        yield XrayTransitionSetNotation(UNATTRIBUTED, MZ, NOTATION_IUPAC,
+                                        'M(4,5)-N(2,3)',
+                                        'M(4,5)\u2013N(2,3)',
+                                        'M<sub>4,5</sub>&ndash;N<sub>2,3</sub>',
+                                        '\\ensuremath{\\mathrm{M}}_{4,5}--\\ensuremath{\\mathrm{N}}_{2,3}')

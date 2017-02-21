@@ -76,18 +76,17 @@ Variables of the methods are defined as follows
       subshell ``1s^{0.5}``
     * any notation (case insensitive)
 
-* ``transition``: 
+* ``xraytransition``: 
     either
     
-    * `Transition <http://github.com/openmicroanalysis/pyxray/blob/master/pyxray/descriptor.py>`_ object
+    * `XrayTransition <http://github.com/openmicroanalysis/pyxray/blob/master/pyxray/descriptor.py>`_ object
     * a ``tuple`` of source and destination subshells
-      (or optionally secondary destination subshells)
     * any notation (case insensitive)
 
-* ``transitionset``:
+* ``xraytransitionset``:
     either
     
-    * `TransitionSet <http://github.com/openmicroanalysis/pyxray/blob/master/pyxray/descriptor.py>`_ object
+    * `XrayTransitionSet <http://github.com/openmicroanalysis/pyxray/blob/master/pyxray/descriptor.py>`_ object
     * a ``tuple`` of transitions
     * any notation (case insensitive)
 
@@ -147,8 +146,8 @@ where the number of protons equal the number of electrons.
 * ``pyxray.element_mass_density_g_per_cm3(element, reference=None)``
     Returns mass density (in g/cm3) of an element.
     
-* ``pyxray.element_transitions(element, reference=None)``
-    Returns all transitions which have a probability greater than 0 for an element.
+* ``pyxray.element_xray_transitions(element, reference=None)``
+    Returns all X-ray transitions which have a probability greater than 0 for an element.
 
 Atomic shell properties
 -----------------------
@@ -193,18 +192,17 @@ a subdivision of atomic shells.
 * ``pyxray.atomic_subshell_occupancy(element, atomic_subshell, reference=None)``
     Returns occupancy of an element and atomic subshell.
 
-Transition properties
+X-ray transition properties
 ---------------------
 
 Properties associated with an electron transition, relaxation process of an 
-electron between quantum states leading to X-rays emission, Auger electrons or 
-Coster-Kronig transitions.
+electron between quantum states leading to X-rays emission.
 
-* ``pyxray.transition(transition)``
-    Returns transition descriptor.
+* ``pyxray.xray_transition(xraytransition)``
+    Returns X-ray transition descriptor.
 
-* ``pyxray.transition_notation(transition, notation, encoding='utf16', reference=None)``
-    Returns notation of a transition.
+* ``pyxray.xray_transition_notation(xraytransition, notation, encoding='utf16', reference=None)``
+    Returns notation of an X-ray transition.
     
     Examples:
 
@@ -213,39 +211,39 @@ Coster-Kronig transitions.
         pyxray.transition_notation('Ka1', 'iupac') #=> 'K-L3'
         pyxray.transition_notation('L3-M1', 'siegbahn', 'ascii') #=> 'Ll'
 
-* ``pyxray.transition_energy_eV(element, transition, reference=None)``
-    Returns energy of an element and transition (in eV).
+* ``pyxray.xray_transition_energy_eV(element, xraytransition, reference=None)``
+    Returns energy of an element and X-ray transition (in eV).
     
     Examples:
         
     .. code:: python
         
-        pyxray.transition_energy_eV(14, 'Ka1') #=> 1740.0263764535946
-        pyxray.transition_energy_eV(14, 'Ma1') #=> NotFound exception
+        pyxray.xray_transition_energy_eV(14, 'Ka1') #=> 1740.0263764535946
+        pyxray.xray_transition_energy_eV(14, 'Ma1') #=> NotFound exception
 
-* ``pyxray.transition_probability(element, transition, reference=None)``
-    Returns probability of an element and transition.
+* ``pyxray.xray_transition_probability(element, xraytransition, reference=None)``
+    Returns probability of an element and X-ray transition.
 
-* ``pyxray.transition_relative_weight(element, transition, reference=None)``
-    Returns relative weight of an element and transition.
+* ``pyxray.xray_transition_relative_weight(element, xraytransition, reference=None)``
+    Returns relative weight of an element and X-ray transition.
 
 Transition set properties
 -------------------------
 
-Properties associated with a transition set, an indistinguishable transition 
+Properties associated with an X-ray transition set, an indistinguishable X-ray transition 
 (e.g. Ka from Ka1/Ka2).
 
-* ``pyxray.transitionset(transitionset)``
-    Returns transition set descriptor.
+* ``pyxray.xray_transitionset(xraytransitionset)``
+    Returns X-ray transition set descriptor.
 
-* ``pyxray.transitionset_notation(transitionset, notation, encoding='utf16', reference=None)``
-    Returns notation of a transition set.
+* ``pyxray.xray_transitionset_notation(xraytransitionset, notation, encoding='utf16', reference=None)``
+    Returns notation of an X-ray transition set.
     
-* ``pyxray.transitionset_energy_eV(element, transitionset, reference=None)``
-    Returns energy of an element and transition set (in eV).
+* ``pyxray.xray_transitionset_energy_eV(element, xraytransitionset, reference=None)``
+    Returns energy of an element and X-ray transition set (in eV).
 
-* ``pyxray.transitionset_relative_weight(element, transitionset, reference=None)``
-    Returns relative weight of an element and transition set.
+* ``pyxray.xray_transitionset_relative_weight(element, xraytransitionset, reference=None)``
+    Returns relative weight of an element and X-ray transition set.
 
 Development
 ===========
