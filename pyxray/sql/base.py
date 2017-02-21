@@ -4,11 +4,11 @@ Base SQL engine
 
 # Standard library modules.
 import collections
+import functools
+import itertools
 
 # Third party modules.
 import sqlalchemy.sql as sql
-
-import more_itertools
 
 # Local modules.
 from pyxray.descriptor import \
@@ -18,6 +18,42 @@ import pyxray.sql.table as table
 from pyxray.base import NotFound
 
 # Globals and constants variables.
+
+def take(n, iterable):
+    """Return first n items of the iterable as a list
+
+        >>> take(3, range(10))
+        [0, 1, 2]
+        >>> take(5, range(3))
+        [0, 1, 2]
+
+    Effectively a short replacement for ``next`` based iterator consumption
+    when you want more than one item, but less than the whole iterator.
+    
+    Taken from more_itertools
+    
+    """
+    return list(itertools.islice(iterable, n))
+
+def chunked(iterable, n):
+    """Break an iterable into lists of a given length::
+
+        >>> list(chunked([1, 2, 3, 4, 5, 6, 7], 3))
+        [[1, 2, 3], [4, 5, 6], [7]]
+
+    If the length of ``iterable`` is not evenly divisible by ``n``, the last
+    returned list will be shorter.
+
+    This is useful for splitting up a computation on a large number of keys
+    into batches, to be pickled and sent off to worker processes. One example
+    is operations on rows in MySQL, which does not implement server-side
+    cursors properly and would otherwise load the entire dataset into RAM on
+    the client.
+    
+    Taken from more_itertools
+
+    """
+    return iter(functools.partial(take, n, iter(iterable)), [])
 
 class SelectBuilder:
 
@@ -39,7 +75,7 @@ class SelectBuilder:
 
     def add_where(self, table, column, variable, *args):
         where = [(table, column, variable)]
-        for table, column, variable in more_itertools.chunked(args, 3):
+        for table, column, variable in chunked(args, 3):
             where.append((table, column, variable))
         self.wheres.append(where)
 
