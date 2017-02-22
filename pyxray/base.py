@@ -200,21 +200,21 @@ class _Database(object, metaclass=abc.ABCMeta):
         """
         return self.element_mass_density_kg_per_m3(element, reference) / 1e3
 
-#    @abc.abstractmethod
-#    @formatdoc(**_docextras)
-#    def element_xray_transitions(self, element, reference=None):
-#        """
-#        Returns all x-ray transitions which have a probability greater
-#        than 0 for an element.
-#
-#        {element}
-#        {reference}
-#
-#        :return: x-ray transitions
-#        :rtype: :class:`tuple` of :class:`XrayTransition`
-#        {exception}
-#        """
-#        raise NotImplementedError
+    @abc.abstractmethod
+    @formatdoc(**_docextras)
+    def element_xray_transitions(self, element, reference=None):
+        """
+        Returns all x-ray transitions which have a probability greater
+        than 0 for an element.
+
+        {element}
+        {reference}
+
+        :return: x-ray transitions
+        :rtype: :class:`tuple` of :class:`XrayTransition`
+        {exception}
+        """
+        raise NotImplementedError
 
     @abc.abstractmethod
     @formatdoc(**_docextras)
@@ -277,71 +277,71 @@ class _Database(object, metaclass=abc.ABCMeta):
         {exception}
         """
         raise NotImplementedError
-#
-#    @abc.abstractmethod
-#    @formatdoc(**_docextras)
-#    def atomic_subshell_binding_energy_eV(self, element, atomic_subshell, reference=None):
-#        """
-#        Returns binding energy of an element and atomic subshell (in eV).
-#
-#        {element}
-#        {atomic_subshell}
-#        {reference}
-#
-#        :return: binding energy (in eV)
-#        :rtype: :class:`float`
-#        {exception}
-#        """
-#        raise NotImplementedError
-#
-#    @abc.abstractmethod
-#    @formatdoc(**_docextras)
-#    def atomic_subshell_radiative_width_eV(self, element, atomic_subshell, reference=None):
-#        """
-#        Returns radiative width of an element and atomic subshell (in eV).
-#
-#        {element}
-#        {atomic_subshell}
-#        {reference}
-#
-#        :return: radiative width (in eV)
-#        :rtype: :class:`float`
-#        {exception}
-#        """
-#        raise NotImplementedError
-#
-#    @abc.abstractmethod
-#    @formatdoc(**_docextras)
-#    def atomic_subshell_nonradiative_width_eV(self, element, atomic_subshell, reference=None):
-#        """
-#        Returns nonradiative width of an element and atomic subshell (in eV).
-#
-#        {element}
-#        {atomic_subshell}
-#        {reference}
-#
-#        :return: nonradiative width (in eV)
-#        :rtype: :class:`float`
-#        {exception}
-#        """
-#        raise NotImplementedError
-#
-#    @abc.abstractmethod
-#    @formatdoc(**_docextras)
-#    def atomic_subshell_occupancy(self, element, atomic_subshell, reference=None):
-#        """
-#        Returns occupancy of an element and atomic subshell.
-#
-#        {element}
-#        {atomic_subshell}
-#        {reference}
-#
-#        :return: occupancy
-#        :rtype: :class:`int`
-#        {exception}
-#        """
-#        raise NotImplementedError
-#
+
+    @abc.abstractmethod
+    @formatdoc(**_docextras)
+    def atomic_subshell_binding_energy_eV(self, element, atomic_subshell, reference=None):
+        """
+        Returns binding energy of an element and atomic subshell (in eV).
+
+        {element}
+        {atomic_subshell}
+        {reference}
+
+        :return: binding energy (in eV)
+        :rtype: :class:`float`
+        {exception}
+        """
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    @formatdoc(**_docextras)
+    def atomic_subshell_radiative_width_eV(self, element, atomic_subshell, reference=None):
+        """
+        Returns radiative width of an element and atomic subshell (in eV).
+
+        {element}
+        {atomic_subshell}
+        {reference}
+
+        :return: radiative width (in eV)
+        :rtype: :class:`float`
+        {exception}
+        """
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    @formatdoc(**_docextras)
+    def atomic_subshell_nonradiative_width_eV(self, element, atomic_subshell, reference=None):
+        """
+        Returns nonradiative width of an element and atomic subshell (in eV).
+
+        {element}
+        {atomic_subshell}
+        {reference}
+
+        :return: nonradiative width (in eV)
+        :rtype: :class:`float`
+        {exception}
+        """
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    @formatdoc(**_docextras)
+    def atomic_subshell_occupancy(self, element, atomic_subshell, reference=None):
+        """
+        Returns occupancy of an element and atomic subshell.
+
+        {element}
+        {atomic_subshell}
+        {reference}
+
+        :return: occupancy
+        :rtype: :class:`int`
+        {exception}
+        """
+        raise NotImplementedError
+
     @abc.abstractmethod
     @formatdoc(**_docextras)
     def xray_transition(self, xraytransition):
@@ -388,98 +388,98 @@ class _Database(object, metaclass=abc.ABCMeta):
         {exception}
         """
         raise NotImplementedError
-#
-#    @abc.abstractmethod
-#    @formatdoc(**_docextras)
-#    def xray_transition_probability(self, element, xraytransition, reference=None):
-#        """
-#        Returns probability of an element and X-ray transition.
-#
-#        {element}
-#        {xraytransition}
-#        {reference}
-#
-#        :return: probability
-#        :rtype: :class:`float`
-#        {exception}
-#        """
-#        raise NotImplementedError
-#
-#    @abc.abstractmethod
-#    @formatdoc(**_docextras)
-#    def xray_transition_relative_weight(self, element, xraytransition, reference=None):
-#        """
-#        Returns relative weight of an element and X-ray transition.
-#
-#        {element}
-#        {xraytransition}
-#        {reference}
-#
-#        :return: relative weight
-#        :rtype: :class:`float`
-#        {exception}
-#        """
-#        raise NotImplementedError
-#
-#    @abc.abstractmethod
-#    @formatdoc(**_docextras)
-#    def xray_transitionset(self, xraytransitionset):
-#        """
-#        Returns X-ray transition set descriptor.
-#
-#        {xraytransitionset}
-#
-#        :return: X-ray transition set descriptor
-#        :rtype: :class:`XrayTransitionSet`
-#        {exception}
-#        """
-#        raise NotImplementedError
-#
-#    @abc.abstractmethod
-#    @formatdoc(**_docextras)
-#    def xray_transitionset_notation(self, xraytransitionset, notation, encoding='utf16', reference=None):
-#        """
-#        Returns notation of an X-ray transition set.
-#
-#        {xraytransitionset}
-#        {notation}
-#        {encoding}
-#        {reference}
-#
-#        :return: notation
-#        :rtype: :class:`str`
-#        {exception}
-#        """
-#        raise NotImplementedError
-#
-#    @abc.abstractmethod
-#    @formatdoc(**_docextras)
-#    def xray_transitionset_energy_eV(self, element, xraytransitionset, reference=None):
-#        """
-#        Returns energy of an element and X-ray transition set (in eV).
-#
-#        {element}
-#        {xraytransitionset}
-#        {reference}
-#
-#        :return: energy (in eV)
-#        :rtype: :class:`float`
-#        {exception}
-#        """
-#        raise NotImplementedError
-#
-#    @abc.abstractmethod
-#    @formatdoc(**_docextras)
-#    def xray_transitionset_relative_weight(self, element, xraytransitionset, reference=None):
-#        """
-#        Returns relative weight of an element and X-ray transition set.
-#
-#        {element}
-#        {xraytransitionset}
-#        {reference}
-#
-#        :return: relative weight
-#        :rtype: :class:`float`
-#        {exception}
-#        """
-#        raise NotImplementedError
+
+    @abc.abstractmethod
+    @formatdoc(**_docextras)
+    def xray_transition_probability(self, element, xraytransition, reference=None):
+        """
+        Returns probability of an element and X-ray transition.
+
+        {element}
+        {xraytransition}
+        {reference}
+
+        :return: probability
+        :rtype: :class:`float`
+        {exception}
+        """
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    @formatdoc(**_docextras)
+    def xray_transition_relative_weight(self, element, xraytransition, reference=None):
+        """
+        Returns relative weight of an element and X-ray transition.
+
+        {element}
+        {xraytransition}
+        {reference}
+
+        :return: relative weight
+        :rtype: :class:`float`
+        {exception}
+        """
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    @formatdoc(**_docextras)
+    def xray_transitionset(self, xraytransitionset):
+        """
+        Returns X-ray transition set descriptor.
+
+        {xraytransitionset}
+
+        :return: X-ray transition set descriptor
+        :rtype: :class:`XrayTransitionSet`
+        {exception}
+        """
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    @formatdoc(**_docextras)
+    def xray_transitionset_notation(self, xraytransitionset, notation, encoding='utf16', reference=None):
+        """
+        Returns notation of an X-ray transition set.
+
+        {xraytransitionset}
+        {notation}
+        {encoding}
+        {reference}
+
+        :return: notation
+        :rtype: :class:`str`
+        {exception}
+        """
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    @formatdoc(**_docextras)
+    def xray_transitionset_energy_eV(self, element, xraytransitionset, reference=None):
+        """
+        Returns energy of an element and X-ray transition set (in eV).
+
+        {element}
+        {xraytransitionset}
+        {reference}
+
+        :return: energy (in eV)
+        :rtype: :class:`float`
+        {exception}
+        """
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    @formatdoc(**_docextras)
+    def xray_transitionset_relative_weight(self, element, xraytransitionset, reference=None):
+        """
+        Returns relative weight of an element and X-ray transition set.
+
+        {element}
+        {xraytransitionset}
+        {reference}
+
+        :return: relative weight
+        :rtype: :class:`float`
+        {exception}
+        """
+        raise NotImplementedError

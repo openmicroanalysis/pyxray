@@ -27,12 +27,12 @@ class SqlEngineDatabase(_Database, SqlEngineDatabaseMixin):
         if isinstance(element, str):
             builder.add_join('element_name', 'element_id', table, column)
             builder.add_join('element_symbol', 'element_id', table, column)
-            builder.add_where('element_name', 'name', 'element',
-                              'element_symbol', 'symbol', 'element')
+            builder.add_where('element_name', 'name', '=', 'element',
+                              'element_symbol', 'symbol', '=', 'element')
 
         elif isinstance(element, int):
             builder.add_join('element', 'id', table, column)
-            builder.add_where('element', 'atomic_number', 'element')
+            builder.add_where('element', 'atomic_number', '=', 'element')
 
         else:
             raise NotFound('Cannot parse element: {}'.format(element))
@@ -45,12 +45,12 @@ class SqlEngineDatabase(_Database, SqlEngineDatabaseMixin):
 
         if isinstance(atomic_shell, str):
             builder.add_join('atomic_shell_notation', 'atomic_shell_id', table, column)
-            builder.add_where('atomic_shell_notation', 'ascii', 'atomic_shell',
-                              'atomic_shell_notation', 'utf16', 'atomic_shell')
+            builder.add_where('atomic_shell_notation', 'ascii', '=', 'atomic_shell',
+                              'atomic_shell_notation', 'utf16', '=', 'atomic_shell')
 
         elif isinstance(atomic_shell, int):
             builder.add_join('atomic_shell', 'id', table, column)
-            builder.add_where('atomic_shell', 'principal_quantum_number', 'atomic_shell')
+            builder.add_where('atomic_shell', 'principal_quantum_number', '=', 'atomic_shell')
 
         else:
             raise NotFound('Cannot parse atomic shell: {}'.format(atomic_shell))
@@ -84,14 +84,14 @@ class SqlEngineDatabase(_Database, SqlEngineDatabaseMixin):
 
         if isinstance(atomic_subshell, str):
             builder.add_join('atomic_subshell_notation', 'atomic_subshell_id', table, column)
-            builder.add_where('atomic_subshell_notation', 'ascii', 'atomic_subshell',
-                              'atomic_subshell_notation', 'utf16', 'atomic_subshell')
+            builder.add_where('atomic_subshell_notation', 'ascii', '=', 'atomic_subshell',
+                              'atomic_subshell_notation', 'utf16', '=', 'atomic_subshell')
             return {'atomic_subshell': atomic_subshell}
 
         elif n > 0 and l >= 0 and j_n > 0:
-            builder.add_where('atomic_shell', 'principal_quantum_number', 'n')
-            builder.add_where('atomic_subshell', 'azimuthal_quantum_number', 'l')
-            builder.add_where('atomic_subshell', 'total_angular_momentum_nominator', 'j_n')
+            builder.add_where('atomic_shell', 'principal_quantum_number', '=', 'n')
+            builder.add_where('atomic_subshell', 'azimuthal_quantum_number', '=', 'l')
+            builder.add_where('atomic_subshell', 'total_angular_momentum_nominator', '=', 'j_n')
             return {'n': n, 'l': l, 'j_n': j_n}
 
         else:
@@ -121,18 +121,18 @@ class SqlEngineDatabase(_Database, SqlEngineDatabaseMixin):
 
         if isinstance(xraytransition, str):
             builder.add_join('xray_transition_notation', 'xray_transition_id', table, column)
-            builder.add_where('xray_transition_notation', 'ascii', 'xraytransition',
-                              'xray_transition_notation', 'utf16', 'xraytransition')
+            builder.add_where('xray_transition_notation', 'ascii', '=', 'xraytransition',
+                              'xray_transition_notation', 'utf16', '=', 'xraytransition')
             return {'xraytransition': xraytransition}
 
         elif src_n > 0 and src_l >= 0 and src_j_n > 0 and \
                 dst_n > 0 and dst_l >= 0 and dst_j_n > 0:
-            builder.add_where('srcshell', 'principal_quantum_number', 'src_n')
-            builder.add_where('srcsubshell', 'azimuthal_quantum_number', 'src_l')
-            builder.add_where('srcsubshell', 'total_angular_momentum_nominator', 'src_j_n')
-            builder.add_where('dstshell', 'principal_quantum_number', 'dst_n')
-            builder.add_where('dstsubshell', 'azimuthal_quantum_number', 'dst_l')
-            builder.add_where('dstsubshell', 'total_angular_momentum_nominator', 'dst_j_n')
+            builder.add_where('srcshell', 'principal_quantum_number', '=', 'src_n')
+            builder.add_where('srcsubshell', 'azimuthal_quantum_number', '=', 'src_l')
+            builder.add_where('srcsubshell', 'total_angular_momentum_nominator', '=', 'src_j_n')
+            builder.add_where('dstshell', 'principal_quantum_number', '=', 'dst_n')
+            builder.add_where('dstsubshell', 'azimuthal_quantum_number', '=', 'dst_l')
+            builder.add_where('dstsubshell', 'total_angular_momentum_nominator', '=', 'dst_j_n')
 
             return {'src_n': src_n, 'src_l': src_l, 'src_j_n': src_j_n,
                     'dst_n': dst_n, 'dst_l': dst_l, 'dst_j_n': dst_j_n}
@@ -140,12 +140,60 @@ class SqlEngineDatabase(_Database, SqlEngineDatabaseMixin):
         else:
             raise NotFound('Cannot parse X-ray transition: {}'.format(xraytransition))
 
+    def _append_xray_transitionset(self, builder, table, column, xraytransitionset):
+        xraytransitions = set()
+        if isinstance(xraytransitionset, descriptor.XrayTransitionSet):
+            xraytransitions.update(xraytransitionset.transitions)
+
+        elif isinstance(xraytransitionset, collections.Sequence):
+            xraytransitions.update(xraytransitionset)
+
+        if isinstance(xraytransitionset, str):
+            builder.add_join('xray_transitionset_notation', 'xray_transitionset_id', table, column)
+            builder.add_where('xray_transitionset_notation', 'ascii', '=', 'xraytransitionset',
+                              'xray_transitionset_notation', 'utf16', '=', 'xraytransitionset')
+            return {'xraytransitionset': xraytransitionset}
+
+        elif xraytransitions:
+            possibilities = set()
+            for i, xraytransition in enumerate(xraytransitions):
+                subtable = 'xray_transitionset_association'
+                subparams = {}
+                subbuilder = SelectBuilder()
+                subbuilder.add_select(subtable, 'xray_transitionset_id')
+                subbuilder.add_select('xray_transitionset', 'count')
+                subbuilder.add_from(subtable)
+                subbuilder.add_join('xray_transitionset', 'id', subtable, 'xray_transitionset_id')
+                subparams.update(self._append_xray_transition(subbuilder, subtable, 'id', xraytransition))
+                sql = subbuilder.build()
+
+                cur = self.connection.cursor()
+                cur.execute(sql, subparams)
+                rows = cur.fetchall()
+                cur.close()
+
+                if i == 0:
+                    possibilities.update(rows)
+                else:
+                    possibilities.intersection_update(rows)
+
+                if not possibilities:
+                    break
+
+            for xray_transitionset_id, count in possibilities:
+                if count == len(xraytransitions):
+                    builder.add_join('xray_transitionset', 'id', table, column)
+                    builder.add_where('xray_transitionset', 'id', '=', 'xray_transitionset_id')
+                    return {'xray_transitionset_id': xray_transitionset_id}
+
+        raise NotFound('Cannot parse X-ray transition set: {}'.format(xraytransitionset))
+
     def _append_language(self, builder, table, language):
         if isinstance(language, descriptor.Language):
             language = language.code
 
         builder.add_join('language', 'id', table, 'language_id')
-        builder.add_where('language', 'code', 'language')
+        builder.add_where('language', 'code', '=', 'language')
 
         return {'language': language}
 
@@ -154,7 +202,7 @@ class SqlEngineDatabase(_Database, SqlEngineDatabaseMixin):
             notation = notation.name
 
         builder.add_join('notation', 'id', table, 'notation_id')
-        builder.add_where('notation', 'name', 'notation')
+        builder.add_where('notation', 'name', '=', 'notation')
 
         return {'notation': notation}
 
@@ -164,7 +212,7 @@ class SqlEngineDatabase(_Database, SqlEngineDatabaseMixin):
 
         if reference:
             builder.add_join('ref', 'id', table, 'reference_id')
-            builder.add_where('ref', 'bibtexkey', 'reference')
+            builder.add_where('ref', 'bibtexkey', '=', 'reference')
 
         else:
             builder.add_orderby(table, 'reference_id')
@@ -302,24 +350,45 @@ class SqlEngineDatabase(_Database, SqlEngineDatabaseMixin):
         value_kg_per_m3, = row
         return value_kg_per_m3
 
-#    def element_xray_transitions(self, element, reference=None):
-#        if not reference:
-#            reference = self.get_default_reference('xray_transition_probability')
-#
-#        element_id = self._get_element_id(self.engine, element)
-#
-#        tbl = table.xray_transition_probability
-#        tbl.create(self.engine, checkfirst=True)
-#        command = sql.select([tbl.c.xray_transition_id])
-#        command = command.where(tbl.c.element_id == element_id)
-#        command = command.where(tbl.c.value > 0.0)
-#        command = self._append_command_reference(command, tbl, reference)
-#        result = self.engine.execute(command)
-#        rows = result.fetchall()
-#        if not rows:
-#            raise NotFound('No X-ray transition found')
-#
-#        return tuple(self._get_xray_transition(self.engine, row[0]) for row in rows)
+    def element_xray_transitions(self, element, reference=None):
+        if not reference:
+            reference = self.get_default_reference('xray_transition_probability')
+
+        table = 'xray_transition_probability'
+        params = {}
+        builder = SelectBuilder()
+        builder.add_select('srcshell', 'principal_quantum_number')
+        builder.add_select('srcsubshell', 'azimuthal_quantum_number')
+        builder.add_select('srcsubshell', 'total_angular_momentum_nominator')
+        builder.add_select('dstshell', 'principal_quantum_number')
+        builder.add_select('dstsubshell', 'azimuthal_quantum_number')
+        builder.add_select('dstsubshell', 'total_angular_momentum_nominator')
+        builder.add_from(table)
+        builder.add_join('xray_transition', 'id', table, 'xray_transition_id')
+        builder.add_join('atomic_subshell', 'id', 'xray_transition', 'source_subshell_id', 'srcsubshell')
+        builder.add_join('atomic_subshell', 'id', 'xray_transition', 'destination_subshell_id', 'dstsubshell')
+        builder.add_join('atomic_shell', 'id', 'srcsubshell', 'atomic_shell_id', 'srcshell')
+        builder.add_join('atomic_shell', 'id', 'dstsubshell', 'atomic_shell_id', 'dstshell')
+        params.update(self._append_element(builder, table, 'element_id', element))
+        params.update(self._append_reference(builder, table, reference))
+        builder.add_where(table, 'value', '>', 'probability')
+        params['probability'] = 0.0
+        sql = builder.build()
+
+        cur = self.connection.cursor()
+        cur.execute(sql, params)
+        rows = cur.fetchall()
+        cur.close()
+        if not rows:
+            raise NotFound('No X-ray transition found')
+
+        transitions = []
+        for src_n, src_l, src_j_n, dst_n, dst_l, dst_j_n in rows:
+            src = descriptor.AtomicSubshell(src_n, src_l, src_j_n)
+            dst = descriptor.AtomicSubshell(dst_n, dst_l, dst_j_n)
+            transitions.append(descriptor.XrayTransition(src, dst))
+
+        return tuple(transitions)
 
     def atomic_shell(self, atomic_shell):
         table = 'atomic_shell'
@@ -411,70 +480,102 @@ class SqlEngineDatabase(_Database, SqlEngineDatabaseMixin):
         value, = row
         return value
 
-#    def atomic_subshell_binding_energy_eV(self, element, atomic_subshell, reference=None):
-#        if not reference:
-#            reference = self.get_default_reference('atomic_subshell_binding_energy_eV')
-#
-#        element_id = self._get_element_id(self.engine, element)
-#        atomic_subshell_id = self._get_atomic_subshell_id(self.engine, atomic_subshell)
-#
-#        tbl = table.atomic_subshell_binding_energy
-#        tbl.create(self.engine, checkfirst=True)
-#        command = sql.select([tbl.c.value_eV])
-#        command = command.where(tbl.c.element_id == element_id)
-#        command = command.where(tbl.c.atomic_subshell_id == atomic_subshell_id)
-#        command = self._append_command_reference(command, tbl, reference)
-#        return self._retrieve_first(self.engine, command,
-#                                    NotFound('No atomic subshell binding energy found'))
-#
-#    def atomic_subshell_radiative_width_eV(self, element, atomic_subshell, reference=None):
-#        if not reference:
-#            reference = self.get_default_reference('atomic_subshell_radiative_width_eV')
-#
-#        element_id = self._get_element_id(self.engine, element)
-#        atomic_subshell_id = self._get_atomic_subshell_id(self.engine, atomic_subshell)
-#
-#        tbl = table.atomic_subshell_radiative_width
-#        tbl.create(self.engine, checkfirst=True)
-#        command = sql.select([tbl.c.value_eV])
-#        command = command.where(tbl.c.element_id == element_id)
-#        command = command.where(tbl.c.atomic_subshell_id == atomic_subshell_id)
-#        command = self._append_command_reference(command, tbl, reference)
-#        return self._retrieve_first(self.engine, command,
-#                                    NotFound('No atomic subshell radiative width found'))
-#
-#    def atomic_subshell_nonradiative_width_eV(self, element, atomic_subshell, reference=None):
-#        if not reference:
-#            reference = self.get_default_reference('atomic_subshell_nonradiative_width_eV')
-#
-#        element_id = self._get_element_id(self.engine, element)
-#        atomic_subshell_id = self._get_atomic_subshell_id(self.engine, atomic_subshell)
-#
-#        tbl = table.atomic_subshell_nonradiative_width
-#        tbl.create(self.engine, checkfirst=True)
-#        command = sql.select([tbl.c.value_eV])
-#        command = command.where(tbl.c.element_id == element_id)
-#        command = command.where(tbl.c.atomic_subshell_id == atomic_subshell_id)
-#        command = self._append_command_reference(command, tbl, reference)
-#        return self._retrieve_first(self.engine, command,
-#                                    NotFound('No atomic subshell nonradiative width found'))
-#
-#    def atomic_subshell_occupancy(self, element, atomic_subshell, reference=None):
-#        if not reference:
-#            reference = self.get_default_reference('atomic_subshell_occupancy')
-#
-#        element_id = self._get_element_id(self.engine, element)
-#        atomic_subshell_id = self._get_atomic_subshell_id(self.engine, atomic_subshell)
-#
-#        tbl = table.atomic_subshell_occupancy
-#        tbl.create(self.engine, checkfirst=True)
-#        command = sql.select([tbl.c.value])
-#        command = command.where(tbl.c.element_id == element_id)
-#        command = command.where(tbl.c.atomic_subshell_id == atomic_subshell_id)
-#        command = self._append_command_reference(command, tbl, reference)
-#        return self._retrieve_first(self.engine, command,
-#                                    NotFound('No atomic subshell occupancy found'))
-#
+    def atomic_subshell_binding_energy_eV(self, element, atomic_subshell, reference=None):
+        if not reference:
+            reference = self.get_default_reference('atomic_subshell_binding_energy_eV')
+
+        table = 'atomic_subshell_binding_energy'
+        params = {}
+        builder = SelectBuilder()
+        builder.add_select(table, 'value_eV')
+        builder.add_from(table)
+        params.update(self._append_element(builder, table, 'element_id', element))
+        params.update(self._append_atomic_shell(builder, table, 'atomic_subshell_id', atomic_subshell))
+        params.update(self._append_reference(builder, table, reference))
+        sql = builder.build()
+
+        cur = self.connection.cursor()
+        cur.execute(sql, params)
+        row = cur.fetchone()
+        cur.close()
+        if row is None:
+            raise NotFound('No atomic subshell binding energy found')
+
+        value_eV, = row
+        return value_eV
+
+    def atomic_subshell_radiative_width_eV(self, element, atomic_subshell, reference=None):
+        if not reference:
+            reference = self.get_default_reference('atomic_subshell_radiative_width_eV')
+
+        table = 'atomic_subshell_radiative_width'
+        params = {}
+        builder = SelectBuilder()
+        builder.add_select(table, 'value_eV')
+        builder.add_from(table)
+        params.update(self._append_element(builder, table, 'element_id', element))
+        params.update(self._append_atomic_shell(builder, table, 'atomic_subshell_id', atomic_subshell))
+        params.update(self._append_reference(builder, table, reference))
+        sql = builder.build()
+
+        cur = self.connection.cursor()
+        cur.execute(sql, params)
+        row = cur.fetchone()
+        cur.close()
+        if row is None:
+            raise NotFound('No atomic subshell radiative width found')
+
+        value_eV, = row
+        return value_eV
+
+    def atomic_subshell_nonradiative_width_eV(self, element, atomic_subshell, reference=None):
+        if not reference:
+            reference = self.get_default_reference('atomic_subshell_nonradiative_width_eV')
+
+        table = 'atomic_subshell_nonradiative_width'
+        params = {}
+        builder = SelectBuilder()
+        builder.add_select(table, 'value_eV')
+        builder.add_from(table)
+        params.update(self._append_element(builder, table, 'element_id', element))
+        params.update(self._append_atomic_shell(builder, table, 'atomic_subshell_id', atomic_subshell))
+        params.update(self._append_reference(builder, table, reference))
+        sql = builder.build()
+
+        cur = self.connection.cursor()
+        cur.execute(sql, params)
+        row = cur.fetchone()
+        cur.close()
+        if row is None:
+            raise NotFound('No atomic subshell nonradiative width found')
+
+        value_eV, = row
+        return value_eV
+
+    def atomic_subshell_occupancy(self, element, atomic_subshell, reference=None):
+        if not reference:
+            reference = self.get_default_reference('atomic_subshell_occupancy')
+
+        table = 'atomic_subshell_occupancy'
+        params = {}
+        builder = SelectBuilder()
+        builder.add_select(table, 'value')
+        builder.add_from(table)
+        params.update(self._append_element(builder, table, 'element_id', element))
+        params.update(self._append_atomic_shell(builder, table, 'atomic_subshell_id', atomic_subshell))
+        params.update(self._append_reference(builder, table, reference))
+        sql = builder.build()
+
+        cur = self.connection.cursor()
+        cur.execute(sql, params)
+        row = cur.fetchone()
+        cur.close()
+        if row is None:
+            raise NotFound('No atomic subshell occupancy found')
+
+        value, = row
+        return value
+
     def xray_transition(self, xraytransition):
         table = 'xray_transition'
         params = {}
@@ -550,89 +651,157 @@ class SqlEngineDatabase(_Database, SqlEngineDatabaseMixin):
         value_eV, = row
         return value_eV
 
-#    def xray_transition_probability(self, element, xraytransition, reference=None):
-#        if not reference:
-#            reference = self.get_default_reference('xray_transition_probability')
-#
-#        element_id = self._get_element_id(self.engine, element)
-#        xray_transition_id = self._get_xray_transition_id(self.engine, xraytransition)
-#
-#        tbl = table.xray_transition_probability
-#        tbl.create(self.engine, checkfirst=True)
-#        command = sql.select([tbl.c.value])
-#        command = command.where(tbl.c.element_id == element_id)
-#        command = command.where(tbl.c.xray_transition_id == xray_transition_id)
-#        command = self._append_command_reference(command, tbl, reference)
-#        return self._retrieve_first(self.engine, command,
-#                                    NotFound('No X-ray transition probability found'))
-#
-#    def xray_transition_relative_weight(self, element, xraytransition, reference=None):
-#        if not reference:
-#            reference = self.get_default_reference('xray_transition_relative_weight')
-#
-#        element_id = self._get_element_id(self.engine, element)
-#        xray_transition_id = self._get_xray_transition_id(self.engine, xraytransition)
-#
-#        tbl = table.xray_transition_relative_weight
-#        tbl.create(self.engine, checkfirst=True)
-#        command = sql.select([tbl.c.value])
-#        command = command.where(tbl.c.element_id == element_id)
-#        command = command.where(tbl.c.xray_transition_id == xray_transition_id)
-#        command = self._append_command_reference(command, tbl, reference)
-#        return self._retrieve_first(self.engine, command,
-#                                    NotFound('No X-ray transition relative weight found'))
-#
-#    def xray_transitionset(self, xraytransitionset):
-#        if isinstance(xraytransitionset, descriptor.XrayTransitionSet):
-#            return xraytransitionset
-#        xray_transitionset_id = self._get_xray_transitionset_id(self.engine, xraytransitionset)
-#        return self._get_xray_transitionset(self.engine, xray_transitionset_id)
-#
-#    def xray_transitionset_notation(self, xraytransitionset, notation,
-#                                    encoding='utf16', reference=None):
-#        if not reference:
-#            reference = self.get_default_reference('xray_transitionset_notation')
-#
-#        xray_transitionset_id = self._get_xray_transitionset_id(self.engine, xraytransitionset)
-#        notation_id = self._get_notation_id(self.engine, notation)
-#
-#        tbl = table.xray_transitionset_notation
-#        tbl.create(self.engine, checkfirst=True)
-#        command = sql.select([getattr(tbl.c, encoding)])
-#        command = command.where(tbl.c.xray_transitionset_id == xray_transitionset_id)
-#        command = command.where(tbl.c.notation_id == notation_id)
-#        command = self._append_command_reference(command, tbl, reference)
-#        return self._retrieve_first(self.engine, command,
-#                                    NotFound('No X-ray transition set notation found'))
-#
-#    def xray_transitionset_energy_eV(self, element, xraytransitionset, reference=None):
-#        if not reference:
-#            reference = self.get_default_reference('xray_transitionset_energy_eV')
-#
-#        element_id = self._get_element_id(self.engine, element)
-#        xray_transitionset_id = self._get_xray_transitionset_id(self.engine, xraytransitionset)
-#
-#        tbl = table.xray_transitionset_energy
-#        tbl.create(self.engine, checkfirst=True)
-#        command = sql.select([tbl.c.value_eV])
-#        command = command.where(tbl.c.element_id == element_id)
-#        command = command.where(tbl.c.xray_transitionset_id == xray_transitionset_id)
-#        command = self._append_command_reference(command, tbl, reference)
-#        return self._retrieve_first(self.engine, command,
-#                                    NotFound('No X-ray transition set energy found'))
-#
-#    def xray_transitionset_relative_weight(self, element, xraytransitionset, reference=None):
-#        if not reference:
-#            reference = self.get_default_reference('xray_transitionset_relative_weight')
-#
-#        element_id = self._get_element_id(self.engine, element)
-#        xray_transitionset_id = self._get_xray_transitionset_id(self.engine, xraytransitionset)
-#
-#        tbl = table.xray_transitionset_relative_weight
-#        tbl.create(self.engine, checkfirst=True)
-#        command = sql.select([tbl.c.value])
-#        command = command.where(tbl.c.element_id == element_id)
-#        command = command.where(tbl.c.xray_transitionset_id == xray_transitionset_id)
-#        command = self._append_command_reference(command, tbl, reference)
-#        return self._retrieve_first(self.engine, command,
-#                                    NotFound('No X-ray transition set relative weight found'))
+    def xray_transition_probability(self, element, xraytransition, reference=None):
+        if not reference:
+            reference = self.get_default_reference('xray_transition_probability')
+
+        table = 'xray_transition_probability'
+        params = {}
+        builder = SelectBuilder()
+        builder.add_select(table, 'value')
+        builder.add_from(table)
+        params.update(self._append_element(builder, table, 'element_id', element))
+        params.update(self._append_xray_transition(builder, table, 'xray_transition_id', xraytransition))
+        params.update(self._append_reference(builder, table, reference))
+        sql = builder.build()
+
+        cur = self.connection.cursor()
+        cur.execute(sql, params)
+        row = cur.fetchone()
+        cur.close()
+        if row is None:
+            raise NotFound('No X-ray transition probability found')
+
+        value, = row
+        return value
+
+    def xray_transition_relative_weight(self, element, xraytransition, reference=None):
+        if not reference:
+            reference = self.get_default_reference('xray_transition_relative_weight')
+
+        table = 'xray_transition_relative_weight'
+        params = {}
+        builder = SelectBuilder()
+        builder.add_select(table, 'value')
+        builder.add_from(table)
+        params.update(self._append_element(builder, table, 'element_id', element))
+        params.update(self._append_xray_transition(builder, table, 'xray_transition_id', xraytransition))
+        params.update(self._append_reference(builder, table, reference))
+        sql = builder.build()
+
+        cur = self.connection.cursor()
+        cur.execute(sql, params)
+        row = cur.fetchone()
+        cur.close()
+        if row is None:
+            raise NotFound('No X-ray transition relative weight found')
+
+        value, = row
+        return value
+
+    def xray_transitionset(self, xraytransitionset):
+        table = 'xray_transitionset_association'
+        params = {}
+        builder = SelectBuilder()
+        builder.add_select('srcshell', 'principal_quantum_number')
+        builder.add_select('srcsubshell', 'azimuthal_quantum_number')
+        builder.add_select('srcsubshell', 'total_angular_momentum_nominator')
+        builder.add_select('dstshell', 'principal_quantum_number')
+        builder.add_select('dstsubshell', 'azimuthal_quantum_number')
+        builder.add_select('dstsubshell', 'total_angular_momentum_nominator')
+        builder.add_from(table)
+        builder.add_join('xray_transition', 'id', table, 'xray_transition_id')
+        builder.add_join('atomic_subshell', 'id', 'xray_transition', 'source_subshell_id', 'srcsubshell')
+        builder.add_join('atomic_subshell', 'id', 'xray_transition', 'destination_subshell_id', 'dstsubshell')
+        builder.add_join('atomic_shell', 'id', 'srcsubshell', 'atomic_shell_id', 'srcshell')
+        builder.add_join('atomic_shell', 'id', 'dstsubshell', 'atomic_shell_id', 'dstshell')
+        params.update(self._append_xray_transitionset(builder, table, 'xray_transitionset_id', xraytransitionset))
+        sql = builder.build()
+
+        cur = self.connection.cursor()
+        cur.execute(sql, params)
+        rows = cur.fetchall()
+        cur.close()
+        if not rows:
+            raise NotFound('No X-ray transition set found')
+
+        transitions = []
+        for src_n, src_l, src_j_n, dst_n, dst_l, dst_j_n in rows:
+            src = descriptor.AtomicSubshell(src_n, src_l, src_j_n)
+            dst = descriptor.AtomicSubshell(dst_n, dst_l, dst_j_n)
+            transitions.append(descriptor.XrayTransition(src, dst))
+
+        return descriptor.XrayTransitionSet(transitions)
+
+    def xray_transitionset_notation(self, xraytransitionset, notation,
+                                    encoding='utf16', reference=None):
+        if not reference:
+            reference = self.get_default_reference('xray_transitionset_notation')
+
+        table = 'xray_transitionset_notation'
+        params = {}
+        builder = SelectBuilder()
+        builder.add_select(table, encoding)
+        builder.add_from(table)
+        params.update(self._append_xray_transitionset(builder, table, 'xray_transitionset_id', xraytransitionset))
+        params.update(self._append_notation(builder, table, notation))
+        params.update(self._append_reference(builder, table, reference))
+        sql = builder.build()
+
+        cur = self.connection.cursor()
+        cur.execute(sql, params)
+        row = cur.fetchone()
+        cur.close()
+        if row is None:
+            raise NotFound('No X-ray transition set notation found')
+
+        value, = row
+        return value
+
+    def xray_transitionset_energy_eV(self, element, xraytransitionset, reference=None):
+        if not reference:
+            reference = self.get_default_reference('xray_transitionset_energy_eV')
+
+        table = 'xray_transitionset_energy'
+        params = {}
+        builder = SelectBuilder()
+        builder.add_select(table, 'value_eV')
+        builder.add_from(table)
+        params.update(self._append_element(builder, table, 'element_id', element))
+        params.update(self._append_xray_transitionset(builder, table, 'xray_transitionset_id', xraytransitionset))
+        params.update(self._append_reference(builder, table, reference))
+        sql = builder.build()
+
+        cur = self.connection.cursor()
+        cur.execute(sql, params)
+        row = cur.fetchone()
+        cur.close()
+        if row is None:
+            raise NotFound('No X-ray transition set energy found')
+
+        value_eV, = row
+        return value_eV
+
+    def xray_transitionset_relative_weight(self, element, xraytransitionset, reference=None):
+        if not reference:
+            reference = self.get_default_reference('xray_transitionset_relative_weight')
+
+        table = 'xray_transitionset_relative_weight'
+        params = {}
+        builder = SelectBuilder()
+        builder.add_select(table, 'value')
+        builder.add_from(table)
+        params.update(self._append_element(builder, table, 'element_id', element))
+        params.update(self._append_xray_transitionset(builder, table, 'xray_transitionset_id', xraytransitionset))
+        params.update(self._append_reference(builder, table, reference))
+        sql = builder.build()
+
+        cur = self.connection.cursor()
+        cur.execute(sql, params)
+        row = cur.fetchone()
+        cur.close()
+        if row is None:
+            raise NotFound('No X-ray transition set relative weight found')
+
+        value, = row
+        return value

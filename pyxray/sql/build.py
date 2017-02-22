@@ -184,6 +184,7 @@ class _DatabaseBuilder(metaclass=abc.ABCMeta):
 
         # Create empty row
         command = sql.insert(table.xray_transitionset)
+        command = command.values(count=len(xray_transition_ids))
         result = conn.execute(command)
         xray_transitionset_id = result.inserted_primary_key[0]
 

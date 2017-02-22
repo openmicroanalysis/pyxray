@@ -96,14 +96,14 @@ class TestSqlEngineDatabase(unittest.TestCase):
         self.assertAlmostEqual(0.9992, self.db.element_mass_density_g_per_cm3(118), 4)
         self.assertAlmostEqual(0.9992, self.db.element_mass_density_g_per_cm3('Vibranium'), 4)
 
-#    def testelement_xray_transitions(self):
-#        transitions = self.db.element_xray_transitions(118)
-#        self.assertEqual(1, len(transitions))
-#
-#        K = descriptor.AtomicSubshell(1, 0, 1)
-#        L3 = descriptor.AtomicSubshell(2, 1, 3)
-#        expected = descriptor.XrayTransition(L3, K)
-#        self.assertEqual(expected, transitions[0])
+    def testelement_xray_transitions(self):
+        transitions = self.db.element_xray_transitions(118)
+        self.assertEqual(1, len(transitions))
+
+        K = descriptor.AtomicSubshell(1, 0, 1)
+        L3 = descriptor.AtomicSubshell(2, 1, 3)
+        expected = descriptor.XrayTransition(L3, K)
+        self.assertEqual(expected, transitions[0])
 
     def testatomic_shell(self):
         expected = descriptor.AtomicShell(1)
@@ -136,23 +136,22 @@ class TestSqlEngineDatabase(unittest.TestCase):
         self.assertEqual('b', self.db.atomic_subshell_notation(ashell, 'mock', 'utf16'))
         self.assertEqual('c', self.db.atomic_subshell_notation(ashell, 'mock', 'html'))
         self.assertEqual('d', self.db.atomic_subshell_notation(ashell, 'mock', 'latex'))
-#
-#    def testatomic_subshell_binding_energy_eV(self):
-#        ashell = descriptor.AtomicSubshell(1, 0, 1)
-#        self.assertAlmostEqual(0.1, self.db.atomic_subshell_binding_energy_eV(118, ashell), 4)
-#
-#    def testatomic_subshell_radiative_width_eV(self):
-#        ashell = descriptor.AtomicSubshell(1, 0, 1)
-#        self.assertAlmostEqual(0.01, self.db.atomic_subshell_radiative_width_eV(118, ashell), 4)
-#
-#    def testatomic_subshell_nonradiative_width_eV(self):
-#        ashell = descriptor.AtomicSubshell(1, 0, 1)
-#        self.assertAlmostEqual(0.001, self.db.atomic_subshell_nonradiative_width_eV(118, ashell), 4)
-#
-#    def testatomic_subshell_occupancy(self):
-#        ashell = descriptor.AtomicSubshell(1, 0, 1)
-#        self.assertEqual(1, self.db.atomic_subshell_occupancy(118, ashell))
-#
+
+    def testatomic_subshell_binding_energy_eV(self):
+        ashell = descriptor.AtomicSubshell(1, 0, 1)
+        self.assertAlmostEqual(0.1, self.db.atomic_subshell_binding_energy_eV(118, ashell), 4)
+
+    def testatomic_subshell_radiative_width_eV(self):
+        ashell = descriptor.AtomicSubshell(1, 0, 1)
+        self.assertAlmostEqual(0.01, self.db.atomic_subshell_radiative_width_eV(118, ashell), 4)
+
+    def testatomic_subshell_nonradiative_width_eV(self):
+        ashell = descriptor.AtomicSubshell(1, 0, 1)
+        self.assertAlmostEqual(0.001, self.db.atomic_subshell_nonradiative_width_eV(118, ashell), 4)
+
+    def testatomic_subshell_occupancy(self):
+        ashell = descriptor.AtomicSubshell(1, 0, 1)
+        self.assertEqual(1, self.db.atomic_subshell_occupancy(118, ashell))
 
     def testxray_transition(self):
         K = descriptor.AtomicSubshell(1, 0, 1)
@@ -176,57 +175,69 @@ class TestSqlEngineDatabase(unittest.TestCase):
         L3 = descriptor.AtomicSubshell(2, 1, 3)
         transition = descriptor.XrayTransition(L3, K)
         self.assertAlmostEqual(0.2, self.db.xray_transition_energy_eV(118, transition), 4)
-#
-#    def testtransition_probability(self):
-#        K = descriptor.AtomicSubshell(1, 0, 1)
-#        L3 = descriptor.AtomicSubshell(2, 1, 3)
-#        transition = descriptor.Transition(L3, K)
-#        self.assertAlmostEqual(0.02, self.db.transition_probability(118, transition), 4)
-#
-#    def testtransition_relative_weight(self):
-#        K = descriptor.AtomicSubshell(1, 0, 1)
-#        L3 = descriptor.AtomicSubshell(2, 1, 3)
-#        transition = descriptor.Transition(L3, K)
-#        self.assertAlmostEqual(0.002, self.db.transition_relative_weight(118, transition), 4)
-#
-#    def testtransitionset(self):
-#        K = descriptor.AtomicSubshell(1, 0, 1)
-#        L3 = descriptor.AtomicSubshell(2, 1, 3)
-#        L2 = descriptor.AtomicSubshell(2, 1, 1)
-#        transition = descriptor.Transition(L3, K)
-#        transition2 = descriptor.Transition(L2, K, L3)
-#        expected = descriptor.TransitionSet([transition, transition2])
-#        self.assertEqual(expected, self.db.transitionset('a'))
-#
-#    def testtransitionset_notation(self):
-#        K = descriptor.AtomicSubshell(1, 0, 1)
-#        L3 = descriptor.AtomicSubshell(2, 1, 3)
-#        L2 = descriptor.AtomicSubshell(2, 1, 1)
-#        transition = descriptor.Transition(L3, K)
-#        transition2 = descriptor.Transition(L2, K, L3)
-#        transitionset = descriptor.TransitionSet([transition, transition2])
-#        self.assertEqual('a', self.db.transitionset_notation(transitionset, 'mock', 'ascii'))
-#        self.assertEqual('b', self.db.transitionset_notation(transitionset, 'mock', 'utf16'))
-#        self.assertEqual('c', self.db.transitionset_notation(transitionset, 'mock', 'html'))
-#        self.assertEqual('d', self.db.transitionset_notation(transitionset, 'mock', 'latex'))
-#
-#    def testtransitionset_energy_eV(self):
-#        K = descriptor.AtomicSubshell(1, 0, 1)
-#        L3 = descriptor.AtomicSubshell(2, 1, 3)
-#        L2 = descriptor.AtomicSubshell(2, 1, 1)
-#        transition = descriptor.Transition(L3, K)
-#        transition2 = descriptor.Transition(L2, K, L3)
-#        transitionset = descriptor.TransitionSet([transition, transition2])
-#        self.assertAlmostEqual(0.3, self.db.transitionset_energy_eV(118, transitionset), 4)
-#
-#    def testtransitionset_relative_weight(self):
-#        K = descriptor.AtomicSubshell(1, 0, 1)
-#        L3 = descriptor.AtomicSubshell(2, 1, 3)
-#        L2 = descriptor.AtomicSubshell(2, 1, 1)
-#        transition = descriptor.Transition(L3, K)
-#        transition2 = descriptor.Transition(L2, K, L3)
-#        transitionset = descriptor.TransitionSet([transition, transition2])
-#        self.assertAlmostEqual(0.003, self.db.transitionset_relative_weight(118, transitionset), 4)
+
+    def testtransition_probability(self):
+        K = descriptor.AtomicSubshell(1, 0, 1)
+        L3 = descriptor.AtomicSubshell(2, 1, 3)
+        transition = descriptor.XrayTransition(L3, K)
+        self.assertAlmostEqual(0.02, self.db.xray_transition_probability(118, transition), 4)
+
+    def testtransition_relative_weight(self):
+        K = descriptor.AtomicSubshell(1, 0, 1)
+        L3 = descriptor.AtomicSubshell(2, 1, 3)
+        transition = descriptor.XrayTransition(L3, K)
+        self.assertAlmostEqual(0.002, self.db.xray_transition_relative_weight(118, transition), 4)
+
+    def testtransitionset(self):
+        K = descriptor.AtomicSubshell(1, 0, 1)
+        L3 = descriptor.AtomicSubshell(2, 1, 3)
+        L2 = descriptor.AtomicSubshell(2, 1, 1)
+        L1 = descriptor.AtomicSubshell(2, 0, 1)
+        transition = descriptor.XrayTransition(L3, K)
+        transition2 = descriptor.XrayTransition(L2, K)
+        expected = descriptor.XrayTransitionSet([transition, transition2])
+        self.assertEqual(expected, self.db.xray_transitionset('a'))
+        self.assertEqual(expected, self.db.xray_transitionset('b'))
+
+        transitionset = descriptor.XrayTransitionSet([transition, transition2])
+        self.assertEqual(expected, self.db.xray_transitionset(transitionset))
+
+        transitionset = descriptor.XrayTransitionSet([transition])
+        self.assertRaises(NotFound, self.db.xray_transitionset, transitionset)
+
+        transition3 = descriptor.XrayTransition(L1, K)
+        transitionset = descriptor.XrayTransitionSet([transition, transition3])
+        self.assertRaises(NotFound, self.db.xray_transitionset, transitionset)
+
+    def testtransitionset_notation(self):
+        K = descriptor.AtomicSubshell(1, 0, 1)
+        L3 = descriptor.AtomicSubshell(2, 1, 3)
+        L2 = descriptor.AtomicSubshell(2, 1, 1)
+        transition = descriptor.XrayTransition(L3, K)
+        transition2 = descriptor.XrayTransition(L2, K)
+        transitionset = descriptor.XrayTransitionSet([transition, transition2])
+        self.assertEqual('a', self.db.xray_transitionset_notation(transitionset, 'mock', 'ascii'))
+        self.assertEqual('b', self.db.xray_transitionset_notation(transitionset, 'mock', 'utf16'))
+        self.assertEqual('c', self.db.xray_transitionset_notation(transitionset, 'mock', 'html'))
+        self.assertEqual('d', self.db.xray_transitionset_notation(transitionset, 'mock', 'latex'))
+
+    def testtransitionset_energy_eV(self):
+        K = descriptor.AtomicSubshell(1, 0, 1)
+        L3 = descriptor.AtomicSubshell(2, 1, 3)
+        L2 = descriptor.AtomicSubshell(2, 1, 1)
+        transition = descriptor.XrayTransition(L3, K)
+        transition2 = descriptor.XrayTransition(L2, K)
+        transitionset = descriptor.XrayTransitionSet([transition, transition2])
+        self.assertAlmostEqual(0.3, self.db.xray_transitionset_energy_eV(118, transitionset), 4)
+
+    def testtransitionset_relative_weight(self):
+        K = descriptor.AtomicSubshell(1, 0, 1)
+        L3 = descriptor.AtomicSubshell(2, 1, 3)
+        L2 = descriptor.AtomicSubshell(2, 1, 1)
+        transition = descriptor.XrayTransition(L3, K)
+        transition2 = descriptor.XrayTransition(L2, K)
+        transitionset = descriptor.XrayTransitionSet([transition, transition2])
+        self.assertAlmostEqual(0.003, self.db.xray_transitionset_relative_weight(118, transitionset), 4)
 
 if __name__ == '__main__': #pragma: no cover
     logging.getLogger().setLevel(logging.DEBUG)

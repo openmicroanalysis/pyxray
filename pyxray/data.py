@@ -12,24 +12,24 @@ __all__ = [
     'element_atomic_weight',
     'element_mass_density_kg_per_m3',
     'element_mass_density_g_per_cm3',
-#    'element_xray_transitions',
+    'element_xray_transitions',
     'atomic_shell',
     'atomic_shell_notation',
     'atomic_subshell',
     'atomic_subshell_notation',
-#    'atomic_subshell_binding_energy_eV',
-#    'atomic_subshell_radiative_width_eV',
-#    'atomic_subshell_nonradiative_width_eV',
-#    'atomic_subshell_occupancy',
+    'atomic_subshell_binding_energy_eV',
+    'atomic_subshell_radiative_width_eV',
+    'atomic_subshell_nonradiative_width_eV',
+    'atomic_subshell_occupancy',
     'xray_transition',
     'xray_transition_notation',
     'xray_transition_energy_eV',
-#    'xray_transition_probability',
-#    'xray_transition_relative_weight',
-#    'xray_transitionset',
-#    'xray_transitionset_notation',
-#    'xray_transitionset_energy_eV',
-#    'xray_transitionset_relative_weight'
+    'xray_transition_probability',
+    'xray_transition_relative_weight',
+    'xray_transitionset',
+    'xray_transitionset_notation',
+    'xray_transitionset_energy_eV',
+    'xray_transitionset_relative_weight'
     ]
 
 # Standard library modules.
@@ -149,21 +149,21 @@ element_name = database.element_name
 element_atomic_weight = database.element_atomic_weight
 element_mass_density_kg_per_m3 = database.element_mass_density_kg_per_m3
 element_mass_density_g_per_cm3 = database.element_mass_density_g_per_cm3
-#element_xray_transitions = database.element_xray_transitions
+element_xray_transitions = database.element_xray_transitions
 atomic_shell = database.atomic_shell
 atomic_shell_notation = database.atomic_shell_notation
 atomic_subshell = database.atomic_subshell
 atomic_subshell_notation = database.atomic_subshell_notation
-#atomic_subshell_binding_energy_eV = database.atomic_subshell_binding_energy_eV
-#atomic_subshell_radiative_width_eV = database.atomic_subshell_radiative_width_eV
-#atomic_subshell_nonradiative_width_eV = database.atomic_subshell_nonradiative_width_eV
-#atomic_subshell_occupancy = database.atomic_subshell_occupancy
+atomic_subshell_binding_energy_eV = database.atomic_subshell_binding_energy_eV
+atomic_subshell_radiative_width_eV = database.atomic_subshell_radiative_width_eV
+atomic_subshell_nonradiative_width_eV = database.atomic_subshell_nonradiative_width_eV
+atomic_subshell_occupancy = database.atomic_subshell_occupancy
 xray_transition = database.xray_transition
 xray_transition_notation = database.xray_transition_notation
 xray_transition_energy_eV = database.xray_transition_energy_eV
-#xray_transition_probability = database.xray_transition_probability
-#xray_transition_relative_weight = database.xray_transition_relative_weight
-#xray_transitionset = database.xray_transitionset
-#xray_transitionset_notation = database.xray_transitionset_notation
-#xray_transitionset_energy_eV = database.xray_transitionset_energy_eV
-#xray_transitionset_relative_weight = database.xray_transitionset_relative_weight
+xray_transition_probability = database.xray_transition_probability
+xray_transition_relative_weight = database.xray_transition_relative_weight
+xray_transitionset = database.xray_transitionset
+xray_transitionset_notation = database.xray_transitionset_notation
+xray_transitionset_energy_eV = database.xray_transitionset_energy_eV
+xray_transitionset_relative_weight = database.xray_transitionset_relative_weight

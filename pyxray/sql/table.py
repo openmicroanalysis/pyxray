@@ -90,7 +90,8 @@ xray_transitionset_association = \
 _append_primary_key_columns(xray_transitionset_association)
 
 xray_transitionset = \
-    Table('xray_transitionset', metadata)
+    Table('xray_transitionset', metadata,
+          Column('count', Integer))
 _append_primary_key_columns(xray_transitionset)
 
 language = \

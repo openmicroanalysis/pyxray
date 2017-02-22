@@ -58,11 +58,15 @@ def chunked(iterable, n):
 class SelectBuilder:
 
     def __init__(self):
+        self.distinct = False
         self.selects = []
         self.froms = []
         self.joins = []
         self.wheres = []
         self.orderbys = []
+
+    def set_distinct(self, distinct):
+        self.distinct = distinct
 
     def add_select(self, table, column):
         self.selects.append((table, column))
@@ -73,10 +77,10 @@ class SelectBuilder:
     def add_join(self, table1, column1, table2, column2, alias1=None):
         self.joins.append((table1, column1, table2, column2, alias1))
 
-    def add_where(self, table, column, variable, *args):
-        where = [(table, column, variable)]
-        for table, column, variable in chunked(args, 3):
-            where.append((table, column, variable))
+    def add_where(self, table, column, operator, variable, *args):
+        where = [(table, column, operator, variable)]
+        for table, column, operator, variable in chunked(args, 4):
+            where.append((table, column, operator, variable))
         self.wheres.append(where)
 
     def add_orderby(self, table, column, order='ASC'):
@@ -86,41 +90,46 @@ class SelectBuilder:
         sql = []
 
         # Select
-        sql += ['SELECT ' + ', '.join('{}.{}'.format(table, column)
-                                      for table, column in self.selects)]
+        sql += ['SELECT ' + \
+                ('DISTINCT ' if self.distinct else '') + \
+                ', '.join('{}.{}'.format(t, c) for t, c in self.selects)]
 
         # From
-        tables = [table1 for table1, _, table2, _, alias1 in self.joins
-                  if not alias1 and table1 != table2]
+        tables = [t1 for t1, _, t2, _, a1 in self.joins if not a1 and t1 != t2]
         sql += ['FROM ' + ', '.join(set(self.froms) - set(tables))]
 
         # Join
-        for table1, column1, table2, column2, alias1 in self.joins:
-            if table1 == table2:
+        for t1, c1, t2, c2, a1 in self.joins:
+            if t1 == t2:
                 continue
 
-            if alias1:
+            if a1:
                 fmt = 'JOIN {0} AS {4} ON {4}.{1} = {2}.{3}'
             else:
                 fmt = 'JOIN {0} ON {0}.{1} = {2}.{3}'
-            sql += [fmt.format(table1, column1, table2, column2, alias1)]
+            sql += [fmt.format(t1, c1, t2, c2, a1)]
 
         # Where
-        if self.wheres:
-            subsql = []
-            for conditions in self.wheres:
-                subsql += ['(' + \
-                           ' OR '.join('{}.{} = :{}'.format(table, column, variable)
-                                       for table, column, variable in conditions) + \
-                           ')']
+        subsql = []
+        for conditions in self.wheres:
+            subsubsql = []
+            for t, c, o, vs in conditions:
+                if o.lower() == 'in':
+                    subsubsql += ['{}.{} {} ('.format(t, c, o) + \
+                                  ', '.join(':{}'.format(v) for v in vs) + ')']
+                else:
+                    subsubsql += ['{}.{} {} :{}'.format(t, c, o, vs)]
 
+            subsql += ['(' + ' OR '.join(subsubsql) + ')']
+
+        if subsql:
             sql += ['WHERE ' + ' AND '.join(subsql)]
 
         # Order by
         if self.orderbys:
             sql += ['ORDER BY ' + \
-                    ', '.join('{}.{} {}'.format(table, column, order)
-                              for table, column, order in self.orderbys)]
+                    ', '.join('{}.{} {}'.format(t, c, o)
+                              for t, c, o in self.orderbys)]
 
         return '\n'.join(sql)
 
