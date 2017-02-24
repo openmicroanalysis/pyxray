@@ -13,12 +13,12 @@ import sqlite3
 
 # Local modules.
 import pyxray.descriptor as descriptor
-from pyxray.sql.data import SqlEngineDatabase, NotFound
+from pyxray.sql.data import SqlDatabase, NotFound
 from pyxray.sql.test_build import MockSqliteDatabaseBuilder
 
 # Globals and constants variables.
 
-class TestSqlEngineDatabase(unittest.TestCase):
+class TestSqlDatabase(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
@@ -38,7 +38,7 @@ class TestSqlEngineDatabase(unittest.TestCase):
         super().setUp()
 
         self.connection = sqlite3.connect(self.filepath)
-        self.db = SqlEngineDatabase(self.connection)
+        self.db = SqlDatabase(self.connection)
 
     def tearDown(self):
         super().tearDown()

@@ -9,56 +9,56 @@ logger = logging.getLogger(__name__)
 import abc
 import argparse
 import shutil
+import sqlite3
 
 # Third party modules.
-from sqlalchemy import create_engine
-import sqlalchemy.sql as sql
-from sqlalchemy.pool import QueuePool
-
-import progressbar
+try:
+    import progressbar
+except ImportError:
+    progressbar = None
 
 # Local modules.
-from pyxray.parser.parser import find_parsers
-import pyxray.sql.table as table
-from pyxray.sql.base import SqlEngineDatabaseMixin
 import pyxray.property as props
 from pyxray.base import NotFound
+from pyxray.parser.parser import find_parsers
+from pyxray.sql.command import SelectBuilder, InsertBuilder, CreateTableBuilder
+from pyxray.sql.base import SqlDatabaseMixin
 
 # Globals and constants variables.
 
-class _DatabaseBuilder(metaclass=abc.ABCMeta):
+class SqlDatabaseBuilder(SqlDatabaseMixin, metaclass=abc.ABCMeta):
 
     def __init__(self):
         self._propfuncs = {}
 
-        self._propfuncs[props.ElementSymbol] = self._add_element_symbol_property
-        self._propfuncs[props.ElementName] = self._add_element_name_property
-        self._propfuncs[props.ElementAtomicWeight] = self._add_element_atomic_weight_property
-        self._propfuncs[props.ElementMassDensity] = self._add_element_mass_density_property
+        self._propfuncs[props.ElementSymbol] = self._insert_element_symbol_property
+        self._propfuncs[props.ElementName] = self._insert_element_name_property
+        self._propfuncs[props.ElementAtomicWeight] = self._insert_element_atomic_weight_property
+        self._propfuncs[props.ElementMassDensity] = self._insert_element_mass_density_property
 
-        self._propfuncs[props.AtomicShellNotation] = self._add_atomic_shell_notation_property
+        self._propfuncs[props.AtomicShellNotation] = self._insert_atomic_shell_notation_property
 
-        self._propfuncs[props.AtomicSubshellNotation] = self._add_atomic_subshell_notation_property
-        self._propfuncs[props.AtomicSubshellBindingEnergy] = self._add_atomic_subshell_binding_energy_property
-        self._propfuncs[props.AtomicSubshellRadiativeWidth] = self._add_atomic_subshell_radiative_width_property
-        self._propfuncs[props.AtomicSubshellNonRadiativeWidth] = self._add_atomic_subshell_nonradiative_width_property
-        self._propfuncs[props.AtomicSubshellOccupancy] = self._add_atomic_subshell_occupancy_property
+        self._propfuncs[props.AtomicSubshellNotation] = self._insert_atomic_subshell_notation_property
+        self._propfuncs[props.AtomicSubshellBindingEnergy] = self._insert_atomic_subshell_binding_energy_property
+        self._propfuncs[props.AtomicSubshellRadiativeWidth] = self._insert_atomic_subshell_radiative_width_property
+        self._propfuncs[props.AtomicSubshellNonRadiativeWidth] = self._insert_atomic_subshell_nonradiative_width_property
+        self._propfuncs[props.AtomicSubshellOccupancy] = self._insert_atomic_subshell_occupancy_property
 
-        self._propfuncs[props.XrayTransitionNotation] = self._add_xray_transition_notation_property
-        self._propfuncs[props.XrayTransitionEnergy] = self._add_xray_transition_energy_property
-        self._propfuncs[props.XrayTransitionProbability] = self._add_xray_transition_propability_property
-        self._propfuncs[props.XrayTransitionRelativeWeight] = self._add_xray_transition_relative_weight_property
+        self._propfuncs[props.XrayTransitionNotation] = self._insert_xray_transition_notation_property
+        self._propfuncs[props.XrayTransitionEnergy] = self._insert_xray_transition_energy_property
+        self._propfuncs[props.XrayTransitionProbability] = self._insert_xray_transition_propability_property
+        self._propfuncs[props.XrayTransitionRelativeWeight] = self._insert_xray_transition_relative_weight_property
 
-        self._propfuncs[props.XrayTransitionSetNotation] = self._add_xray_transitionset_notation_property
-        self._propfuncs[props.XrayTransitionSetEnergy] = self._add_xray_transitionset_energy_property
-        self._propfuncs[props.XrayTransitionSetRelativeWeight] = self._add_xray_transitionset_relative_weight_property
+        self._propfuncs[props.XrayTransitionSetNotation] = self._insert_xray_transitionset_notation_property
+        self._propfuncs[props.XrayTransitionSetEnergy] = self._insert_xray_transitionset_energy_property
+        self._propfuncs[props.XrayTransitionSetRelativeWeight] = self._insert_xray_transitionset_relative_weight_property
 
     @abc.abstractmethod
     def _backup_existing_database(self): #pragma: no cover
         raise NotImplementedError
 
     @abc.abstractmethod
-    def _create_database_engine(self): #pragma: no cover
+    def _create_database_connection(self): #pragma: no cover
         raise NotImplementedError
 
     @abc.abstractmethod
@@ -72,26 +72,29 @@ class _DatabaseBuilder(metaclass=abc.ABCMeta):
         return find_parsers()
 
     def _create_progressbar(self, desc):
+        if not progressbar:
+            return
         widgets = [desc, ' ' * 4, progressbar.Bar(), progressbar.Percentage()]
         return progressbar.ProgressBar(max_value=100, widgets=widgets)
 
-    def _process_parser(self, conn, name, parser):
+    def _process_parser(self, connection, name, parser):
         bar = self._create_progressbar(name)
-        parser.add_reporthook(bar.update)
+        if bar: parser.add_reporthook(bar.update)
 
         try:
-            bar.start()
+            if bar: bar.start()
 
             for prop in parser:
                 func = self._propfuncs[type(prop)]
-                func(conn, prop)
+                func(connection, prop)
 
         finally:
             parser.clear_reporthooks()
-            bar.finish()
+            if bar: bar.finish()
 
-    def purge_database(self, engine):
-        table.metadata.drop_all(engine) #@UndefinedVariable
+    def _purge_database(self, connection):
+        #TODO: Purge
+        pass
 
     def build(self):
         parsers = self._find_parsers()
@@ -102,17 +105,21 @@ class _DatabaseBuilder(metaclass=abc.ABCMeta):
             logger.info('Backup existing database')
 
         try:
-            engine = self._create_database_engine()
-            logger.info('Created database engine')
+            connection = self._create_database_connection()
+            logger.info('Created database connection')
 
-            self.purge_database(engine)
+            self._purge_database(connection)
             logger.info('Purged database')
 
+            self._create_tables(connection)
+            logger.info('Created tables')
+
             for name, parser in parsers:
-                with engine.begin() as conn:
-                    self._process_parser(conn, name, parser)
+                self._process_parser(connection, name, parser)
                 logger.info('Populated {0}'.format(name))
 
+            connection.commit()
+            connection.close()
         except:
             reverted = self._revert_to_backup_database()
             if reverted:
@@ -121,501 +128,674 @@ class _DatabaseBuilder(metaclass=abc.ABCMeta):
 
         self._cleanup()
 
-    def _insert_element(self, conn, element):
-        atomic_number = element.atomic_number
+    def _create_tables(self, connection):
+        self._create_element_table(connection)
+        self._create_element_symbol_table(connection)
+        self._create_element_name_table(connection)
+        self._create_element_atomic_weight_table(connection)
+        self._create_element_mass_density_table(connection)
 
-        tbl = table.element
-        tbl.create(conn, checkfirst=True)
+        self._create_atomic_shell_table(connection)
+        self._create_atomic_shell_notation_table(connection)
 
-        command = sql.insert(tbl)
-        command = command.values(atomic_number=atomic_number)
-        result = conn.execute(command)
-        return result.inserted_primary_key[0]
+        self._create_atomic_subshell_table(connection)
+        self._create_atomic_subshell_notation_table(connection)
+        self._create_atomic_subshell_binding_energy_table(connection)
+        self._create_atomic_subshell_radiative_width_table(connection)
+        self._create_atomic_subshell_nonradiative_width_table(connection)
+        self._create_atomic_subshell_occupancy_table(connection)
 
-    def _insert_atomic_shell(self, conn, atomic_shell):
-        principal_quantum_number = atomic_shell.principal_quantum_number
+        self._create_xray_transition_table(connection)
+        self._create_xray_transition_notation_table(connection)
+        self._create_xray_transition_energy_table(connection)
+        self._create_xray_transition_probability_table(connection)
+        self._create_xray_transition_relative_weight_table(connection)
 
-        tbl = table.atomic_shell
-        tbl.create(conn, checkfirst=True)
+        self._create_xray_transitionset_table(connection)
+        self._create_xray_transitionset_association_table(connection)
+        self._create_xray_transitionset_notation_table(connection)
+        self._create_xray_transitionset_energy_table(connection)
+        self._create_xray_transitionset_relative_weight_table(connection)
 
-        command = sql.insert(tbl)
-        command = command.values(principal_quantum_number=principal_quantum_number)
-        result = conn.execute(command)
-        return result.inserted_primary_key[0]
+        self._create_language_table(connection)
+        self._create_notation_table(connection)
+        self._create_reference_table(connection)
 
-    def _insert_atomic_subshell(self, conn, atomic_subshell):
-        atomic_shell_id = self._require_atomic_shell(conn, atomic_subshell.atomic_shell)
-        azimuthal_quantum_number = atomic_subshell.azimuthal_quantum_number
-        total_angular_momentum_nominator = atomic_subshell.total_angular_momentum_nominator
+    def _create_table(self, connection, builder):
+        sql = builder.build()
 
-        tbl = table.atomic_subshell
-        tbl.create(conn, checkfirst=True)
+        cur = connection.cursor()
+        cur.execute(sql)
+        cur.close()
 
-        command = sql.insert(tbl)
-        command = command.values(atomic_shell_id=atomic_shell_id,
-                                 azimuthal_quantum_number=azimuthal_quantum_number,
-                                 total_angular_momentum_nominator=total_angular_momentum_nominator)
-        result = conn.execute(command)
-        return result.inserted_primary_key[0]
+    def _append_table_primary_key_columns(self, builder):
+        builder.add_primarykey_column('id')
 
-    def _insert_xray_transition(self, conn, xraytransition):
-        source_subshell_id = \
-            self._require_atomic_subshell(conn, xraytransition.source_subshell)
-        destination_subshell_id = \
-            self._require_atomic_subshell(conn, xraytransition.destination_subshell)
+    def _append_table_element_columns(self, builder):
+        builder.add_foreignkey_column('element_id', 'element', 'id')
 
-        tbl = table.xray_transition
-        tbl.create(conn, checkfirst=True)
+    def _append_table_atomic_shell_columns(self, builder):
+        builder.add_foreignkey_column('atomic_shell_id', 'atomic_shell', 'id'),
 
-        command = sql.insert(tbl)
-        command = command.values(source_subshell_id=source_subshell_id,
-                                 destination_subshell_id=destination_subshell_id)
-        result = conn.execute(command)
-        return result.inserted_primary_key[0]
+    def _append_table_atomic_subshell_columns(self, builder):
+        builder.add_foreignkey_column('atomic_subshell_id', 'atomic_subshell', 'id')
 
-    def _insert_xray_transitionset(self, conn, xraytransitionset):
-        xray_transition_ids = set()
-        for xraytransition in xraytransitionset.transitions:
-            xray_transition_id = self._require_xray_transition(conn, xraytransition)
-            xray_transition_ids.add(xray_transition_id)
+    def _append_table_xray_transition_columns(self, builder):
+        builder.add_foreignkey_column('xray_transition_id', 'xray_transition', 'id')
 
-        table.xray_transitionset.create(conn, checkfirst=True)
-        table.xray_transitionset_association.create(conn, checkfirst=True)
+    def _append_table_xray_transitionset_columns(self, builder):
+        builder.add_foreignkey_column('xray_transitionset_id', 'xray_transitionset', 'id')
 
-        # Create empty row
-        command = sql.insert(table.xray_transitionset)
-        command = command.values(count=len(xray_transition_ids))
-        result = conn.execute(command)
-        xray_transitionset_id = result.inserted_primary_key[0]
+    def _append_table_language_columns(self, builder):
+        builder.add_foreignkey_column('language_id', 'language', 'id')
 
-        # Populate association table
-        for xray_transition_id in xray_transition_ids:
-            command = sql.insert(table.xray_transitionset_association)
-            command = command.values(xray_transitionset_id=xray_transitionset_id,
-                                     xray_transition_id=xray_transition_id)
-            conn.execute(command)
+    def _append_table_notation_columns(self, builder):
+        builder.add_foreignkey_column('notation_id', 'notation', 'id')
 
-        return xray_transitionset_id
+    def _append_table_notation_property_columns(self, builder):
+        builder.add_string_column('ascii', 100, nullable=False)
+        builder.add_string_column('utf16', 100)
+        builder.add_string_column('html', 100)
+        builder.add_string_column('latex', 100)
 
-    def _insert_language(self, conn, language):
-        code = language.code
+    def _append_table_reference_columns(self, builder):
+        builder.add_foreignkey_column('reference_id', 'ref', 'id')
 
-        tbl = table.language
-        tbl.create(conn, checkfirst=True)
+    def _append_table_energy_property_columns(self, builder):
+        builder.add_float_column('value_eV', nullable=False)
 
-        command = sql.insert(tbl)
-        command = command.values(code=code)
-        result = conn.execute(command)
-        return result.inserted_primary_key[0]
+    def _append_table_value_property_columns(self, builder):
+        builder.add_float_column('value', nullable=False)
 
-    def _insert_notation(self, conn, notation):
-        name = notation.name
+    def _create_element_table(self, connection):
+        builder = CreateTableBuilder('element')
+        self._append_table_primary_key_columns(builder)
+        builder.add_integer_column('atomic_number', nullable=False)
+        self._create_table(connection, builder)
 
-        tbl = table.notation
-        tbl.create(conn, checkfirst=True)
+    def _create_element_symbol_table(self, connection):
+        builder = CreateTableBuilder('element_symbol')
+        self._append_table_primary_key_columns(builder)
+        self._append_table_element_columns(builder)
+        self._append_table_reference_columns(builder)
+        builder.add_string_column('symbol', 3, nullable=False, casesensitive=False)
+        self._create_table(connection, builder)
 
-        command = sql.insert(tbl)
-        command = command.values(name=name)
-        result = conn.execute(command)
-        return result.inserted_primary_key[0]
+    def _create_element_name_table(self, connection):
+        builder = CreateTableBuilder('element_name')
+        self._append_table_primary_key_columns(builder)
+        self._append_table_element_columns(builder)
+        self._append_table_language_columns(builder)
+        self._append_table_reference_columns(builder)
+        builder.add_string_column('name', 256, nullable=False, casesensitive=False)
+        self._create_table(connection, builder)
 
-    def _insert_reference(self, conn, reference):
-        tbl = table.reference
-        tbl.create(conn, checkfirst=True)
+    def _create_element_atomic_weight_table(self, connection):
+        builder = CreateTableBuilder('element_atomic_weight')
+        self._append_table_primary_key_columns(builder)
+        self._append_table_element_columns(builder)
+        self._append_table_reference_columns(builder)
+        self._append_table_value_property_columns(builder)
+        self._create_table(connection, builder)
 
-        command = sql.insert(tbl)
-        command = command.values(bibtexkey=reference.bibtexkey,
-                                 author=reference.author,
-                                 year=reference.year,
-                                 title=reference.title,
-                                 type=reference.type,
-                                 booktitle=reference.booktitle,
-                                 editor=reference.editor,
-                                 pages=reference.pages,
-                                 edition=reference.edition,
-                                 journal=reference.journal,
-                                 school=reference.school,
-                                 address=reference.address,
-                                 url=reference.url,
-                                 note=reference.note,
-                                 number=reference.number,
-                                 series=reference.series,
-                                 volume=reference.volume,
-                                 publisher=reference.publisher,
-                                 organization=reference.organization,
-                                 chapter=reference.chapter,
-                                 howpublished=reference.howpublished,
-                                 doi=reference.doi)
-        result = conn.execute(command)
-        return result.inserted_primary_key[0]
+    def _create_element_mass_density_table(self, connection):
+        builder = CreateTableBuilder('element_mass_density')
+        self._append_table_primary_key_columns(builder)
+        self._append_table_element_columns(builder)
+        self._append_table_reference_columns(builder)
+        builder.add_float_column('value_kg_per_m3', nullable=False)
+        self._create_table(connection, builder)
 
-    def _require_element(self, conn, element):
+    def _create_atomic_shell_table(self, connection):
+        builder = CreateTableBuilder('atomic_shell')
+        self._append_table_primary_key_columns(builder)
+        builder.add_integer_column('principal_quantum_number', nullable=False)
+        self._create_table(connection, builder)
+
+    def _create_atomic_shell_notation_table(self, connection):
+        builder = CreateTableBuilder('atomic_shell_notation')
+        self._append_table_primary_key_columns(builder)
+        self._append_table_atomic_shell_columns(builder)
+        self._append_table_notation_columns(builder)
+        self._append_table_notation_property_columns(builder)
+        self._append_table_reference_columns(builder)
+        self._create_table(connection, builder)
+
+    def _create_atomic_subshell_table(self, connection):
+        builder = CreateTableBuilder('atomic_subshell')
+        self._append_table_primary_key_columns(builder)
+        self._append_table_atomic_shell_columns(builder)
+        builder.add_integer_column('azimuthal_quantum_number', nullable=False)
+        builder.add_integer_column('total_angular_momentum_nominator', nullable=False)
+        self._create_table(connection, builder)
+
+    def _create_atomic_subshell_notation_table(self, connection):
+        builder = CreateTableBuilder('atomic_subshell_notation')
+        self._append_table_primary_key_columns(builder)
+        self._append_table_atomic_subshell_columns(builder)
+        self._append_table_notation_columns(builder)
+        self._append_table_notation_property_columns(builder)
+        self._append_table_reference_columns(builder)
+        self._create_table(connection, builder)
+
+    def _create_atomic_subshell_binding_energy_table(self, connection):
+        builder = CreateTableBuilder('atomic_subshell_binding_energy')
+        self._append_table_primary_key_columns(builder)
+        self._append_table_element_columns(builder)
+        self._append_table_atomic_subshell_columns(builder)
+        self._append_table_energy_property_columns(builder)
+        self._append_table_reference_columns(builder)
+        self._create_table(connection, builder)
+
+    def _create_atomic_subshell_radiative_width_table(self, connection):
+        builder = CreateTableBuilder('atomic_subshell_radiative_width')
+        self._append_table_primary_key_columns(builder)
+        self._append_table_element_columns(builder)
+        self._append_table_atomic_subshell_columns(builder)
+        self._append_table_energy_property_columns(builder)
+        self._append_table_reference_columns(builder)
+        self._create_table(connection, builder)
+
+    def _create_atomic_subshell_nonradiative_width_table(self, connection):
+        builder = CreateTableBuilder('atomic_subshell_nonradiative_width')
+        self._append_table_primary_key_columns(builder)
+        self._append_table_element_columns(builder)
+        self._append_table_atomic_subshell_columns(builder)
+        self._append_table_energy_property_columns(builder)
+        self._append_table_reference_columns(builder)
+        self._create_table(connection, builder)
+
+    def _create_atomic_subshell_occupancy_table(self, connection):
+        builder = CreateTableBuilder('atomic_subshell_occupancy')
+        self._append_table_primary_key_columns(builder)
+        self._append_table_element_columns(builder)
+        self._append_table_atomic_subshell_columns(builder)
+        self._append_table_value_property_columns(builder)
+        self._append_table_reference_columns(builder)
+        self._create_table(connection, builder)
+
+    def _create_xray_transition_table(self, connection):
+        builder = CreateTableBuilder('xray_transition')
+        self._append_table_primary_key_columns(builder)
+        builder.add_foreignkey_column('source_subshell_id', 'atomic_subshell', 'id')
+        builder.add_foreignkey_column('destination_subshell_id', 'atomic_subshell', 'id')
+        self._create_table(connection, builder)
+
+    def _create_xray_transition_notation_table(self, connection):
+        builder = CreateTableBuilder('xray_transition_notation')
+        self._append_table_primary_key_columns(builder)
+        self._append_table_xray_transition_columns(builder)
+        self._append_table_notation_columns(builder)
+        self._append_table_notation_property_columns(builder)
+        self._append_table_reference_columns(builder)
+        self._create_table(connection, builder)
+
+    def _create_xray_transition_energy_table(self, connection):
+        builder = CreateTableBuilder('xray_transition_energy')
+        self._append_table_primary_key_columns(builder)
+        self._append_table_element_columns(builder)
+        self._append_table_xray_transition_columns(builder)
+        self._append_table_energy_property_columns(builder)
+        self._append_table_reference_columns(builder)
+        self._create_table(connection, builder)
+
+    def _create_xray_transition_probability_table(self, connection):
+        builder = CreateTableBuilder('xray_transition_probability')
+        self._append_table_primary_key_columns(builder)
+        self._append_table_element_columns(builder)
+        self._append_table_xray_transition_columns(builder)
+        self._append_table_value_property_columns(builder)
+        self._append_table_reference_columns(builder)
+        self._create_table(connection, builder)
+
+    def _create_xray_transition_relative_weight_table(self, connection):
+        builder = CreateTableBuilder('xray_transition_relative_weight')
+        self._append_table_primary_key_columns(builder)
+        self._append_table_element_columns(builder)
+        self._append_table_xray_transition_columns(builder)
+        self._append_table_value_property_columns(builder)
+        self._append_table_reference_columns(builder)
+        self._create_table(connection, builder)
+
+    def _create_xray_transitionset_table(self, connection):
+        builder = CreateTableBuilder('xray_transitionset')
+        self._append_table_primary_key_columns(builder)
+        builder.add_integer_column('count', nullable=False)
+        self._create_table(connection, builder)
+
+    def _create_xray_transitionset_association_table(self, connection):
+        builder = CreateTableBuilder('xray_transitionset_association')
+        self._append_table_primary_key_columns(builder)
+        builder.add_foreignkey_column('xray_transitionset_id', 'xray_transitionset', 'id')
+        builder.add_foreignkey_column('xray_transition_id', 'xray_transition', 'id')
+        self._create_table(connection, builder)
+
+    def _create_xray_transitionset_notation_table(self, connection):
+        builder = CreateTableBuilder('xray_transitionset_notation')
+        self._append_table_primary_key_columns(builder)
+        self._append_table_xray_transitionset_columns(builder)
+        self._append_table_notation_columns(builder)
+        self._append_table_notation_property_columns(builder)
+        self._append_table_reference_columns(builder)
+        self._create_table(connection, builder)
+
+    def _create_xray_transitionset_energy_table(self, connection):
+        builder = CreateTableBuilder('xray_transitionset_energy')
+        self._append_table_primary_key_columns(builder)
+        self._append_table_element_columns(builder)
+        self._append_table_xray_transitionset_columns(builder)
+        self._append_table_energy_property_columns(builder)
+        self._append_table_reference_columns(builder)
+        self._create_table(connection, builder)
+
+    def _create_xray_transitionset_relative_weight_table(self, connection):
+        builder = CreateTableBuilder('xray_transitionset_relative_weight')
+        self._append_table_primary_key_columns(builder)
+        self._append_table_element_columns(builder)
+        self._append_table_xray_transitionset_columns(builder)
+        self._append_table_value_property_columns(builder)
+        self._append_table_reference_columns(builder)
+        self._create_table(connection, builder)
+
+    def _create_language_table(self, connection):
+        builder = CreateTableBuilder('language')
+        self._append_table_primary_key_columns(builder)
+        builder.add_string_column('code', 3, nullable=False, casesensitive=False)
+        self._create_table(connection, builder)
+
+    def _create_notation_table(self, connection):
+        builder = CreateTableBuilder('notation')
+        self._append_table_primary_key_columns(builder)
+        builder.add_string_column('name', 25, nullable=False, casesensitive=False)
+        self._create_table(connection, builder)
+
+    def _create_reference_table(self, connection):
+        builder = CreateTableBuilder('ref')
+        self._append_table_primary_key_columns(builder)
+        builder.add_string_column('bibtexkey', 256, nullable=False, casesensitive=False)
+        for column in ['author', 'year', 'title', 'type', 'booktitle', 'editor',
+                       'pages', 'edition', 'journal', 'school', 'address',
+                       'url', 'note', 'number', 'series', 'volume', 'publisher',
+                       'organization', 'chapter', 'howpublished', 'doi']:
+            builder.add_string_column(column)
+        self._create_table(connection, builder)
+
+    def _select_id(self, connection, table, builder):
+        builder.add_select(table, 'id')
+        builder.add_from(table)
+        sql, params = builder.build()
+
+        cur = connection.cursor()
+        cur.execute(sql, params)
+        row = cur.fetchone()
+        cur.close()
+        if row is None:
+            raise NotFound('No element found')
+
+        return row[0]
+
+    def _select_element_id(self, connection, element):
+        builder = SelectBuilder()
+        self._select_element(connection, builder, 'element', 'id', element)
+        return self._select_id(connection, 'element', builder)
+
+    def _select_atomic_shell_id(self, connection, atomic_shell):
+        builder = SelectBuilder()
+        self._select_atomic_shell(connection, builder, 'atomic_shell', 'id', atomic_shell)
+        return self._select_id(connection, 'atomic_shell', builder)
+
+    def _select_atomic_subshell_id(self, connection, atomic_subshell):
+        builder = SelectBuilder()
+        self._select_atomic_subshell(connection, builder, 'atomic_subshell', 'id', atomic_subshell)
+        return self._select_id(connection, 'atomic_subshell', builder)
+
+    def _select_xray_transition_id(self, connection, xraytransition):
+        builder = SelectBuilder()
+        self._select_xray_transition(connection, builder, 'xray_transition', 'id', xraytransition)
+        return self._select_id(connection, 'xray_transition', builder)
+
+    def _select_xray_transitionset_id(self, connection, xraytransitionset):
+        builder = SelectBuilder()
+        self._select_xray_transitionset(connection, builder, 'xray_transitionset', 'id', xraytransitionset)
+        return self._select_id(connection, 'xray_transitionset', builder)
+
+    def _select_notation_id(self, connection, notation):
+        builder = SelectBuilder()
+        self._select_notation(connection, builder, 'notation', notation)
+        return self._select_id(connection, 'notation', builder)
+
+    def _select_language_id(self, connection, language):
+        builder = SelectBuilder()
+        self._select_language(connection, builder, 'language', language)
+        return self._select_id(connection, 'language', builder)
+
+    def _select_reference_id(self, connection, reference):
+        builder = SelectBuilder()
+        self._select_reference(connection, builder, 'ref', reference)
+        return self._select_id(connection, 'ref', builder)
+
+    def _require_element(self, connection, element):
         try:
-            return self._get_element_id(conn, element)
+            return self._select_element_id(connection, element)
         except NotFound:
-            return self._insert_element(conn, element)
+            return self._insert_element(connection, element)
 
-    def _require_atomic_shell(self, conn, atomic_shell):
+    def _require_atomic_shell(self, connection, atomic_shell):
         try:
-            return self._get_atomic_shell_id(conn, atomic_shell)
+            return self._select_atomic_shell_id(connection, atomic_shell)
         except NotFound:
-            return self._insert_atomic_shell(conn, atomic_shell)
+            return self._insert_atomic_shell(connection, atomic_shell)
 
-    def _require_atomic_subshell(self, conn, atomic_subshell):
+    def _require_atomic_subshell(self, connection, atomic_subshell):
         # Ensure atomic shell exists
-        self._require_atomic_shell(conn, atomic_subshell.atomic_shell)
+        self._require_atomic_shell(connection, atomic_subshell.atomic_shell)
 
         try:
-            return self._get_atomic_subshell_id(conn, atomic_subshell)
+            return self._select_atomic_subshell_id(connection, atomic_subshell)
         except NotFound:
-            return self._insert_atomic_subshell(conn, atomic_subshell)
+            return self._insert_atomic_subshell(connection, atomic_subshell)
 
-    def _require_xray_transition(self, conn, xraytransition):
+    def _require_xray_transition(self, connection, xraytransition):
         # Ensure atomic subshells exist
-        self._require_atomic_subshell(conn, xraytransition.source_subshell)
-        self._require_atomic_subshell(conn, xraytransition.destination_subshell)
+        self._require_atomic_subshell(connection, xraytransition.source_subshell)
+        self._require_atomic_subshell(connection, xraytransition.destination_subshell)
 
         try:
-            return self._get_xray_transition_id(conn, xraytransition)
+            return self._select_xray_transition_id(connection, xraytransition)
         except NotFound:
-            return self._insert_xray_transition(conn, xraytransition)
+            return self._insert_xray_transition(connection, xraytransition)
 
-    def _require_xray_transitionset(self, conn, xraytransitionset):
+    def _require_xray_transitionset(self, connection, xraytransitionset):
         # Ensure transitions exist
         for xraytransition in xraytransitionset.transitions:
-            self._require_xray_transition(conn, xraytransition)
+            self._require_xray_transition(connection, xraytransition)
 
         try:
-            return self._get_xray_transitionset_id(conn, xraytransitionset)
+            return self._select_xray_transitionset_id(connection, xraytransitionset)
         except NotFound:
-            return self._insert_xray_transitionset(conn, xraytransitionset)
-
-    def _require_language(self, conn, language):
+            return self._insert_xray_transitionset(connection, xraytransitionset)
+#
+    def _require_language(self, connection, language):
         try:
-            return self._get_language_id(conn, language)
+            return self._select_language_id(connection, language)
         except NotFound:
-            return self._insert_language(conn, language)
+            return self._insert_language(connection, language)
 
-    def _require_notation(self, conn, notation):
+    def _require_notation(self, connection, notation):
         try:
-            return self._get_notation_id(conn, notation)
+            return self._select_notation_id(connection, notation)
         except NotFound:
-            return self._insert_notation(conn, notation)
+            return self._insert_notation(connection, notation)
 
-    def _require_reference(self, conn, reference):
+    def _require_reference(self, connection, reference):
         try:
-            return self._get_reference_id(conn, reference)
+            return self._select_reference_id(connection, reference)
         except NotFound:
-            return self._insert_reference(conn, reference)
+            return self._insert_reference(connection, reference)
 
-    def _add_element_symbol_property(self, conn, prop):
-        reference_id = self._require_reference(conn, prop.reference)
-        element_id = self._require_element(conn, prop.element)
-        symbol = prop.symbol
+    def _insert(self, connection, builder):
+        sql, params = builder.build()
 
-        tbl = table.element_symbol
-        tbl.create(conn, checkfirst=True)
+        cur = connection.cursor()
+        cur.execute(sql, params)
+        cur.close()
 
-        command = sql.insert(tbl)
-        command = command.values(reference_id=reference_id,
-                                 element_id=element_id,
-                                 symbol=symbol)
-        result = conn.execute(command)
-        return result.inserted_primary_key[0]
+        return cur.lastrowid
 
-    def _add_element_name_property(self, conn, prop):
-        reference_id = self._require_reference(conn, prop.reference)
-        element_id = self._require_element(conn, prop.element)
-        language_id = self._require_language(conn, prop.language)
-        name = prop.name
+    def _append_insert_property_element_columns(self, connection, builder, prop):
+        element_id = self._require_element(connection, prop.element)
+        builder.add_column('element_id', element_id)
 
-        tbl = table.element_name
-        tbl.create(conn, checkfirst=True)
+    def _append_insert_property_atomic_shell_columns(self, connection, builder, prop):
+        atomic_shell_id = self._require_atomic_shell(connection, prop.atomic_shell)
+        builder.add_column('atomic_shell_id', atomic_shell_id)
 
-        command = sql.insert(tbl)
-        command = command.values(reference_id=reference_id,
-                                 element_id=element_id,
-                                 language_id=language_id,
-                                 name=name)
-        result = conn.execute(command)
-        return result.inserted_primary_key[0]
+    def _append_insert_property_atomic_subshell_columns(self, connection, builder, prop):
+        atomic_subshell_id = self._require_atomic_subshell(connection, prop.atomic_subshell)
+        builder.add_column('atomic_subshell_id', atomic_subshell_id)
 
-    def _add_element_atomic_weight_property(self, conn, prop):
-        reference_id = self._require_reference(conn, prop.reference)
-        element_id = self._require_element(conn, prop.element)
-        value = prop.value
+    def _append_insert_property_xray_transition_columns(self, connection, builder, prop):
+        xray_transition_id = self._require_xray_transition(connection, prop.xraytransition)
+        builder.add_column('xray_transition_id', xray_transition_id)
 
-        tbl = table.element_atomic_weight
-        tbl.create(conn, checkfirst=True)
+    def _append_insert_property_xray_transitionset_columns(self, connection, builder, prop):
+        xray_transitionset_id = self._require_xray_transitionset(connection, prop.xraytransitionset)
+        builder.add_column('xray_transitionset_id', xray_transitionset_id)
 
-        command = sql.insert(tbl)
-        command = command.values(reference_id=reference_id,
-                                 element_id=element_id,
-                                 value=value)
-        result = conn.execute(command)
-        return result.inserted_primary_key[0]
+    def _append_insert_property_reference_columns(self, connection, builder, prop):
+        reference_id = self._require_reference(connection, prop.reference)
+        builder.add_column('reference_id', reference_id)
 
-    def _add_element_mass_density_property(self, conn, prop):
-        reference_id = self._require_reference(conn, prop.reference)
-        element_id = self._require_element(conn, prop.element)
-        value_kg_per_m3 = prop.value_kg_per_m3
+    def _append_insert_property_language_columns(self, connection, builder, prop):
+        language_id = self._require_language(connection, prop.language)
+        builder.add_column('language_id', language_id)
 
-        tbl = table.element_mass_density
-        tbl.create(conn, checkfirst=True)
+    def _append_insert_property_notation_columns(self, connection, builder, prop):
+        notation_id = self._require_notation(connection, prop.notation)
+        builder.add_column('notation_id', notation_id)
 
-        command = sql.insert(tbl)
-        command = command.values(reference_id=reference_id,
-                                 element_id=element_id,
-                                 value_kg_per_m3=value_kg_per_m3)
-        result = conn.execute(command)
-        return result.inserted_primary_key[0]
+        builder.add_column('ascii', prop.ascii)
+        builder.add_column('utf16', prop.utf16)
+        builder.add_column('html', prop.html)
+        builder.add_column('latex', prop.latex)
 
-    def _add_atomic_shell_notation_property(self, conn, prop):
-        reference_id = self._require_reference(conn, prop.reference)
-        atomic_shell_id = self._require_atomic_shell(conn, prop.atomic_shell)
-        notation_id = self._require_notation(conn, prop.notation)
-        ascii = prop.ascii
-        utf16 = prop.utf16
-        html = prop.html
-        latex = prop.latex
+    def _append_insert_property_energy_columns(self, connection, builder, prop):
+        builder.add_column('value_eV', prop.value_eV)
 
-        tbl = table.atomic_shell_notation
-        tbl.create(conn, checkfirst=True)
+    def _insert_element(self, connection, element):
+        builder = InsertBuilder('element')
+        builder.add_column('atomic_number', element.atomic_number)
+        return self._insert(connection, builder)
 
-        command = sql.insert(tbl)
-        command = command.values(reference_id=reference_id,
-                                 atomic_shell_id=atomic_shell_id,
-                                 notation_id=notation_id,
-                                 ascii=ascii,
-                                 utf16=utf16,
-                                 html=html,
-                                 latex=latex)
-        result = conn.execute(command)
-        return result.inserted_primary_key[0]
+    def _insert_atomic_shell(self, connection, atomic_shell):
+        builder = InsertBuilder('atomic_shell')
+        builder.add_column('principal_quantum_number', atomic_shell.principal_quantum_number)
+        return self._insert(connection, builder)
 
-    def _add_atomic_subshell_notation_property(self, conn, prop):
-        reference_id = self._require_reference(conn, prop.reference)
-        atomic_subshell_id = self._require_atomic_subshell(conn, prop.atomic_subshell)
-        notation_id = self._require_notation(conn, prop.notation)
-        ascii = prop.ascii
-        utf16 = prop.utf16
-        html = prop.html
-        latex = prop.latex
+    def _insert_atomic_subshell(self, connection, atomic_subshell):
+        atomic_shell_id = self._require_atomic_shell(connection, atomic_subshell.atomic_shell)
 
-        tbl = table.atomic_subshell_notation
-        tbl.create(conn, checkfirst=True)
+        builder = InsertBuilder('atomic_subshell')
+        builder.add_column('atomic_shell_id', atomic_shell_id)
+        builder.add_column('azimuthal_quantum_number', atomic_subshell.azimuthal_quantum_number)
+        builder.add_column('total_angular_momentum_nominator', atomic_subshell.total_angular_momentum_nominator)
+        return self._insert(connection, builder)
+#
+    def _insert_xray_transition(self, connection, xraytransition):
+        source_subshell_id = \
+            self._require_atomic_subshell(connection, xraytransition.source_subshell)
+        destination_subshell_id = \
+            self._require_atomic_subshell(connection, xraytransition.destination_subshell)
 
-        command = sql.insert(tbl)
-        command = command.values(reference_id=reference_id,
-                                 atomic_subshell_id=atomic_subshell_id,
-                                 notation_id=notation_id,
-                                 ascii=ascii,
-                                 utf16=utf16,
-                                 html=html,
-                                 latex=latex)
-        result = conn.execute(command)
-        return result.inserted_primary_key[0]
+        builder = InsertBuilder('xray_transition')
+        builder.add_column('source_subshell_id', source_subshell_id)
+        builder.add_column('destination_subshell_id', destination_subshell_id)
+        return self._insert(connection, builder)
 
-    def _add_atomic_subshell_binding_energy_property(self, conn, prop):
-        reference_id = self._require_reference(conn, prop.reference)
-        element_id = self._require_element(conn, prop.element)
-        atomic_subshell_id = self._require_atomic_subshell(conn, prop.atomic_subshell)
-        value_eV = prop.value_eV
+    def _insert_xray_transitionset(self, connection, xraytransitionset):
+        xray_transition_ids = set()
+        for xraytransition in xraytransitionset.transitions:
+            xray_transition_id = self._require_xray_transition(connection, xraytransition)
+            xray_transition_ids.add(xray_transition_id)
 
-        tbl = table.atomic_subshell_binding_energy
-        tbl.create(conn, checkfirst=True)
+        builder = InsertBuilder('xray_transitionset')
+        builder.add_column('count', len(xray_transition_ids))
+        xray_transitionset_id = self._insert(connection, builder)
 
-        command = sql.insert(tbl)
-        command = command.values(reference_id=reference_id,
-                                 element_id=element_id,
-                                 atomic_subshell_id=atomic_subshell_id,
-                                 value_eV=value_eV)
-        result = conn.execute(command)
-        return result.inserted_primary_key[0]
+        for xray_transition_id in xray_transition_ids:
+            builder = InsertBuilder('xray_transitionset_association')
+            builder.add_column('xray_transitionset_id', xray_transitionset_id)
+            builder.add_column('xray_transition_id', xray_transition_id)
+            self._insert(connection, builder)
 
-    def _add_atomic_subshell_radiative_width_property(self, conn, prop):
-        reference_id = self._require_reference(conn, prop.reference)
-        element_id = self._require_element(conn, prop.element)
-        atomic_subshell_id = self._require_atomic_subshell(conn, prop.atomic_subshell)
-        value_eV = prop.value_eV
+        return xray_transitionset_id
+#
+    def _insert_language(self, connection, language):
+        builder = InsertBuilder('language')
+        builder.add_column('code', language.code)
+        return self._insert(connection, builder)
 
-        tbl = table.atomic_subshell_radiative_width
-        tbl.create(conn, checkfirst=True)
+    def _insert_notation(self, connection, notation):
+        builder = InsertBuilder('notation')
+        builder.add_column('name', notation.name)
+        return self._insert(connection, builder)
 
-        command = sql.insert(tbl)
-        command = command.values(reference_id=reference_id,
-                                 element_id=element_id,
-                                 atomic_subshell_id=atomic_subshell_id,
-                                 value_eV=value_eV)
-        result = conn.execute(command)
-        return result.inserted_primary_key[0]
+    def _insert_reference(self, connection, reference):
+        builder = InsertBuilder('ref')
+        builder.add_column('bibtexkey', reference.bibtexkey)
+        builder.add_column('author', reference.author)
+        builder.add_column('year', reference.year)
+        builder.add_column('title', reference.title)
+        builder.add_column('type', reference.type)
+        builder.add_column('booktitle', reference.booktitle)
+        builder.add_column('editor', reference.editor)
+        builder.add_column('pages', reference.pages)
+        builder.add_column('edition', reference.edition)
+        builder.add_column('journal', reference.journal)
+        builder.add_column('school', reference.school)
+        builder.add_column('address', reference.address)
+        builder.add_column('url', reference.url)
+        builder.add_column('note', reference.note)
+        builder.add_column('number', reference.number)
+        builder.add_column('series', reference.series)
+        builder.add_column('volume', reference.volume)
+        builder.add_column('publisher', reference.publisher)
+        builder.add_column('organization', reference.organization)
+        builder.add_column('chapter', reference.chapter)
+        builder.add_column('howpublished', reference.howpublished)
+        builder.add_column('doi', reference.doi)
+        return self._insert(connection, builder)
 
-    def _add_atomic_subshell_nonradiative_width_property(self, conn, prop):
-        reference_id = self._require_reference(conn, prop.reference)
-        element_id = self._require_element(conn, prop.element)
-        atomic_subshell_id = self._require_atomic_subshell(conn, prop.atomic_subshell)
-        value_eV = prop.value_eV
+    def _insert_element_symbol_property(self, connection, prop):
+        builder = InsertBuilder('element_symbol')
+        self._append_insert_property_element_columns(connection, builder, prop)
+        self._append_insert_property_reference_columns(connection, builder, prop)
+        builder.add_column('symbol', prop.symbol)
+        return self._insert(connection, builder)
 
-        tbl = table.atomic_subshell_nonradiative_width
-        tbl.create(conn, checkfirst=True)
+    def _insert_element_name_property(self, connection, prop):
+        builder = InsertBuilder('element_name')
+        self._append_insert_property_element_columns(connection, builder, prop)
+        self._append_insert_property_reference_columns(connection, builder, prop)
+        self._append_insert_property_language_columns(connection, builder, prop)
+        builder.add_column('name', prop.name)
+        return self._insert(connection, builder)
 
-        command = sql.insert(tbl)
-        command = command.values(reference_id=reference_id,
-                                 element_id=element_id,
-                                 atomic_subshell_id=atomic_subshell_id,
-                                 value_eV=value_eV)
-        result = conn.execute(command)
-        return result.inserted_primary_key[0]
+    def _insert_element_atomic_weight_property(self, connection, prop):
+        builder = InsertBuilder('element_atomic_weight')
+        self._append_insert_property_element_columns(connection, builder, prop)
+        self._append_insert_property_reference_columns(connection, builder, prop)
+        builder.add_column('value', prop.value)
+        return self._insert(connection, builder)
 
-    def _add_atomic_subshell_occupancy_property(self, conn, prop):
-        reference_id = self._require_reference(conn, prop.reference)
-        element_id = self._require_element(conn, prop.element)
-        atomic_subshell_id = self._require_atomic_subshell(conn, prop.atomic_subshell)
-        value = prop.value
+    def _insert_element_mass_density_property(self, connection, prop):
+        builder = InsertBuilder('element_mass_density')
+        self._append_insert_property_element_columns(connection, builder, prop)
+        self._append_insert_property_reference_columns(connection, builder, prop)
+        builder.add_column('value_kg_per_m3', prop.value_kg_per_m3)
+        return self._insert(connection, builder)
 
-        tbl = table.atomic_subshell_occupancy
-        tbl.create(conn, checkfirst=True)
+    def _insert_atomic_shell_notation_property(self, connection, prop):
+        builder = InsertBuilder('atomic_shell_notation')
+        self._append_insert_property_atomic_shell_columns(connection, builder, prop)
+        self._append_insert_property_reference_columns(connection, builder, prop)
+        self._append_insert_property_notation_columns(connection, builder, prop)
+        return self._insert(connection, builder)
 
-        command = sql.insert(tbl)
-        command = command.values(reference_id=reference_id,
-                                 element_id=element_id,
-                                 atomic_subshell_id=atomic_subshell_id,
-                                 value=value)
-        result = conn.execute(command)
-        return result.inserted_primary_key[0]
+    def _insert_atomic_subshell_notation_property(self, connection, prop):
+        builder = InsertBuilder('atomic_subshell_notation')
+        self._append_insert_property_atomic_subshell_columns(connection, builder, prop)
+        self._append_insert_property_reference_columns(connection, builder, prop)
+        self._append_insert_property_notation_columns(connection, builder, prop)
+        return self._insert(connection, builder)
 
-    def _add_xray_transition_notation_property(self, conn, prop):
-        reference_id = self._require_reference(conn, prop.reference)
-        xray_transition_id = self._require_xray_transition(conn, prop.xraytransition)
-        notation_id = self._require_notation(conn, prop.notation)
-        ascii = prop.ascii
-        utf16 = prop.utf16
-        html = prop.html
-        latex = prop.latex
+    def _insert_atomic_subshell_binding_energy_property(self, connection, prop):
+        builder = InsertBuilder('atomic_subshell_binding_energy')
+        self._append_insert_property_element_columns(connection, builder, prop)
+        self._append_insert_property_atomic_subshell_columns(connection, builder, prop)
+        self._append_insert_property_reference_columns(connection, builder, prop)
+        self._append_insert_property_energy_columns(connection, builder, prop)
+        return self._insert(connection, builder)
 
-        tbl = table.xray_transition_notation
-        tbl.create(conn, checkfirst=True)
+    def _insert_atomic_subshell_radiative_width_property(self, connection, prop):
+        builder = InsertBuilder('atomic_subshell_radiative_width')
+        self._append_insert_property_element_columns(connection, builder, prop)
+        self._append_insert_property_atomic_subshell_columns(connection, builder, prop)
+        self._append_insert_property_reference_columns(connection, builder, prop)
+        self._append_insert_property_energy_columns(connection, builder, prop)
+        return self._insert(connection, builder)
 
-        command = sql.insert(tbl)
-        command = command.values(reference_id=reference_id,
-                                 xray_transition_id=xray_transition_id,
-                                 notation_id=notation_id,
-                                 ascii=ascii,
-                                 utf16=utf16,
-                                 html=html,
-                                 latex=latex)
-        result = conn.execute(command)
-        return result.inserted_primary_key[0]
+    def _insert_atomic_subshell_nonradiative_width_property(self, connection, prop):
+        builder = InsertBuilder('atomic_subshell_nonradiative_width')
+        self._append_insert_property_element_columns(connection, builder, prop)
+        self._append_insert_property_atomic_subshell_columns(connection, builder, prop)
+        self._append_insert_property_reference_columns(connection, builder, prop)
+        self._append_insert_property_energy_columns(connection, builder, prop)
+        return self._insert(connection, builder)
 
-    def _add_xray_transition_energy_property(self, conn, prop):
-        reference_id = self._require_reference(conn, prop.reference)
-        element_id = self._require_element(conn, prop.element)
-        xray_transition_id = self._require_xray_transition(conn, prop.xraytransition)
-        value_eV = prop.value_eV
+    def _insert_atomic_subshell_occupancy_property(self, connection, prop):
+        builder = InsertBuilder('atomic_subshell_occupancy')
+        self._append_insert_property_element_columns(connection, builder, prop)
+        self._append_insert_property_atomic_subshell_columns(connection, builder, prop)
+        self._append_insert_property_reference_columns(connection, builder, prop)
+        builder.add_column('value', prop.value)
+        return self._insert(connection, builder)
 
-        tbl = table.xray_transition_energy
-        tbl.create(conn, checkfirst=True)
+    def _insert_xray_transition_notation_property(self, connection, prop):
+        builder = InsertBuilder('xray_transition_notation')
+        self._append_insert_property_xray_transition_columns(connection, builder, prop)
+        self._append_insert_property_notation_columns(connection, builder, prop)
+        self._append_insert_property_reference_columns(connection, builder, prop)
+        return self._insert(connection, builder)
 
-        command = sql.insert(tbl)
-        command = command.values(reference_id=reference_id,
-                                 element_id=element_id,
-                                 xray_transition_id=xray_transition_id,
-                                 value_eV=value_eV)
-        result = conn.execute(command)
-        return result.inserted_primary_key[0]
+    def _insert_xray_transition_energy_property(self, connection, prop):
+        builder = InsertBuilder('xray_transition_energy')
+        self._append_insert_property_element_columns(connection, builder, prop)
+        self._append_insert_property_xray_transition_columns(connection, builder, prop)
+        self._append_insert_property_reference_columns(connection, builder, prop)
+        self._append_insert_property_energy_columns(connection, builder, prop)
+        return self._insert(connection, builder)
 
-    def _add_xray_transition_propability_property(self, conn, prop):
-        reference_id = self._require_reference(conn, prop.reference)
-        element_id = self._require_element(conn, prop.element)
-        xray_transition_id = self._require_xray_transition(conn, prop.xraytransition)
-        value = prop.value
+    def _insert_xray_transition_propability_property(self, connection, prop):
+        builder = InsertBuilder('xray_transition_probability')
+        self._append_insert_property_element_columns(connection, builder, prop)
+        self._append_insert_property_xray_transition_columns(connection, builder, prop)
+        self._append_insert_property_reference_columns(connection, builder, prop)
+        builder.add_column('value', prop.value)
+        return self._insert(connection, builder)
 
-        tbl = table.xray_transition_probability
-        tbl.create(conn, checkfirst=True)
+    def _insert_xray_transition_relative_weight_property(self, connection, prop):
+        builder = InsertBuilder('xray_transition_relative_weight')
+        self._append_insert_property_element_columns(connection, builder, prop)
+        self._append_insert_property_xray_transition_columns(connection, builder, prop)
+        self._append_insert_property_reference_columns(connection, builder, prop)
+        builder.add_column('value', prop.value)
+        return self._insert(connection, builder)
 
-        command = sql.insert(tbl)
-        command = command.values(reference_id=reference_id,
-                                 element_id=element_id,
-                                 xray_transition_id=xray_transition_id,
-                                 value=value)
-        result = conn.execute(command)
-        return result.inserted_primary_key[0]
+    def _insert_xray_transitionset_notation_property(self, connection, prop):
+        builder = InsertBuilder('xray_transitionset_notation')
+        self._append_insert_property_xray_transitionset_columns(connection, builder, prop)
+        self._append_insert_property_notation_columns(connection, builder, prop)
+        self._append_insert_property_reference_columns(connection, builder, prop)
+        return self._insert(connection, builder)
 
-    def _add_xray_transition_relative_weight_property(self, conn, prop):
-        reference_id = self._require_reference(conn, prop.reference)
-        element_id = self._require_element(conn, prop.element)
-        xray_transition_id = self._require_xray_transition(conn, prop.xraytransition)
-        value = prop.value
+    def _insert_xray_transitionset_energy_property(self, connection, prop):
+        builder = InsertBuilder('xray_transitionset_energy')
+        self._append_insert_property_element_columns(connection, builder, prop)
+        self._append_insert_property_xray_transitionset_columns(connection, builder, prop)
+        self._append_insert_property_reference_columns(connection, builder, prop)
+        self._append_insert_property_energy_columns(connection, builder, prop)
+        return self._insert(connection, builder)
 
-        tbl = table.xray_transition_relative_weight
-        tbl.create(conn, checkfirst=True)
+    def _insert_xray_transitionset_relative_weight_property(self, connection, prop):
+        builder = InsertBuilder('xray_transitionset_relative_weight')
+        self._append_insert_property_element_columns(connection, builder, prop)
+        self._append_insert_property_xray_transitionset_columns(connection, builder, prop)
+        self._append_insert_property_reference_columns(connection, builder, prop)
+        builder.add_column('value', prop.value)
+        return self._insert(connection, builder)
 
-        command = sql.insert(tbl)
-        command = command.values(reference_id=reference_id,
-                                 element_id=element_id,
-                                 xray_transition_id=xray_transition_id,
-                                 value=value)
-        result = conn.execute(command)
-        return result.inserted_primary_key[0]
-
-    def _add_xray_transitionset_notation_property(self, conn, prop):
-        reference_id = self._require_reference(conn, prop.reference)
-        xray_transitionset_id = self._require_xray_transitionset(conn, prop.xraytransitionset)
-        notation_id = self._require_notation(conn, prop.notation)
-        ascii = prop.ascii
-        utf16 = prop.utf16
-        html = prop.html
-        latex = prop.latex
-
-        tbl = table.xray_transitionset_notation
-        tbl.create(conn, checkfirst=True)
-
-        command = sql.insert(tbl)
-        command = command.values(reference_id=reference_id,
-                                 xray_transitionset_id=xray_transitionset_id,
-                                 notation_id=notation_id,
-                                 ascii=ascii,
-                                 utf16=utf16,
-                                 html=html,
-                                 latex=latex)
-        result = conn.execute(command)
-        return result.inserted_primary_key[0]
-
-    def _add_xray_transitionset_energy_property(self, conn, prop):
-        reference_id = self._require_reference(conn, prop.reference)
-        element_id = self._require_element(conn, prop.element)
-        xray_transitionset_id = self._require_xray_transitionset(conn, prop.xraytransitionset)
-        value_eV = prop.value_eV
-
-        tbl = table.xray_transitionset_energy
-        tbl.create(conn, checkfirst=True)
-
-        command = sql.insert(tbl)
-        command = command.values(reference_id=reference_id,
-                                 element_id=element_id,
-                                 xray_transitionset_id=xray_transitionset_id,
-                                 value_eV=value_eV)
-        result = conn.execute(command)
-        return result.inserted_primary_key[0]
-
-    def _add_xray_transitionset_relative_weight_property(self, conn, prop):
-        reference_id = self._require_reference(conn, prop.reference)
-        element_id = self._require_element(conn, prop.element)
-        xray_transitionset_id = self._require_xray_transitionset(conn, prop.xraytransitionset)
-        value = prop.value
-
-        tbl = table.xray_transitionset_relative_weight
-        tbl.create(conn, checkfirst=True)
-
-        command = sql.insert(tbl)
-        command = command.values(reference_id=reference_id,
-                                 element_id=element_id,
-                                 xray_transitionset_id=xray_transitionset_id,
-                                 value=value)
-        result = conn.execute(command)
-        return result.inserted_primary_key[0]
-
-class SqliteDatabaseBuilder(SqlEngineDatabaseMixin, _DatabaseBuilder):
+class SqliteDatabaseBuilder(SqlDatabaseBuilder):
 
     def __init__(self, filepath=None):
         super().__init__()
@@ -643,10 +823,8 @@ class SqliteDatabaseBuilder(SqlEngineDatabaseMixin, _DatabaseBuilder):
             return True
         return False
 
-    def _create_database_engine(self):
-        return create_engine('sqlite:///' + self.filepath,
-                             poolclass=QueuePool,
-                             pool_size=20, max_overflow=0)
+    def _create_database_connection(self):
+        return sqlite3.connect(self.filepath)
 
     @property
     def filepath(self):

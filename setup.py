@@ -32,7 +32,7 @@ with open(os.path.join(BASEDIR, 'README.rst'), 'r') as fp:
     LONG_DESCRIPTION = fp.read()
 
 SETUP_REQUIRES = ['setuptools', 'nose', 'coverage']
-INSTALL_REQUIRES = ['sqlalchemy', 'requests', 'requests-cache', 'progressbar2']
+INSTALL_REQUIRES = ['requests', 'requests-cache', 'progressbar2']
 
 CMDCLASS = versioneer.get_cmdclass()
 CMDCLASS['build_py'] = build_py

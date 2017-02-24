@@ -1,467 +1,197 @@
-"""
-Base SQL engine
-"""
+""""""
 
 # Standard library modules.
 import collections
-import functools
-import itertools
 
 # Third party modules.
-import sqlalchemy.sql as sql
 
 # Local modules.
-from pyxray.descriptor import \
-    (Element, Language, Reference, Notation, AtomicShell, AtomicSubshell,
-     XrayTransition, XrayTransitionSet)
-import pyxray.sql.table as table
 from pyxray.base import NotFound
+import pyxray.descriptor as descriptor
+from pyxray.sql.command import SelectBuilder
 
 # Globals and constants variables.
 
-def take(n, iterable):
-    """Return first n items of the iterable as a list
+class SqlDatabaseMixin:
 
-        >>> take(3, range(10))
-        [0, 1, 2]
-        >>> take(5, range(3))
-        [0, 1, 2]
+    def _select_element(self, connection, builder, table, column, element):
+        if hasattr(element, 'atomic_number'):
+            element = element.atomic_number
 
-    Effectively a short replacement for ``next`` based iterator consumption
-    when you want more than one item, but less than the whole iterator.
-    
-    Taken from more_itertools
-    
-    """
-    return list(itertools.islice(iterable, n))
-
-def chunked(iterable, n):
-    """Break an iterable into lists of a given length::
-
-        >>> list(chunked([1, 2, 3, 4, 5, 6, 7], 3))
-        [[1, 2, 3], [4, 5, 6], [7]]
-
-    If the length of ``iterable`` is not evenly divisible by ``n``, the last
-    returned list will be shorter.
-
-    This is useful for splitting up a computation on a large number of keys
-    into batches, to be pickled and sent off to worker processes. One example
-    is operations on rows in MySQL, which does not implement server-side
-    cursors properly and would otherwise load the entire dataset into RAM on
-    the client.
-    
-    Taken from more_itertools
-
-    """
-    return iter(functools.partial(take, n, iter(iterable)), [])
-
-class SelectBuilder:
-
-    def __init__(self):
-        self.distinct = False
-        self.selects = []
-        self.froms = []
-        self.joins = []
-        self.wheres = []
-        self.orderbys = []
-
-    def set_distinct(self, distinct):
-        self.distinct = distinct
-
-    def add_select(self, table, column):
-        self.selects.append((table, column))
-
-    def add_from(self, table):
-        self.froms.append(table)
-
-    def add_join(self, table1, column1, table2, column2, alias1=None):
-        self.joins.append((table1, column1, table2, column2, alias1))
-
-    def add_where(self, table, column, operator, variable, *args):
-        where = [(table, column, operator, variable)]
-        for table, column, operator, variable in chunked(args, 4):
-            where.append((table, column, operator, variable))
-        self.wheres.append(where)
-
-    def add_orderby(self, table, column, order='ASC'):
-        self.orderbys.append((table, column, order))
-
-    def build(self):
-        sql = []
-
-        # Select
-        sql += ['SELECT ' + \
-                ('DISTINCT ' if self.distinct else '') + \
-                ', '.join('{}.{}'.format(t, c) for t, c in self.selects)]
-
-        # From
-        tables = [t1 for t1, _, t2, _, a1 in self.joins if not a1 and t1 != t2]
-        sql += ['FROM ' + ', '.join(set(self.froms) - set(tables))]
-
-        # Join
-        for t1, c1, t2, c2, a1 in self.joins:
-            if t1 == t2:
-                continue
-
-            if a1:
-                fmt = 'JOIN {0} AS {4} ON {4}.{1} = {2}.{3}'
-            else:
-                fmt = 'JOIN {0} ON {0}.{1} = {2}.{3}'
-            sql += [fmt.format(t1, c1, t2, c2, a1)]
-
-        # Where
-        subsql = []
-        for conditions in self.wheres:
-            subsubsql = []
-            for t, c, o, vs in conditions:
-                if o.lower() == 'in':
-                    subsubsql += ['{}.{} {} ('.format(t, c, o) + \
-                                  ', '.join(':{}'.format(v) for v in vs) + ')']
-                else:
-                    subsubsql += ['{}.{} {} :{}'.format(t, c, o, vs)]
-
-            subsql += ['(' + ' OR '.join(subsubsql) + ')']
-
-        if subsql:
-            sql += ['WHERE ' + ' AND '.join(subsql)]
-
-        # Order by
-        if self.orderbys:
-            sql += ['ORDER BY ' + \
-                    ', '.join('{}.{} {}'.format(t, c, o)
-                              for t, c, o in self.orderbys)]
-
-        return '\n'.join(sql)
-
-class SqlEngineDatabaseMixin:
-
-    def _create_sql(self, select, joins, wheres):
-        return '\n'.join([select, '\n'.join(joins), '\n'.join(wheres)])
-
-    def _retrieve_first(self, conn, command, exc=None):
-        result = conn.execute(command)
-        row = result.first()
-        if row is not None:
-            return row[0]
-
-        if exc:
-            raise exc
-
-        return None
-
-    def _get_element_id(self, conn, element):
         if isinstance(element, str):
-            if len(element) <= 2:
-                tbl = table.element_symbol
-                tbl.create(conn, checkfirst=True)
-                command = sql.select([tbl.c.element_id])
-                command = command.where(tbl.c.symbol == element)
-                out = self._retrieve_first(conn, command)
-                if out is not None:
-                    return out
-
-            # Outside if because name of an element could also be of length 2,
-            # but not a symbol
-            tbl = table.element_name
-            tbl.create(conn, checkfirst=True)
-            command = sql.select([tbl.c.element_id])
-            command = command.where(tbl.c.name == element)
-            out = self._retrieve_first(conn, command)
-            if out is not None:
-                return out
-
-        atomic_number = 0
-        if isinstance(element, Element):
-            atomic_number = element.atomic_number
+            builder.add_join('element_name', 'element_id', table, column)
+            builder.add_join('element_symbol', 'element_id', table, column)
+            builder.add_where('element_name', 'name', '=', element,
+                              'element_symbol', 'symbol', '=', element)
 
         elif isinstance(element, int):
-            atomic_number = element
+            builder.add_join('element', 'id', table, column)
+            builder.add_where('element', 'atomic_number', '=', element)
 
-        elif hasattr(element, 'atomic_number'):
-            atomic_number = element.atomic_number
+        else:
+            raise NotFound('Cannot parse element: {}'.format(element))
 
-        elif hasattr(element, 'z'):
-            atomic_number = element.z
+    def _select_atomic_shell(self, connection, builder, table, column, atomic_shell):
+        if hasattr(atomic_shell, 'principal_quantum_number'):
+            atomic_shell = atomic_shell.principal_quantum_number
 
-        if atomic_number > 0 :
-            tbl = table.element
-            tbl.create(conn, checkfirst=True)
-            command = sql.select([tbl.c.id])
-            command = command.where(tbl.c.atomic_number == atomic_number)
-            out = self._retrieve_first(conn, command)
-            if out is not None:
-                return out
-
-        raise NotFound('Unknown element: {0}'.format(element))
-
-    def _get_element(self, conn, element_id):
-        tbl = table.element
-        tbl.create(conn, checkfirst=True)
-        command = sql.select([tbl.c.atomic_number])
-        command = command.where(tbl.c.id == element_id)
-        atomic_number = \
-            self._retrieve_first(conn, command, NotFound('No element found'))
-
-        return Element(atomic_number)
-
-    def _get_atomic_shell_id(self, conn, atomic_shell):
         if isinstance(atomic_shell, str):
-            tbl = table.atomic_shell_notation
-            tbl.create(conn, checkfirst=True)
-
-            command = sql.select([tbl.c.atomic_shell_id])
-            command = command.where(sql.or_(tbl.c.ascii == atomic_shell,
-                                            tbl.c.utf16 == atomic_shell))
-            out = self._retrieve_first(conn, command)
-            if out is not None:
-                return out
-
-        principal_quantum_number = 0
-        if isinstance(atomic_shell, AtomicShell):
-            principal_quantum_number = atomic_shell.principal_quantum_number
+            builder.add_join('atomic_shell_notation', 'atomic_shell_id', table, column)
+            builder.add_where('atomic_shell_notation', 'ascii', '=', atomic_shell,
+                              'atomic_shell_notation', 'utf16', '=', atomic_shell)
 
         elif isinstance(atomic_shell, int):
-            principal_quantum_number = atomic_shell
+            builder.add_join('atomic_shell', 'id', table, column)
+            builder.add_where('atomic_shell', 'principal_quantum_number', '=', atomic_shell)
 
-        if principal_quantum_number > 0:
-            tbl = table.atomic_shell
-            tbl.create(conn, checkfirst=True)
-            command = sql.select([tbl.c.id])
-            command = command.where(tbl.c.principal_quantum_number == principal_quantum_number)
-            out = self._retrieve_first(conn, command)
-            if out is not None:
-                return out
+        else:
+            raise NotFound('Cannot parse atomic shell: {}'.format(atomic_shell))
 
-        raise NotFound('Unknown atomic shell: {0}'.format(atomic_shell))
-
-    def _get_atomic_shell(self, conn, atomic_shell_id):
-        tbl = table.atomic_shell
-        tbl.create(conn, checkfirst=True)
-        command = sql.select([tbl.c.principal_quantum_number])
-        command = command.where(tbl.c.id == atomic_shell_id)
-        principal_quantum_number = \
-            self._retrieve_first(conn, command, NotFound('No atomic shell found'))
-
-        return AtomicShell(principal_quantum_number)
-
-    def _get_atomic_subshell_id(self, conn, atomic_subshell):
-        if isinstance(atomic_subshell, str):
-            tbl = table.atomic_subshell_notation
-            tbl.create(conn, checkfirst=True)
-
-            command = sql.select([tbl.c.atomic_subshell_id])
-            command = command.where(sql.or_(tbl.c.ascii == atomic_subshell,
-                                            tbl.c.utf16 == atomic_subshell))
-            out = self._retrieve_first(conn, command)
-            if out is not None:
-                return out
-
-        principal_quantum_number = 0
-        azimuthal_quantum_number = -1
-        total_angular_momentum_nominator = 0
-        if isinstance(atomic_subshell, AtomicSubshell):
-            principal_quantum_number = atomic_subshell.atomic_shell.principal_quantum_number
-            azimuthal_quantum_number = atomic_subshell.azimuthal_quantum_number
-            total_angular_momentum_nominator = atomic_subshell.total_angular_momentum_nominator
+    def _expand_atomic_subshell(self, atomic_subshell):
+        n = 0
+        l = -1
+        j_n = 0
+        if hasattr(atomic_subshell, 'principal_quantum_number') and \
+                hasattr(atomic_subshell, 'azimuthal_quantum_number') and \
+                hasattr(atomic_subshell, 'total_angular_momentum_nominator'):
+            n = atomic_subshell.atomic_shell.principal_quantum_number
+            l = atomic_subshell.azimuthal_quantum_number
+            j_n = atomic_subshell.total_angular_momentum_nominator
 
         elif isinstance(atomic_subshell, collections.Sequence) and \
                 len(atomic_subshell) == 3:
-            principal_quantum_number = atomic_subshell[0]
-            azimuthal_quantum_number = atomic_subshell[1]
-            total_angular_momentum_nominator = atomic_subshell[2]
+            n = atomic_subshell[0]
+            l = atomic_subshell[1]
+            j_n = atomic_subshell[2]
 
-        if principal_quantum_number > 0 and \
-                azimuthal_quantum_number >= 0 and \
-                total_angular_momentum_nominator > 0:
-            atomic_shell_id = self._get_atomic_shell_id(conn, principal_quantum_number)
+        return n, l, j_n
 
-            tbl = table.atomic_subshell
-            tbl.create(conn, checkfirst=True)
+    def _select_atomic_subshell(self, connection, builder, table, column, atomic_subshell):
+        n, l, j_n = self._expand_atomic_subshell(atomic_subshell)
 
-            command = sql.select([tbl.c.id])
-            command = command.where(tbl.c.atomic_shell_id == atomic_shell_id)
-            command = command.where(tbl.c.azimuthal_quantum_number == azimuthal_quantum_number)
-            command = command.where(tbl.c.total_angular_momentum_nominator == total_angular_momentum_nominator)
-            out = self._retrieve_first(conn, command)
-            if out is not None:
-                return out
+        builder.add_join('atomic_subshell', 'id', table, column)
+        builder.add_join('atomic_shell', 'id', 'atomic_subshell', 'atomic_shell_id')
 
-        raise NotFound('Unknown atomic subshell: {0}'.format(atomic_subshell))
+        if isinstance(atomic_subshell, str):
+            builder.add_join('atomic_subshell_notation', 'atomic_subshell_id', table, column)
+            builder.add_where('atomic_subshell_notation', 'ascii', '=', atomic_subshell,
+                              'atomic_subshell_notation', 'utf16', '=', atomic_subshell)
 
-    def _get_atomic_subshell(self, conn, atomic_subshell_id):
-        tbl = table.atomic_subshell
-        tbl.create(conn, checkfirst=True)
-        command = sql.select([tbl.c.atomic_shell_id,
-                              tbl.c.azimuthal_quantum_number,
-                              tbl.c.total_angular_momentum_nominator])
-        command = command.where(tbl.c.id == atomic_subshell_id)
-        result = conn.execute(command)
-        row = result.first()
-        if row is None:
-            raise NotFound('No atomic subshell found')
-        atomic_shell_id, azimuthal_quantum_number, total_angular_momentum_nominator = row
+        elif n > 0 and l >= 0 and j_n > 0:
+            builder.add_where('atomic_shell', 'principal_quantum_number', '=', n)
+            builder.add_where('atomic_subshell', 'azimuthal_quantum_number', '=', l)
+            builder.add_where('atomic_subshell', 'total_angular_momentum_nominator', '=', j_n)
 
-        atomic_shell = self._get_atomic_shell(conn, atomic_shell_id)
+        else:
+            raise NotFound('Cannot parse atomic subshell: {}'.format(atomic_subshell))
 
-        return AtomicSubshell(atomic_shell,
-                              azimuthal_quantum_number,
-                              total_angular_momentum_nominator)
+    def _select_xray_transition(self, connection, builder, table, column, xraytransition):
+        src_n = 0; src_l = -1; src_j_n = 0
+        dst_n = 0; dst_l = -1; dst_j_n = 0
 
-    def _get_xray_transition_id(self, conn, xraytransition):
-        if isinstance(xraytransition, str):
-            tbl = table.xray_transition_notation
-            tbl.create(conn, checkfirst=True)
+        if hasattr(xraytransition, 'source_subshell') and \
+                hasattr(xraytransition, 'destination_subshell'):
+            src_n, src_l, src_j_n = \
+                self._expand_atomic_subshell(xraytransition.source_subshell)
+            dst_n, dst_l, dst_j_n = \
+                self._expand_atomic_subshell(xraytransition.destination_subshell)
 
-            command = sql.select([tbl.c.xray_transition_id])
-            command = command.where(sql.or_(tbl.c.ascii == xraytransition,
-                                            tbl.c.utf16 == xraytransition))
-            out = self._retrieve_first(conn, command)
-            if out is not None:
-                return out
-
-        source_subshell = None
-        destination_subshell = None
-        if isinstance(xraytransition, XrayTransition):
-            source_subshell = xraytransition.source_subshell
-            destination_subshell = xraytransition.destination_subshell
         elif isinstance(xraytransition, collections.Sequence) and \
-                len(xraytransition) == 2:
-            source_subshell = xraytransition[0]
-            destination_subshell = xraytransition[1]
+                len(xraytransition) >= 2:
+            src_n, src_l, src_j_n = self._expand_atomic_subshell(xraytransition[0])
+            dst_n, dst_l, dst_j_n = self._expand_atomic_subshell(xraytransition[1])
 
-        if source_subshell is not None and \
-                destination_subshell is not None:
-            source_subshell_id = self._get_atomic_subshell_id(conn, source_subshell)
-            destination_subshell_id = self._get_atomic_subshell_id(conn, destination_subshell)
+        builder.add_join('xray_transition', 'id', table, column)
+        builder.add_join('atomic_subshell', 'id', 'xray_transition', 'source_subshell_id', 'srcsubshell')
+        builder.add_join('atomic_subshell', 'id', 'xray_transition', 'destination_subshell_id', 'dstsubshell')
+        builder.add_join('atomic_shell', 'id', 'srcsubshell', 'atomic_shell_id', 'srcshell')
+        builder.add_join('atomic_shell', 'id', 'dstsubshell', 'atomic_shell_id', 'dstshell')
 
-            tbl = table.xray_transition
-            tbl.create(conn, checkfirst=True)
+        if isinstance(xraytransition, str):
+            builder.add_join('xray_transition_notation', 'xray_transition_id', table, column)
+            builder.add_where('xray_transition_notation', 'ascii', '=', xraytransition,
+                              'xray_transition_notation', 'utf16', '=', xraytransition)
 
-            command = sql.select([tbl.c.id])
-            command = command.where(sql.and_(tbl.c.source_subshell_id == source_subshell_id,
-                                             tbl.c.destination_subshell_id == destination_subshell_id))
-            out = self._retrieve_first(conn, command)
-            if out is not None:
-                return out
+        elif src_n > 0 and src_l >= 0 and src_j_n > 0 and \
+                dst_n > 0 and dst_l >= 0 and dst_j_n > 0:
+            builder.add_where('srcshell', 'principal_quantum_number', '=', src_n)
+            builder.add_where('srcsubshell', 'azimuthal_quantum_number', '=', src_l)
+            builder.add_where('srcsubshell', 'total_angular_momentum_nominator', '=', src_j_n)
+            builder.add_where('dstshell', 'principal_quantum_number', '=', dst_n)
+            builder.add_where('dstsubshell', 'azimuthal_quantum_number', '=', dst_l)
+            builder.add_where('dstsubshell', 'total_angular_momentum_nominator', '=', dst_j_n)
 
-        raise NotFound('Unknown transition: {0}'.format(xraytransition))
+        else:
+            raise NotFound('Cannot parse X-ray transition: {}'.format(xraytransition))
 
-    def _get_xray_transition(self, conn, xray_transition_id):
-        tbl = table.xray_transition
-        tbl.create(conn, checkfirst=True)
-        command = sql.select([tbl.c.source_subshell_id,
-                              tbl.c.destination_subshell_id])
-        command = command.where(tbl.c.id == xray_transition_id)
-        result = conn.execute(command)
-        row = result.first()
-        if row is None:
-            raise NotFound('No transition found')
-        source_subshell_id, destination_subshell_id = row
-
-        source_subshell = self._get_atomic_subshell(conn, source_subshell_id)
-        destination_subshell = self._get_atomic_subshell(conn, destination_subshell_id)
-        return XrayTransition(source_subshell,
-                              destination_subshell)
-
-    def _get_xray_transitionset_id(self, conn, xraytransitionset):
-        if isinstance(xraytransitionset, str):
-            tbl = table.xray_transitionset_notation
-            tbl.create(conn, checkfirst=True)
-
-            command = sql.select([tbl.c.xray_transitionset_id])
-            command = command.where(sql.or_(tbl.c.ascii == xraytransitionset,
-                                            tbl.c.utf16 == xraytransitionset))
-            out = self._retrieve_first(conn, command)
-            if out is not None:
-                return out
-
+    def _select_xray_transitionset(self, connection, builder, table, column, xraytransitionset):
         xraytransitions = set()
-        if isinstance(xraytransitionset, XrayTransitionSet):
+        if isinstance(xraytransitionset, descriptor.XrayTransitionSet):
             xraytransitions.update(xraytransitionset.transitions)
+
         elif isinstance(xraytransitionset, collections.Sequence):
             xraytransitions.update(xraytransitionset)
 
-        if xraytransitions:
-            xraytransition_ids = set()
-            for xraytransition in xraytransitions:
-                xraytransition_id = self._get_xray_transition_id(conn, xraytransition)
-                xraytransition_ids.add(xraytransition_id)
+        if isinstance(xraytransitionset, str):
+            builder.add_join('xray_transitionset_notation', 'xray_transitionset_id', table, column)
+            builder.add_where('xray_transitionset_notation', 'ascii', '=', xraytransitionset,
+                              'xray_transitionset_notation', 'utf16', '=', xraytransitionset)
+            return
 
-            table.xray_transitionset.create(conn, checkfirst=True)
-            table.xray_transitionset_association.create(conn, checkfirst=True)
+        elif xraytransitions:
+            possibilities = set()
+            for i, xraytransition in enumerate(xraytransitions):
+                subtable = 'xray_transitionset_association'
+                subbuilder = SelectBuilder()
+                subbuilder.add_select(subtable, 'xray_transitionset_id')
+                subbuilder.add_select('xray_transitionset', 'count')
+                subbuilder.add_from(subtable)
+                subbuilder.add_join('xray_transitionset', 'id', subtable, 'xray_transitionset_id')
+                self._select_xray_transition(connection, subbuilder, subtable, 'id', xraytransition)
+                sql, params = subbuilder.build()
 
-            tbl = table.xray_transitionset_association
-            command = sql.select([tbl.c.xray_transitionset_id])
-            command = command.where(tbl.c.xray_transition_id.in_(xraytransition_ids))
-            command = command.distinct()
-            result = conn.execute(command)
+                cur = connection.cursor()
+                cur.execute(sql, params)
+                rows = cur.fetchall()
+                cur.close()
 
-            for row in result:
-                command = sql.select([tbl.c.xray_transitionset_id])
-                command = command.where(tbl.c.xray_transitionset_id == row[0])
-                command = command.group_by(tbl.c.xray_transitionset_id)
-                command = command.having(sql.func.count(tbl.c.xray_transition_id) == len(xraytransition_ids))
+                if i == 0:
+                    possibilities.update(rows)
+                else:
+                    possibilities.intersection_update(rows)
 
-                result = conn.execute(command)
-                if result.fetchone():
-                    return row[0]
+                if not possibilities:
+                    break
 
-        raise NotFound('Unknown transition set: {0}'.format(xraytransitionset))
+            for xray_transitionset_id, count in possibilities:
+                if count == len(xraytransitions):
+                    builder.add_join('xray_transitionset', 'id', table, column)
+                    builder.add_where('xray_transitionset', 'id', '=', xray_transitionset_id)
+                    return
 
-    def _get_xray_transitionset(self, conn, xray_transitionset_id):
-        tbl = table.xray_transitionset_association
-        tbl.create(conn, checkfirst=True)
-        command = sql.select([tbl.c.xray_transition_id])
-        command = command.where(tbl.c.xray_transitionset_id == xray_transitionset_id)
-        result = conn.execute(command)
-        rows = result.fetchall()
-        if not rows:
-            raise NotFound('No transition set found')
+        raise NotFound('Cannot parse X-ray transition set: {}'.format(xraytransitionset))
 
-        transitions = [self._get_xray_transition(conn, row[0]) for row in rows]
+    def _select_language(self, connection, builder, table, language):
+        if isinstance(language, descriptor.Language):
+            language = language.code
 
-        return XrayTransitionSet(transitions)
+        builder.add_join('language', 'id', table, 'language_id')
+        builder.add_where('language', 'code', '=', language)
 
-    def _get_language_id(self, conn, language):
-        if isinstance(language, Language):
-            code = language.code
+    def _select_notation(self, connection, builder, table, notation):
+        if isinstance(notation, descriptor.Notation):
+            notation = notation.name
+
+        builder.add_join('notation', 'id', table, 'notation_id')
+        builder.add_where('notation', 'name', '=', notation)
+
+    def _select_reference(self, connection, builder, table, reference):
+        if isinstance(reference, descriptor.Reference):
+            reference = reference.bibtexkey
+
+        if reference:
+            builder.add_join('ref', 'id', table, 'reference_id')
+            builder.add_where('ref', 'bibtexkey', '=', reference)
+
         else:
-            code = language
-
-        tbl = table.language
-        tbl.create(conn, checkfirst=True)
-        command = sql.select([tbl.c.id])
-        command = command.where(tbl.c.code == code)
-        return self._retrieve_first(conn, command,
-                                    NotFound('Unknown language: {0}'
-                                             .format(language)))
-
-    def _get_notation_id(self, conn, notation):
-        if isinstance(notation, Notation):
-            name = notation.name
-        else:
-            name = notation
-
-        tbl = table.notation
-        tbl.create(conn, checkfirst=True)
-
-        command = sql.select([tbl.c.id])
-        command = command.where(tbl.c.name == name)
-        return self._retrieve_first(conn, command,
-                                    NotFound('Unknown notation: {0}'
-                                             .format(notation)))
-
-    def _get_reference_id(self, conn, reference):
-        if isinstance(reference, Reference):
-            bibtexkey = reference.bibtexkey
-        else:
-            bibtexkey = reference
-
-        tbl = table.reference
-        tbl.create(conn, checkfirst=True)
-        command = sql.select([tbl.c.id])
-        command = command.where(tbl.c.bibtexkey == bibtexkey)
-        return self._retrieve_first(conn, command,
-                                    NotFound('Unknown reference: {0}'
-                                             .format(reference)))
-
+            builder.add_orderby(table, 'reference_id')
