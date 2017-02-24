@@ -147,7 +147,7 @@ class SelectMixin:
                 subbuilder.add_select('xray_transitionset', 'count')
                 subbuilder.add_from(subtable)
                 subbuilder.add_join('xray_transitionset', 'id', subtable, 'xray_transitionset_id')
-                self._append_select_xray_transition(connection, subbuilder, subtable, 'id', xraytransition)
+                self._append_select_xray_transition(connection, subbuilder, subtable, 'xray_transition_id', xraytransition)
                 sql, params = subbuilder.build()
 
                 cur = connection.cursor()
