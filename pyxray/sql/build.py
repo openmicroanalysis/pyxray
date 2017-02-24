@@ -22,11 +22,12 @@ import pyxray.property as props
 from pyxray.base import NotFound
 from pyxray.parser.parser import find_parsers
 from pyxray.sql.command import SelectBuilder, InsertBuilder, CreateTableBuilder
-from pyxray.sql.base import SqlDatabaseMixin
+from pyxray.sql.base import SelectMixin, TableMixin, InsertMixin
 
 # Globals and constants variables.
 
-class SqlDatabaseBuilder(SqlDatabaseMixin, metaclass=abc.ABCMeta):
+class SqlDatabaseBuilder(SelectMixin, TableMixin, InsertMixin,
+                         metaclass=abc.ABCMeta):
 
     def __init__(self):
         self._propfuncs = {}
@@ -167,45 +168,6 @@ class SqlDatabaseBuilder(SqlDatabaseMixin, metaclass=abc.ABCMeta):
         cur = connection.cursor()
         cur.execute(sql)
         cur.close()
-
-    def _append_table_primary_key_columns(self, builder):
-        builder.add_primarykey_column('id')
-
-    def _append_table_element_columns(self, builder):
-        builder.add_foreignkey_column('element_id', 'element', 'id')
-
-    def _append_table_atomic_shell_columns(self, builder):
-        builder.add_foreignkey_column('atomic_shell_id', 'atomic_shell', 'id'),
-
-    def _append_table_atomic_subshell_columns(self, builder):
-        builder.add_foreignkey_column('atomic_subshell_id', 'atomic_subshell', 'id')
-
-    def _append_table_xray_transition_columns(self, builder):
-        builder.add_foreignkey_column('xray_transition_id', 'xray_transition', 'id')
-
-    def _append_table_xray_transitionset_columns(self, builder):
-        builder.add_foreignkey_column('xray_transitionset_id', 'xray_transitionset', 'id')
-
-    def _append_table_language_columns(self, builder):
-        builder.add_foreignkey_column('language_id', 'language', 'id')
-
-    def _append_table_notation_columns(self, builder):
-        builder.add_foreignkey_column('notation_id', 'notation', 'id')
-
-    def _append_table_notation_property_columns(self, builder):
-        builder.add_string_column('ascii', 100, nullable=False)
-        builder.add_string_column('utf16', 100)
-        builder.add_string_column('html', 100)
-        builder.add_string_column('latex', 100)
-
-    def _append_table_reference_columns(self, builder):
-        builder.add_foreignkey_column('reference_id', 'ref', 'id')
-
-    def _append_table_energy_property_columns(self, builder):
-        builder.add_float_column('value_eV', nullable=False)
-
-    def _append_table_value_property_columns(self, builder):
-        builder.add_float_column('value', nullable=False)
 
     def _create_element_table(self, connection):
         builder = CreateTableBuilder('element')
@@ -436,42 +398,42 @@ class SqlDatabaseBuilder(SqlDatabaseMixin, metaclass=abc.ABCMeta):
 
     def _select_element_id(self, connection, element):
         builder = SelectBuilder()
-        self._select_element(connection, builder, 'element', 'id', element)
+        self._append_select_element(connection, builder, 'element', 'id', element)
         return self._select_id(connection, 'element', builder)
 
     def _select_atomic_shell_id(self, connection, atomic_shell):
         builder = SelectBuilder()
-        self._select_atomic_shell(connection, builder, 'atomic_shell', 'id', atomic_shell)
+        self._append_select_atomic_shell(connection, builder, 'atomic_shell', 'id', atomic_shell)
         return self._select_id(connection, 'atomic_shell', builder)
 
     def _select_atomic_subshell_id(self, connection, atomic_subshell):
         builder = SelectBuilder()
-        self._select_atomic_subshell(connection, builder, 'atomic_subshell', 'id', atomic_subshell)
+        self._append_select_atomic_subshell(connection, builder, 'atomic_subshell', 'id', atomic_subshell)
         return self._select_id(connection, 'atomic_subshell', builder)
 
     def _select_xray_transition_id(self, connection, xraytransition):
         builder = SelectBuilder()
-        self._select_xray_transition(connection, builder, 'xray_transition', 'id', xraytransition)
+        self._append_select_xray_transition(connection, builder, 'xray_transition', 'id', xraytransition)
         return self._select_id(connection, 'xray_transition', builder)
 
     def _select_xray_transitionset_id(self, connection, xraytransitionset):
         builder = SelectBuilder()
-        self._select_xray_transitionset(connection, builder, 'xray_transitionset', 'id', xraytransitionset)
+        self._append_select_xray_transitionset(connection, builder, 'xray_transitionset', 'id', xraytransitionset)
         return self._select_id(connection, 'xray_transitionset', builder)
 
     def _select_notation_id(self, connection, notation):
         builder = SelectBuilder()
-        self._select_notation(connection, builder, 'notation', notation)
+        self._append_select_notation(connection, builder, 'notation', notation)
         return self._select_id(connection, 'notation', builder)
 
     def _select_language_id(self, connection, language):
         builder = SelectBuilder()
-        self._select_language(connection, builder, 'language', language)
+        self._append_select_language(connection, builder, 'language', language)
         return self._select_id(connection, 'language', builder)
 
     def _select_reference_id(self, connection, reference):
         builder = SelectBuilder()
-        self._select_reference(connection, builder, 'ref', reference)
+        self._append_select_reference(connection, builder, 'ref', reference)
         return self._select_id(connection, 'ref', builder)
 
     def _require_element(self, connection, element):
@@ -541,46 +503,6 @@ class SqlDatabaseBuilder(SqlDatabaseMixin, metaclass=abc.ABCMeta):
         cur.close()
 
         return cur.lastrowid
-
-    def _append_insert_property_element_columns(self, connection, builder, prop):
-        element_id = self._require_element(connection, prop.element)
-        builder.add_column('element_id', element_id)
-
-    def _append_insert_property_atomic_shell_columns(self, connection, builder, prop):
-        atomic_shell_id = self._require_atomic_shell(connection, prop.atomic_shell)
-        builder.add_column('atomic_shell_id', atomic_shell_id)
-
-    def _append_insert_property_atomic_subshell_columns(self, connection, builder, prop):
-        atomic_subshell_id = self._require_atomic_subshell(connection, prop.atomic_subshell)
-        builder.add_column('atomic_subshell_id', atomic_subshell_id)
-
-    def _append_insert_property_xray_transition_columns(self, connection, builder, prop):
-        xray_transition_id = self._require_xray_transition(connection, prop.xraytransition)
-        builder.add_column('xray_transition_id', xray_transition_id)
-
-    def _append_insert_property_xray_transitionset_columns(self, connection, builder, prop):
-        xray_transitionset_id = self._require_xray_transitionset(connection, prop.xraytransitionset)
-        builder.add_column('xray_transitionset_id', xray_transitionset_id)
-
-    def _append_insert_property_reference_columns(self, connection, builder, prop):
-        reference_id = self._require_reference(connection, prop.reference)
-        builder.add_column('reference_id', reference_id)
-
-    def _append_insert_property_language_columns(self, connection, builder, prop):
-        language_id = self._require_language(connection, prop.language)
-        builder.add_column('language_id', language_id)
-
-    def _append_insert_property_notation_columns(self, connection, builder, prop):
-        notation_id = self._require_notation(connection, prop.notation)
-        builder.add_column('notation_id', notation_id)
-
-        builder.add_column('ascii', prop.ascii)
-        builder.add_column('utf16', prop.utf16)
-        builder.add_column('html', prop.html)
-        builder.add_column('latex', prop.latex)
-
-    def _append_insert_property_energy_columns(self, connection, builder, prop):
-        builder.add_column('value_eV', prop.value_eV)
 
     def _insert_element(self, connection, element):
         builder = InsertBuilder('element')

@@ -12,9 +12,9 @@ from pyxray.sql.command import SelectBuilder
 
 # Globals and constants variables.
 
-class SqlDatabaseMixin:
+class SelectMixin:
 
-    def _select_element(self, connection, builder, table, column, element):
+    def _append_select_element(self, connection, builder, table, column, element):
         if hasattr(element, 'atomic_number'):
             element = element.atomic_number
 
@@ -31,7 +31,7 @@ class SqlDatabaseMixin:
         else:
             raise NotFound('Cannot parse element: {}'.format(element))
 
-    def _select_atomic_shell(self, connection, builder, table, column, atomic_shell):
+    def _append_select_atomic_shell(self, connection, builder, table, column, atomic_shell):
         if hasattr(atomic_shell, 'principal_quantum_number'):
             atomic_shell = atomic_shell.principal_quantum_number
 
@@ -66,7 +66,7 @@ class SqlDatabaseMixin:
 
         return n, l, j_n
 
-    def _select_atomic_subshell(self, connection, builder, table, column, atomic_subshell):
+    def _append_select_atomic_subshell(self, connection, builder, table, column, atomic_subshell):
         n, l, j_n = self._expand_atomic_subshell(atomic_subshell)
 
         builder.add_join('atomic_subshell', 'id', table, column)
@@ -85,7 +85,7 @@ class SqlDatabaseMixin:
         else:
             raise NotFound('Cannot parse atomic subshell: {}'.format(atomic_subshell))
 
-    def _select_xray_transition(self, connection, builder, table, column, xraytransition):
+    def _append_select_xray_transition(self, connection, builder, table, column, xraytransition):
         src_n = 0; src_l = -1; src_j_n = 0
         dst_n = 0; dst_l = -1; dst_j_n = 0
 
@@ -124,7 +124,7 @@ class SqlDatabaseMixin:
         else:
             raise NotFound('Cannot parse X-ray transition: {}'.format(xraytransition))
 
-    def _select_xray_transitionset(self, connection, builder, table, column, xraytransitionset):
+    def _append_select_xray_transitionset(self, connection, builder, table, column, xraytransitionset):
         xraytransitions = set()
         if isinstance(xraytransitionset, descriptor.XrayTransitionSet):
             xraytransitions.update(xraytransitionset.transitions)
@@ -147,7 +147,7 @@ class SqlDatabaseMixin:
                 subbuilder.add_select('xray_transitionset', 'count')
                 subbuilder.add_from(subtable)
                 subbuilder.add_join('xray_transitionset', 'id', subtable, 'xray_transitionset_id')
-                self._select_xray_transition(connection, subbuilder, subtable, 'id', xraytransition)
+                self._append_select_xray_transition(connection, subbuilder, subtable, 'id', xraytransition)
                 sql, params = subbuilder.build()
 
                 cur = connection.cursor()
@@ -171,21 +171,21 @@ class SqlDatabaseMixin:
 
         raise NotFound('Cannot parse X-ray transition set: {}'.format(xraytransitionset))
 
-    def _select_language(self, connection, builder, table, language):
+    def _append_select_language(self, connection, builder, table, language):
         if isinstance(language, descriptor.Language):
             language = language.code
 
         builder.add_join('language', 'id', table, 'language_id')
         builder.add_where('language', 'code', '=', language)
 
-    def _select_notation(self, connection, builder, table, notation):
+    def _append_select_notation(self, connection, builder, table, notation):
         if isinstance(notation, descriptor.Notation):
             notation = notation.name
 
         builder.add_join('notation', 'id', table, 'notation_id')
         builder.add_where('notation', 'name', '=', notation)
 
-    def _select_reference(self, connection, builder, table, reference):
+    def _append_select_reference(self, connection, builder, table, reference):
         if isinstance(reference, descriptor.Reference):
             reference = reference.bibtexkey
 
@@ -195,3 +195,86 @@ class SqlDatabaseMixin:
 
         else:
             builder.add_orderby(table, 'reference_id')
+
+class TableMixin:
+
+    def _append_table_primary_key_columns(self, builder):
+        builder.add_primarykey_column('id')
+
+    def _append_table_element_columns(self, builder):
+        builder.add_foreignkey_column('element_id', 'element', 'id')
+
+    def _append_table_atomic_shell_columns(self, builder):
+        builder.add_foreignkey_column('atomic_shell_id', 'atomic_shell', 'id'),
+
+    def _append_table_atomic_subshell_columns(self, builder):
+        builder.add_foreignkey_column('atomic_subshell_id', 'atomic_subshell', 'id')
+
+    def _append_table_xray_transition_columns(self, builder):
+        builder.add_foreignkey_column('xray_transition_id', 'xray_transition', 'id')
+
+    def _append_table_xray_transitionset_columns(self, builder):
+        builder.add_foreignkey_column('xray_transitionset_id', 'xray_transitionset', 'id')
+
+    def _append_table_language_columns(self, builder):
+        builder.add_foreignkey_column('language_id', 'language', 'id')
+
+    def _append_table_notation_columns(self, builder):
+        builder.add_foreignkey_column('notation_id', 'notation', 'id')
+
+    def _append_table_notation_property_columns(self, builder):
+        builder.add_string_column('ascii', 100, nullable=False)
+        builder.add_string_column('utf16', 100)
+        builder.add_string_column('html', 100)
+        builder.add_string_column('latex', 100)
+
+    def _append_table_reference_columns(self, builder):
+        builder.add_foreignkey_column('reference_id', 'ref', 'id')
+
+    def _append_table_energy_property_columns(self, builder):
+        builder.add_float_column('value_eV', nullable=False)
+
+    def _append_table_value_property_columns(self, builder):
+        builder.add_float_column('value', nullable=False)
+
+class InsertMixin:
+
+    def _append_insert_property_element_columns(self, connection, builder, prop):
+        element_id = self._require_element(connection, prop.element)
+        builder.add_column('element_id', element_id)
+
+    def _append_insert_property_atomic_shell_columns(self, connection, builder, prop):
+        atomic_shell_id = self._require_atomic_shell(connection, prop.atomic_shell)
+        builder.add_column('atomic_shell_id', atomic_shell_id)
+
+    def _append_insert_property_atomic_subshell_columns(self, connection, builder, prop):
+        atomic_subshell_id = self._require_atomic_subshell(connection, prop.atomic_subshell)
+        builder.add_column('atomic_subshell_id', atomic_subshell_id)
+
+    def _append_insert_property_xray_transition_columns(self, connection, builder, prop):
+        xray_transition_id = self._require_xray_transition(connection, prop.xraytransition)
+        builder.add_column('xray_transition_id', xray_transition_id)
+
+    def _append_insert_property_xray_transitionset_columns(self, connection, builder, prop):
+        xray_transitionset_id = self._require_xray_transitionset(connection, prop.xraytransitionset)
+        builder.add_column('xray_transitionset_id', xray_transitionset_id)
+
+    def _append_insert_property_reference_columns(self, connection, builder, prop):
+        reference_id = self._require_reference(connection, prop.reference)
+        builder.add_column('reference_id', reference_id)
+
+    def _append_insert_property_language_columns(self, connection, builder, prop):
+        language_id = self._require_language(connection, prop.language)
+        builder.add_column('language_id', language_id)
+
+    def _append_insert_property_notation_columns(self, connection, builder, prop):
+        notation_id = self._require_notation(connection, prop.notation)
+        builder.add_column('notation_id', notation_id)
+
+        builder.add_column('ascii', prop.ascii)
+        builder.add_column('utf16', prop.utf16)
+        builder.add_column('html', prop.html)
+        builder.add_column('latex', prop.latex)
+
+    def _append_insert_property_energy_columns(self, connection, builder, prop):
+        builder.add_column('value_eV', prop.value_eV)

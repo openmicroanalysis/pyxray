@@ -10,11 +10,11 @@ Implementation of the database using a SQL database
 from pyxray.base import _Database, NotFound
 import pyxray.descriptor as descriptor
 from pyxray.sql.command import SelectBuilder
-from pyxray.sql.base import SqlDatabaseMixin
+from pyxray.sql.base import SelectMixin
 
 # Globals and constants variables.
 
-class SqlDatabase(SqlDatabaseMixin, _Database):
+class SqlDatabase(SelectMixin, _Database):
 
     def __init__(self, connection):
         super().__init__()
@@ -25,7 +25,7 @@ class SqlDatabase(SqlDatabaseMixin, _Database):
         builder = SelectBuilder()
         builder.add_select(table, 'atomic_number')
         builder.add_from(table)
-        self._select_element(self.connection, builder, table, 'id', element)
+        self._append_select_element(self.connection, builder, table, 'id', element)
         sql, params = builder.build()
 
         cur = self.connection.cursor()
@@ -43,7 +43,7 @@ class SqlDatabase(SqlDatabaseMixin, _Database):
         builder = SelectBuilder()
         builder.add_select(table, 'atomic_number')
         builder.add_from(table)
-        self._select_element(self.connection, builder, table, 'id', element)
+        self._append_select_element(self.connection, builder, table, 'id', element)
         sql, params = builder.build()
 
         cur = self.connection.cursor()
@@ -64,8 +64,8 @@ class SqlDatabase(SqlDatabaseMixin, _Database):
         builder = SelectBuilder()
         builder.add_select(table, 'symbol')
         builder.add_from(table)
-        self._select_element(self.connection, builder, table, 'element_id', element)
-        self._select_reference(self.connection, builder, table, reference)
+        self._append_select_element(self.connection, builder, table, 'element_id', element)
+        self._append_select_reference(self.connection, builder, table, reference)
         sql, params = builder.build()
 
         cur = self.connection.cursor()
@@ -86,9 +86,9 @@ class SqlDatabase(SqlDatabaseMixin, _Database):
         builder = SelectBuilder()
         builder.add_select(table, 'name')
         builder.add_from(table)
-        self._select_element(self.connection, builder, table, 'element_id', element)
-        self._select_language(self.connection, builder, table, language)
-        self._select_reference(self.connection, builder, table, reference)
+        self._append_select_element(self.connection, builder, table, 'element_id', element)
+        self._append_select_language(self.connection, builder, table, language)
+        self._append_select_reference(self.connection, builder, table, reference)
         sql, params = builder.build()
 
         cur = self.connection.cursor()
@@ -109,8 +109,8 @@ class SqlDatabase(SqlDatabaseMixin, _Database):
         builder = SelectBuilder()
         builder.add_select(table, 'value')
         builder.add_from(table)
-        self._select_element(self.connection, builder, table, 'element_id', element)
-        self._select_reference(self.connection, builder, table, reference)
+        self._append_select_element(self.connection, builder, table, 'element_id', element)
+        self._append_select_reference(self.connection, builder, table, reference)
         sql, params = builder.build()
 
         cur = self.connection.cursor()
@@ -131,8 +131,8 @@ class SqlDatabase(SqlDatabaseMixin, _Database):
         builder = SelectBuilder()
         builder.add_select(table, 'value_kg_per_m3')
         builder.add_from(table)
-        self._select_element(self.connection, builder, table, 'element_id', element)
-        self._select_reference(self.connection, builder, table, reference)
+        self._append_select_element(self.connection, builder, table, 'element_id', element)
+        self._append_select_reference(self.connection, builder, table, reference)
         sql, params = builder.build()
 
         cur = self.connection.cursor()
@@ -163,8 +163,8 @@ class SqlDatabase(SqlDatabaseMixin, _Database):
         builder.add_join('atomic_subshell', 'id', 'xray_transition', 'destination_subshell_id', 'dstsubshell')
         builder.add_join('atomic_shell', 'id', 'srcsubshell', 'atomic_shell_id', 'srcshell')
         builder.add_join('atomic_shell', 'id', 'dstsubshell', 'atomic_shell_id', 'dstshell')
-        self._select_element(self.connection, builder, table, 'element_id', element)
-        self._select_reference(self.connection, builder, table, reference)
+        self._append_select_element(self.connection, builder, table, 'element_id', element)
+        self._append_select_reference(self.connection, builder, table, reference)
         builder.add_where(table, 'value', '>', 0.0)
         sql, params = builder.build()
 
@@ -188,7 +188,7 @@ class SqlDatabase(SqlDatabaseMixin, _Database):
         builder = SelectBuilder()
         builder.add_select(table, 'principal_quantum_number')
         builder.add_from(table)
-        self._select_atomic_shell(self.connection, builder, table, 'id', atomic_shell)
+        self._append_select_atomic_shell(self.connection, builder, table, 'id', atomic_shell)
         sql, params = builder.build()
 
         cur = self.connection.cursor()
@@ -210,9 +210,9 @@ class SqlDatabase(SqlDatabaseMixin, _Database):
         builder = SelectBuilder()
         builder.add_select(table, encoding)
         builder.add_from(table)
-        self._select_atomic_shell(self.connection, builder, table, 'atomic_shell_id', atomic_shell)
-        self._select_notation(self.connection, builder, table, notation)
-        self._select_reference(self.connection, builder, table, reference)
+        self._append_select_atomic_shell(self.connection, builder, table, 'atomic_shell_id', atomic_shell)
+        self._append_select_notation(self.connection, builder, table, notation)
+        self._append_select_reference(self.connection, builder, table, reference)
         sql, params = builder.build()
 
         cur = self.connection.cursor()
@@ -232,7 +232,7 @@ class SqlDatabase(SqlDatabaseMixin, _Database):
         builder.add_select(table, 'azimuthal_quantum_number')
         builder.add_select(table, 'total_angular_momentum_nominator')
         builder.add_from(table)
-        self._select_atomic_subshell(self.connection, builder, table, 'id', atomic_subshell)
+        self._append_select_atomic_subshell(self.connection, builder, table, 'id', atomic_subshell)
         sql, params = builder.build()
 
         cur = self.connection.cursor()
@@ -254,9 +254,9 @@ class SqlDatabase(SqlDatabaseMixin, _Database):
         builder = SelectBuilder()
         builder.add_select(table, encoding)
         builder.add_from(table)
-        self._select_atomic_shell(self.connection, builder, table, 'atomic_subshell_id', atomic_subshell)
-        self._select_notation(self.connection, builder, table, notation)
-        self._select_reference(self.connection, builder, table, reference)
+        self._append_select_atomic_shell(self.connection, builder, table, 'atomic_subshell_id', atomic_subshell)
+        self._append_select_notation(self.connection, builder, table, notation)
+        self._append_select_reference(self.connection, builder, table, reference)
         sql, params = builder.build()
 
         cur = self.connection.cursor()
@@ -277,9 +277,9 @@ class SqlDatabase(SqlDatabaseMixin, _Database):
         builder = SelectBuilder()
         builder.add_select(table, 'value_eV')
         builder.add_from(table)
-        self._select_element(self.connection, builder, table, 'element_id', element)
-        self._select_atomic_shell(self.connection, builder, table, 'atomic_subshell_id', atomic_subshell)
-        self._select_reference(self.connection, builder, table, reference)
+        self._append_select_element(self.connection, builder, table, 'element_id', element)
+        self._append_select_atomic_shell(self.connection, builder, table, 'atomic_subshell_id', atomic_subshell)
+        self._append_select_reference(self.connection, builder, table, reference)
         sql, params = builder.build()
 
         cur = self.connection.cursor()
@@ -300,9 +300,9 @@ class SqlDatabase(SqlDatabaseMixin, _Database):
         builder = SelectBuilder()
         builder.add_select(table, 'value_eV')
         builder.add_from(table)
-        self._select_element(self.connection, builder, table, 'element_id', element)
-        self._select_atomic_shell(self.connection, builder, table, 'atomic_subshell_id', atomic_subshell)
-        self._select_reference(self.connection, builder, table, reference)
+        self._append_select_element(self.connection, builder, table, 'element_id', element)
+        self._append_select_atomic_shell(self.connection, builder, table, 'atomic_subshell_id', atomic_subshell)
+        self._append_select_reference(self.connection, builder, table, reference)
         sql, params = builder.build()
 
         cur = self.connection.cursor()
@@ -323,9 +323,9 @@ class SqlDatabase(SqlDatabaseMixin, _Database):
         builder = SelectBuilder()
         builder.add_select(table, 'value_eV')
         builder.add_from(table)
-        self._select_element(self.connection, builder, table, 'element_id', element)
-        self._select_atomic_shell(self.connection, builder, table, 'atomic_subshell_id', atomic_subshell)
-        self._select_reference(self.connection, builder, table, reference)
+        self._append_select_element(self.connection, builder, table, 'element_id', element)
+        self._append_select_atomic_shell(self.connection, builder, table, 'atomic_subshell_id', atomic_subshell)
+        self._append_select_reference(self.connection, builder, table, reference)
         sql, params = builder.build()
 
         cur = self.connection.cursor()
@@ -346,9 +346,9 @@ class SqlDatabase(SqlDatabaseMixin, _Database):
         builder = SelectBuilder()
         builder.add_select(table, 'value')
         builder.add_from(table)
-        self._select_element(self.connection, builder, table, 'element_id', element)
-        self._select_atomic_shell(self.connection, builder, table, 'atomic_subshell_id', atomic_subshell)
-        self._select_reference(self.connection, builder, table, reference)
+        self._append_select_element(self.connection, builder, table, 'element_id', element)
+        self._append_select_atomic_shell(self.connection, builder, table, 'atomic_subshell_id', atomic_subshell)
+        self._append_select_reference(self.connection, builder, table, reference)
         sql, params = builder.build()
 
         cur = self.connection.cursor()
@@ -371,7 +371,7 @@ class SqlDatabase(SqlDatabaseMixin, _Database):
         builder.add_select('dstsubshell', 'azimuthal_quantum_number')
         builder.add_select('dstsubshell', 'total_angular_momentum_nominator')
         builder.add_from(table)
-        self._select_xray_transition(self.connection, builder, table, 'id', xraytransition)
+        self._append_select_xray_transition(self.connection, builder, table, 'id', xraytransition)
         sql, params = builder.build()
 
         cur = self.connection.cursor()
@@ -395,9 +395,9 @@ class SqlDatabase(SqlDatabaseMixin, _Database):
         builder = SelectBuilder()
         builder.add_select(table, encoding)
         builder.add_from(table)
-        self._select_xray_transition(self.connection, builder, table, 'xray_transition_id', xraytransition)
-        self._select_notation(self.connection, builder, table, notation)
-        self._select_reference(self.connection, builder, table, reference)
+        self._append_select_xray_transition(self.connection, builder, table, 'xray_transition_id', xraytransition)
+        self._append_select_notation(self.connection, builder, table, notation)
+        self._append_select_reference(self.connection, builder, table, reference)
         sql, params = builder.build()
 
         cur = self.connection.cursor()
@@ -418,9 +418,9 @@ class SqlDatabase(SqlDatabaseMixin, _Database):
         builder = SelectBuilder()
         builder.add_select(table, 'value_eV')
         builder.add_from(table)
-        self._select_element(self.connection, builder, table, 'element_id', element)
-        self._select_xray_transition(self.connection, builder, table, 'xray_transition_id', xraytransition)
-        self._select_reference(self.connection, builder, table, reference)
+        self._append_select_element(self.connection, builder, table, 'element_id', element)
+        self._append_select_xray_transition(self.connection, builder, table, 'xray_transition_id', xraytransition)
+        self._append_select_reference(self.connection, builder, table, reference)
         sql, params = builder.build()
 
         cur = self.connection.cursor()
@@ -441,9 +441,9 @@ class SqlDatabase(SqlDatabaseMixin, _Database):
         builder = SelectBuilder()
         builder.add_select(table, 'value')
         builder.add_from(table)
-        self._select_element(self.connection, builder, table, 'element_id', element)
-        self._select_xray_transition(self.connection, builder, table, 'xray_transition_id', xraytransition)
-        self._select_reference(self.connection, builder, table, reference)
+        self._append_select_element(self.connection, builder, table, 'element_id', element)
+        self._append_select_xray_transition(self.connection, builder, table, 'xray_transition_id', xraytransition)
+        self._append_select_reference(self.connection, builder, table, reference)
         sql, params = builder.build()
 
         cur = self.connection.cursor()
@@ -464,9 +464,9 @@ class SqlDatabase(SqlDatabaseMixin, _Database):
         builder = SelectBuilder()
         builder.add_select(table, 'value')
         builder.add_from(table)
-        self._select_element(self.connection, builder, table, 'element_id', element)
-        self._select_xray_transition(self.connection, builder, table, 'xray_transition_id', xraytransition)
-        self._select_reference(self.connection, builder, table, reference)
+        self._append_select_element(self.connection, builder, table, 'element_id', element)
+        self._append_select_xray_transition(self.connection, builder, table, 'xray_transition_id', xraytransition)
+        self._append_select_reference(self.connection, builder, table, reference)
         sql, params = builder.build()
 
         cur = self.connection.cursor()
@@ -494,7 +494,7 @@ class SqlDatabase(SqlDatabaseMixin, _Database):
         builder.add_join('atomic_subshell', 'id', 'xray_transition', 'destination_subshell_id', 'dstsubshell')
         builder.add_join('atomic_shell', 'id', 'srcsubshell', 'atomic_shell_id', 'srcshell')
         builder.add_join('atomic_shell', 'id', 'dstsubshell', 'atomic_shell_id', 'dstshell')
-        self._select_xray_transitionset(self.connection, builder, table, 'xray_transitionset_id', xraytransitionset)
+        self._append_select_xray_transitionset(self.connection, builder, table, 'xray_transitionset_id', xraytransitionset)
         sql, params = builder.build()
 
         cur = self.connection.cursor()
@@ -521,9 +521,9 @@ class SqlDatabase(SqlDatabaseMixin, _Database):
         builder = SelectBuilder()
         builder.add_select(table, encoding)
         builder.add_from(table)
-        self._select_xray_transitionset(self.connection, builder, table, 'xray_transitionset_id', xraytransitionset)
-        self._select_notation(self.connection, builder, table, notation)
-        self._select_reference(self.connection, builder, table, reference)
+        self._append_select_xray_transitionset(self.connection, builder, table, 'xray_transitionset_id', xraytransitionset)
+        self._append_select_notation(self.connection, builder, table, notation)
+        self._append_select_reference(self.connection, builder, table, reference)
         sql, params = builder.build()
 
         cur = self.connection.cursor()
@@ -544,9 +544,9 @@ class SqlDatabase(SqlDatabaseMixin, _Database):
         builder = SelectBuilder()
         builder.add_select(table, 'value_eV')
         builder.add_from(table)
-        self._select_element(self.connection, builder, table, 'element_id', element)
-        self._select_xray_transitionset(self.connection, builder, table, 'xray_transitionset_id', xraytransitionset)
-        self._select_reference(self.connection, builder, table, reference)
+        self._append_select_element(self.connection, builder, table, 'element_id', element)
+        self._append_select_xray_transitionset(self.connection, builder, table, 'xray_transitionset_id', xraytransitionset)
+        self._append_select_reference(self.connection, builder, table, reference)
         sql, params = builder.build()
 
         cur = self.connection.cursor()
@@ -567,9 +567,9 @@ class SqlDatabase(SqlDatabaseMixin, _Database):
         builder = SelectBuilder()
         builder.add_select(table, 'value')
         builder.add_from(table)
-        self._select_element(self.connection, builder, table, 'element_id', element)
-        self._select_xray_transitionset(self.connection, builder, table, 'xray_transitionset_id', xraytransitionset)
-        self._select_reference(self.connection, builder, table, reference)
+        self._append_select_element(self.connection, builder, table, 'element_id', element)
+        self._append_select_xray_transitionset(self.connection, builder, table, 'xray_transitionset_id', xraytransitionset)
+        self._append_select_reference(self.connection, builder, table, reference)
         sql, params = builder.build()
 
         cur = self.connection.cursor()
