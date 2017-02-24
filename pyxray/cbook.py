@@ -104,7 +104,7 @@ class Validable(type):
     In all other cases, a :exc:`ValueError` is raised.
     """
 
-    def validate(cls, *args, **kwargs): #@NoSelf
+    def validate(cls, *args, **kwargs): #@NoSelf #pragma: no cover
         return args
 
     def __call__(self, *args, **kwargs):
@@ -117,7 +117,7 @@ class Validable(type):
             elif isinstance(out, tuple):
                 args = out
                 kwargs = {}
-            else:
+            else: #pragma: no cover
                 raise ValueError('Unknown type of return arguments')
 
         return super().__call__(*args, **kwargs)

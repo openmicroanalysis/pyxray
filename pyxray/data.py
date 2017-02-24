@@ -46,79 +46,79 @@ from pyxray.base import _Database, NotFound
 
 class _EmptyDatabase(_Database):
 
-    def element(self, element):
+    def element(self, element): #pragma: no cover
         raise NotFound
 
-    def element_atomic_number(self, element):
+    def element_atomic_number(self, element): #pragma: no cover
         raise NotFound
 
-    def element_symbol(self, element, reference=None):
+    def element_symbol(self, element, reference=None): #pragma: no cover
         raise NotFound
 
-    def element_name(self, element, language='en', reference=None):
+    def element_name(self, element, language='en', reference=None): #pragma: no cover
         raise NotFound
 
-    def element_atomic_weight(self, element, reference=None):
+    def element_atomic_weight(self, element, reference=None): #pragma: no cover
         raise NotFound
 
-    def element_mass_density_kg_per_m3(self, element, reference=None):
+    def element_mass_density_kg_per_m3(self, element, reference=None): #pragma: no cover
         raise NotFound
 
-    def element_mass_density_g_per_cm3(self, element, reference=None):
+    def element_mass_density_g_per_cm3(self, element, reference=None): #pragma: no cover
         raise NotFound
 
-    def element_xray_transitions(self, element, reference=None):
+    def element_xray_transitions(self, element, reference=None): #pragma: no cover
         raise NotFound
 
-    def atomic_shell(self, atomic_shell):
+    def atomic_shell(self, atomic_shell): #pragma: no cover
         raise NotFound
 
-    def atomic_shell_notation(self, atomic_shell, notation, encoding='utf16', reference=None):
+    def atomic_shell_notation(self, atomic_shell, notation, encoding='utf16', reference=None): #pragma: no cover
         raise NotFound
 
-    def atomic_subshell(self, atomic_subshell):
+    def atomic_subshell(self, atomic_subshell): #pragma: no cover
         raise NotFound
 
-    def atomic_subshell_notation(self, atomic_subshell, notation, encoding='utf16', reference=None):
+    def atomic_subshell_notation(self, atomic_subshell, notation, encoding='utf16', reference=None): #pragma: no cover
         raise NotFound
 
-    def atomic_subshell_binding_energy_eV(self, element, atomic_subshell, reference=None):
+    def atomic_subshell_binding_energy_eV(self, element, atomic_subshell, reference=None): #pragma: no cover
         raise NotFound
 
-    def atomic_subshell_radiative_width_eV(self, element, atomic_subshell, reference=None):
+    def atomic_subshell_radiative_width_eV(self, element, atomic_subshell, reference=None): #pragma: no cover
         raise NotFound
 
-    def atomic_subshell_nonradiative_width_eV(self, element, atomic_subshell, reference=None):
+    def atomic_subshell_nonradiative_width_eV(self, element, atomic_subshell, reference=None): #pragma: no cover
         raise NotFound
 
-    def atomic_subshell_occupancy(self, element, atomic_subshell, reference=None):
+    def atomic_subshell_occupancy(self, element, atomic_subshell, reference=None): #pragma: no cover
         raise NotFound
 
-    def xray_transition(self, xraytransition):
+    def xray_transition(self, xraytransition): #pragma: no cover
         raise NotFound
 
-    def xray_transition_notation(self, xraytransition, notation, encoding='utf16', reference=None):
+    def xray_transition_notation(self, xraytransition, notation, encoding='utf16', reference=None): #pragma: no cover
         raise NotFound
 
-    def xray_transition_energy_eV(self, element, xraytransition, reference=None):
+    def xray_transition_energy_eV(self, element, xraytransition, reference=None): #pragma: no cover
         raise NotFound
 
-    def xray_transition_probability(self, element, xraytransition, reference=None):
+    def xray_transition_probability(self, element, xraytransition, reference=None): #pragma: no cover
         raise NotFound
 
-    def xray_transition_relative_weight(self, element, xraytransition, reference=None):
+    def xray_transition_relative_weight(self, element, xraytransition, reference=None): #pragma: no cover
         raise NotFound
 
-    def xray_transitionset(self, xraytransitionset):
+    def xray_transitionset(self, xraytransitionset): #pragma: no cover
         raise NotFound
 
-    def xray_transitionset_notation(self, xraytransitionset, notation, encoding='utf16', reference=None):
+    def xray_transitionset_notation(self, xraytransitionset, notation, encoding='utf16', reference=None): #pragma: no cover
         raise NotFound
 
-    def xray_transitionset_energy_eV(self, element, xraytransitionset, reference=None):
+    def xray_transitionset_energy_eV(self, element, xraytransitionset, reference=None): #pragma: no cover
         raise NotFound
 
-    def xray_transitionset_relative_weight(self, element, xraytransitionset, reference=None):
+    def xray_transitionset_relative_weight(self, element, xraytransitionset, reference=None): #pragma: no cover
         raise NotFound
 
 def _init_sql_database():

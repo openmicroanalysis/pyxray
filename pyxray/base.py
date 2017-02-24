@@ -97,7 +97,7 @@ class _Database(object, metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     @formatdoc(**_docextras)
-    def element(self, element):
+    def element(self, element): #pragma: no cover
         """
         Returns element descriptor.
 
@@ -111,7 +111,7 @@ class _Database(object, metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     @formatdoc(**_docextras)
-    def element_atomic_number(self, element):
+    def element_atomic_number(self, element): #pragma: no cover
         """
         Returns atomic number of an element.
 
@@ -125,7 +125,7 @@ class _Database(object, metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     @formatdoc(**_docextras)
-    def element_symbol(self, element, reference=None):
+    def element_symbol(self, element, reference=None): #pragma: no cover
         """
         Returns symbol of an element.
 
@@ -139,7 +139,7 @@ class _Database(object, metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     @formatdoc(**_docextras)
-    def element_name(self, element, language='en', reference=None):
+    def element_name(self, element, language='en', reference=None): #pragma: no cover
         """
         Returns full name of an element, in the language specified.
 
@@ -155,7 +155,7 @@ class _Database(object, metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     @formatdoc(**_docextras)
-    def element_atomic_weight(self, element, reference=None):
+    def element_atomic_weight(self, element, reference=None): #pragma: no cover
         """
         Returns atomic weight of an element.
         The atomic weight is defined by the CIAAW as it is the ratio of
@@ -173,7 +173,7 @@ class _Database(object, metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     @formatdoc(**_docextras)
-    def element_mass_density_kg_per_m3(self, element, reference=None):
+    def element_mass_density_kg_per_m3(self, element, reference=None): #pragma: no cover
         """
         Returns mass density (in kg/m3) of an element.
 
@@ -187,7 +187,7 @@ class _Database(object, metaclass=abc.ABCMeta):
         raise NotImplementedError
 
     @formatdoc(**_docextras)
-    def element_mass_density_g_per_cm3(self, element, reference=None):
+    def element_mass_density_g_per_cm3(self, element, reference=None): #pragma: no cover
         """
         Returns mass density (in g/cm3) of an element.
 
@@ -202,7 +202,7 @@ class _Database(object, metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     @formatdoc(**_docextras)
-    def element_xray_transitions(self, element, reference=None):
+    def element_xray_transitions(self, element, reference=None): #pragma: no cover
         """
         Returns all x-ray transitions which have a probability greater
         than 0 for an element.
@@ -218,7 +218,7 @@ class _Database(object, metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     @formatdoc(**_docextras)
-    def atomic_shell(self, atomic_shell):
+    def atomic_shell(self, atomic_shell): #pragma: no cover
         """
         Returns atomic shell descriptor.
 
@@ -232,7 +232,7 @@ class _Database(object, metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     @formatdoc(**_docextras)
-    def atomic_shell_notation(self, atomic_shell, notation, encoding='utf16', reference=None):
+    def atomic_shell_notation(self, atomic_shell, notation, encoding='utf16', reference=None): #pragma: no cover
         """
         Returns notation of an atomic shell.
 
@@ -249,7 +249,7 @@ class _Database(object, metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     @formatdoc(**_docextras)
-    def atomic_subshell(self, atomic_subshell):
+    def atomic_subshell(self, atomic_subshell): #pragma: no cover
         """
         Returns atomic subshell descriptor.
 
@@ -263,7 +263,7 @@ class _Database(object, metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     @formatdoc(**_docextras)
-    def atomic_subshell_notation(self, atomic_subshell, notation, encoding='utf16', reference=None):
+    def atomic_subshell_notation(self, atomic_subshell, notation, encoding='utf16', reference=None): #pragma: no cover
         """
         Returns notation of an atomic subshell.
 
@@ -280,7 +280,7 @@ class _Database(object, metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     @formatdoc(**_docextras)
-    def atomic_subshell_binding_energy_eV(self, element, atomic_subshell, reference=None):
+    def atomic_subshell_binding_energy_eV(self, element, atomic_subshell, reference=None): #pragma: no cover
         """
         Returns binding energy of an element and atomic subshell (in eV).
 
@@ -296,7 +296,7 @@ class _Database(object, metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     @formatdoc(**_docextras)
-    def atomic_subshell_radiative_width_eV(self, element, atomic_subshell, reference=None):
+    def atomic_subshell_radiative_width_eV(self, element, atomic_subshell, reference=None): #pragma: no cover
         """
         Returns radiative width of an element and atomic subshell (in eV).
 
@@ -312,7 +312,7 @@ class _Database(object, metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     @formatdoc(**_docextras)
-    def atomic_subshell_nonradiative_width_eV(self, element, atomic_subshell, reference=None):
+    def atomic_subshell_nonradiative_width_eV(self, element, atomic_subshell, reference=None): #pragma: no cover
         """
         Returns nonradiative width of an element and atomic subshell (in eV).
 
@@ -328,7 +328,7 @@ class _Database(object, metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     @formatdoc(**_docextras)
-    def atomic_subshell_occupancy(self, element, atomic_subshell, reference=None):
+    def atomic_subshell_occupancy(self, element, atomic_subshell, reference=None): #pragma: no cover
         """
         Returns occupancy of an element and atomic subshell.
 
@@ -344,7 +344,7 @@ class _Database(object, metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     @formatdoc(**_docextras)
-    def xray_transition(self, xraytransition):
+    def xray_transition(self, xraytransition): #pragma: no cover
         """
         Returns x-ray transition descriptor.
         
@@ -358,7 +358,7 @@ class _Database(object, metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     @formatdoc(**_docextras)
-    def xray_transition_notation(self, xraytransition, notation, encoding='utf16', reference=None):
+    def xray_transition_notation(self, xraytransition, notation, encoding='utf16', reference=None): #pragma: no cover
         """
         Returns notation of an x-ray transition.
         
@@ -375,7 +375,7 @@ class _Database(object, metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     @formatdoc(**_docextras)
-    def xray_transition_energy_eV(self, element, xraytransition, reference=None):
+    def xray_transition_energy_eV(self, element, xraytransition, reference=None): #pragma: no cover
         """
         Returns energy of an element and X-ray transition (in eV).
 
@@ -391,7 +391,7 @@ class _Database(object, metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     @formatdoc(**_docextras)
-    def xray_transition_probability(self, element, xraytransition, reference=None):
+    def xray_transition_probability(self, element, xraytransition, reference=None): #pragma: no cover
         """
         Returns probability of an element and X-ray transition.
 
@@ -407,7 +407,7 @@ class _Database(object, metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     @formatdoc(**_docextras)
-    def xray_transition_relative_weight(self, element, xraytransition, reference=None):
+    def xray_transition_relative_weight(self, element, xraytransition, reference=None): #pragma: no cover
         """
         Returns relative weight of an element and X-ray transition.
 
@@ -423,7 +423,7 @@ class _Database(object, metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     @formatdoc(**_docextras)
-    def xray_transitionset(self, xraytransitionset):
+    def xray_transitionset(self, xraytransitionset): #pragma: no cover
         """
         Returns X-ray transition set descriptor.
 
@@ -437,7 +437,7 @@ class _Database(object, metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     @formatdoc(**_docextras)
-    def xray_transitionset_notation(self, xraytransitionset, notation, encoding='utf16', reference=None):
+    def xray_transitionset_notation(self, xraytransitionset, notation, encoding='utf16', reference=None): #pragma: no cover
         """
         Returns notation of an X-ray transition set.
 
@@ -454,7 +454,7 @@ class _Database(object, metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     @formatdoc(**_docextras)
-    def xray_transitionset_energy_eV(self, element, xraytransitionset, reference=None):
+    def xray_transitionset_energy_eV(self, element, xraytransitionset, reference=None): #pragma: no cover
         """
         Returns energy of an element and X-ray transition set (in eV).
 
@@ -470,7 +470,7 @@ class _Database(object, metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     @formatdoc(**_docextras)
-    def xray_transitionset_relative_weight(self, element, xraytransitionset, reference=None):
+    def xray_transitionset_relative_weight(self, element, xraytransitionset, reference=None): #pragma: no cover
         """
         Returns relative weight of an element and X-ray transition set.
 

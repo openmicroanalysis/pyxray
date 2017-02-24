@@ -94,6 +94,8 @@ class TestImmutable(unittest.TestCase):
         self.assertEqual('abc', obj.foo)
         self.assertEqual(123, obj.bar)
 
+        self.assertRaises(TypeError, MockImmutable, 'abc', abc='def')
+
     def test__slots__(self):
         self.assertRaises(AttributeError, setattr, self.obj, 'foo2', 'abc')
 
