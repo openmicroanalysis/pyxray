@@ -123,7 +123,7 @@ class _EmptyDatabase(_Database):
 
 def _init_sql_database():
     import sqlite3
-    from pyxray.sql.data import SqlEngineDatabase
+    from pyxray.sql.data import SqlDatabase
 
     basedir = os.path.abspath(os.path.dirname(__file__))
     filepath = os.path.join(basedir, 'data', 'pyxray.sql')
@@ -132,7 +132,7 @@ def _init_sql_database():
                            .format(filepath))
 
     connection = sqlite3.connect(filepath)
-    return SqlEngineDatabase(connection)
+    return SqlDatabase(connection)
 
 try:
     database = _init_sql_database()
