@@ -31,8 +31,10 @@ class build_py(_build_py.build_py):
 with open(os.path.join(BASEDIR, 'README.rst'), 'r') as fp:
     LONG_DESCRIPTION = fp.read()
 
-SETUP_REQUIRES = ['setuptools', 'nose', 'coverage']
-INSTALL_REQUIRES = ['requests', 'requests-cache', 'progressbar2']
+SETUP_REQUIRES = ['setuptools']
+INSTALL_REQUIRES = []
+TESTS_REQUIRE = ['nose', 'coverage']
+EXTRAS_REQUIRE = {'build': ['requests', 'requests-cache', 'progressbar2']}
 
 CMDCLASS = versioneer.get_cmdclass()
 CMDCLASS['build_py'] = build_py
@@ -79,6 +81,8 @@ setup(name="pyxray",
 
       setup_requires=SETUP_REQUIRES,
       install_requires=INSTALL_REQUIRES,
+      tests_require=TESTS_REQUIRE,
+      extras_require=EXTRAS_REQUIRE,
 
       test_suite='nose.collector',
 
