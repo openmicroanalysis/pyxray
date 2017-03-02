@@ -19,10 +19,10 @@ class SelectMixin:
             element = element.atomic_number
 
         if isinstance(element, str):
-            builder.add_join('element_name', 'element_id', table, column)
-            builder.add_join('element_symbol', 'element_id', table, column)
-            builder.add_where('element_name', 'name', '=', element,
-                              'element_symbol', 'symbol', '=', element)
+            builder.add_join('element_name', 'element_id', table, column, 'en')
+            builder.add_join('element_symbol', 'element_id', table, column, 'es')
+            builder.add_where('en', 'name', '=', element,
+                              'es', 'symbol', '=', element)
 
         elif isinstance(element, int):
             builder.add_join('element', 'id', table, column)
@@ -36,9 +36,9 @@ class SelectMixin:
             atomic_shell = atomic_shell.principal_quantum_number
 
         if isinstance(atomic_shell, str):
-            builder.add_join('atomic_shell_notation', 'atomic_shell_id', table, column)
-            builder.add_where('atomic_shell_notation', 'ascii', '=', atomic_shell,
-                              'atomic_shell_notation', 'utf16', '=', atomic_shell)
+            builder.add_join('atomic_shell_notation', 'atomic_shell_id', table, column, 'asn')
+            builder.add_where('asn', 'ascii', '=', atomic_shell,
+                              'asn', 'utf16', '=', atomic_shell)
 
         elif isinstance(atomic_shell, int):
             builder.add_join('atomic_shell', 'id', table, column)
@@ -73,9 +73,9 @@ class SelectMixin:
         builder.add_join('atomic_shell', 'id', 'atomic_subshell', 'atomic_shell_id')
 
         if isinstance(atomic_subshell, str):
-            builder.add_join('atomic_subshell_notation', 'atomic_subshell_id', table, column)
-            builder.add_where('atomic_subshell_notation', 'ascii', '=', atomic_subshell,
-                              'atomic_subshell_notation', 'utf16', '=', atomic_subshell)
+            builder.add_join('atomic_subshell_notation', 'atomic_subshell_id', table, column, 'asn')
+            builder.add_where('asn', 'ascii', '=', atomic_subshell,
+                              'asn', 'utf16', '=', atomic_subshell)
 
         elif n > 0 and l >= 0 and j_n > 0:
             builder.add_where('atomic_shell', 'principal_quantum_number', '=', n)
@@ -108,9 +108,9 @@ class SelectMixin:
         builder.add_join('atomic_shell', 'id', 'dstsubshell', 'atomic_shell_id', 'dstshell')
 
         if isinstance(xraytransition, str):
-            builder.add_join('xray_transition_notation', 'xray_transition_id', table, column)
-            builder.add_where('xray_transition_notation', 'ascii', '=', xraytransition,
-                              'xray_transition_notation', 'utf16', '=', xraytransition)
+            builder.add_join('xray_transition_notation', 'xray_transition_id', table, column, 'xtn')
+            builder.add_where('xtn', 'ascii', '=', xraytransition,
+                              'xtn', 'utf16', '=', xraytransition)
 
         elif src_n > 0 and src_l >= 0 and src_j_n > 0 and \
                 dst_n > 0 and dst_l >= 0 and dst_j_n > 0:
@@ -133,9 +133,9 @@ class SelectMixin:
             xraytransitions.update(xraytransitionset)
 
         if isinstance(xraytransitionset, str):
-            builder.add_join('xray_transitionset_notation', 'xray_transitionset_id', table, column)
-            builder.add_where('xray_transitionset_notation', 'ascii', '=', xraytransitionset,
-                              'xray_transitionset_notation', 'utf16', '=', xraytransitionset)
+            builder.add_join('xray_transitionset_notation', 'xray_transitionset_id', table, column, 'xtn')
+            builder.add_where('xtn', 'ascii', '=', xraytransitionset,
+                              'xtn', 'utf16', '=', xraytransitionset)
             return
 
         elif xraytransitions:

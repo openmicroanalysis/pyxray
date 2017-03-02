@@ -95,7 +95,7 @@ class SelectBuilder:
 
         # Join
         for t1, c1, t2, c2, a1 in self.joins:
-            if t1 == t2:
+            if t1 == t2 and a1 is None:
                 continue
 
             if a1:
