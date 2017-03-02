@@ -166,7 +166,7 @@ class CreateTableBuilder:
         if length:
             sql += '({})'.format(length)
         if not casesensitive:
-            sql += ' COLLATE "NOCASE"'
+            sql += ' COLLATE NOCASE'
         if not nullable:
             sql += ' NOT NULL'
         self.columns.append(sql)
