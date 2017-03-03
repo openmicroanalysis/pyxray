@@ -93,10 +93,6 @@ class SqlDatabaseBuilder(SelectMixin, TableMixin, InsertMixin,
             parser.clear_reporthooks()
             if bar: bar.finish()
 
-    def _purge_database(self, connection):
-        #TODO: Purge
-        pass
-
     def build(self):
         parsers = self._find_parsers()
         logger.info('Found {:d} parsers'.format(len(parsers)))
@@ -108,9 +104,6 @@ class SqlDatabaseBuilder(SelectMixin, TableMixin, InsertMixin,
         try:
             connection = self._create_database_connection()
             logger.info('Created database connection')
-
-            self._purge_database(connection)
-            logger.info('Purged database')
 
             self._create_tables(connection)
             logger.info('Created tables')
@@ -734,7 +727,7 @@ class SqliteDatabaseBuilder(SqlDatabaseBuilder):
     def _backup_existing_database(self):
         if os.path.exists(self.filepath):
             oldfilepath = self.filepath + '.old'
-            shutil.copy(self.filepath, oldfilepath)
+            shutil.move(self.filepath, oldfilepath)
             self._oldfilepath = oldfilepath
             return True
         return False
