@@ -36,11 +36,14 @@ __all__ = [
 import os
 import logging
 logger = logging.getLogger(__name__)
+import sqlite3
+import atexit
 
 # Third party modules.
 
 # Local modules.
 from pyxray.base import _Database, NotFound
+from pyxray.sql.data import SqlDatabase
 
 # Globals and constants variables.
 
@@ -122,9 +125,6 @@ class _EmptyDatabase(_Database):
         raise NotFound
 
 def _init_sql_database():
-    import sqlite3
-    from pyxray.sql.data import SqlDatabase
-
     basedir = os.path.abspath(os.path.dirname(__file__))
     filepath = os.path.join(basedir, 'data', 'pyxray.sql')
     if not os.path.exists(filepath):
@@ -133,6 +133,11 @@ def _init_sql_database():
 
     connection = sqlite3.connect(filepath)
     return SqlDatabase(connection)
+
+@atexit.register
+def _close_sql_database():
+    global database
+    database.connection.close()
 
 try:
     database = _init_sql_database()
