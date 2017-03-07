@@ -18,6 +18,7 @@ except ImportError:
     progressbar = None
 
 # Local modules.
+import pyxray.data
 import pyxray.property as props
 from pyxray.base import NotFound
 from pyxray.parser.parser import find_parsers
@@ -97,10 +98,14 @@ class SqlDatabaseBuilder(SelectMixin, TableMixin, InsertMixin,
         parsers = self._find_parsers()
         logger.info('Found {:d} parsers'.format(len(parsers)))
 
+        pyxray.data._close_sql_database()
+        logger.info('Closed connection')
+
         backuped = self._backup_existing_database()
         if backuped:
             logger.info('Backup existing database')
 
+        connection = None
         try:
             connection = self._create_database_connection()
             logger.info('Created database connection')
@@ -115,6 +120,9 @@ class SqlDatabaseBuilder(SelectMixin, TableMixin, InsertMixin,
             connection.commit()
             connection.close()
         except:
+            if connection:
+                connection.close()
+
             reverted = self._revert_to_backup_database()
             if reverted:
                 logger.info('Reverted to previous database')
