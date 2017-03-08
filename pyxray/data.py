@@ -124,6 +124,8 @@ class _EmptyDatabase(_Database):
     def xray_transitionset_relative_weight(self, element, xraytransitionset, reference=None): #pragma: no cover
         raise NotFound
 
+connection = None
+
 def _init_sql_database():
     basedir = os.path.abspath(os.path.dirname(__file__))
     filepath = os.path.join(basedir, 'data', 'pyxray.sql')
@@ -131,13 +133,15 @@ def _init_sql_database():
         raise RuntimeError('Cannot find SQL database at location {0}'
                            .format(filepath))
 
+    global connection
     connection = sqlite3.connect(filepath)
     return SqlDatabase(connection)
 
 @atexit.register
 def _close_sql_database():
-    global database
-    database.connection.close()
+    global connection
+    if hasattr(connection, 'close'):
+        connection.close()
 
 try:
     database = _init_sql_database()
