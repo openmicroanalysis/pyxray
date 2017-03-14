@@ -134,7 +134,7 @@ def _init_sql_database():
                            .format(filepath))
 
     global connection
-    connection = sqlite3.connect(filepath)
+    connection = sqlite3.connect(filepath, check_same_thread=False)
     return SqlDatabase(connection)
 
 @atexit.register
