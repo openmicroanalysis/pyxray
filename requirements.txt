@@ -1,6 +1,0 @@
-setuptools
-nose
-coverage
-requests
-requests-cache
-progressbar2
