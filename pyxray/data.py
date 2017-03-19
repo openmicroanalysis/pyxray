@@ -13,6 +13,7 @@ __all__ = [
     'element_mass_density_kg_per_m3',
     'element_mass_density_g_per_cm3',
     'element_xray_transitions',
+    'print_element_xray_transitions',
     'atomic_shell',
     'atomic_shell_notation',
     'atomic_subshell',
@@ -159,6 +160,7 @@ element_atomic_weight = database.element_atomic_weight
 element_mass_density_kg_per_m3 = database.element_mass_density_kg_per_m3
 element_mass_density_g_per_cm3 = database.element_mass_density_g_per_cm3
 element_xray_transitions = database.element_xray_transitions
+print_element_xray_transitions = database.print_element_xray_transitions
 atomic_shell = database.atomic_shell
 atomic_shell_notation = database.atomic_shell_notation
 atomic_subshell = database.atomic_subshell

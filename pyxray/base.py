@@ -4,8 +4,11 @@ Base database
 
 # Standard library modules.
 import abc
+import sys
+import operator
 
 # Third party modules.
+import tabulate
 
 # Local modules.
 from pyxray.cbook import formatdoc
@@ -215,6 +218,48 @@ class _Database(object, metaclass=abc.ABCMeta):
         {exception}
         """
         raise NotImplementedError
+
+    @formatdoc(**_docextras)
+    def print_element_xray_transitions(self, element, file=sys.stdout, tabulate_kwargs=None):
+        """
+        Prints all x-ray transitions for an element, with their different
+        notations and energy.
+        
+        {element}
+        
+        :arg file: file for output, default to standard out
+        """
+        header = ['IUPAC', 'Siegbahn', 'Energy (eV)', 'Probability']
+
+        rows = []
+        for xraytransition in self.element_xray_transitions(element):
+            try:
+                iupac = self.xray_transition_notation(xraytransition, 'iupac')
+            except:
+                iupac = ''
+
+            try:
+                siegbahn = self.xray_transition_notation(xraytransition, 'siegbahn')
+            except:
+                siegbahn = ''
+
+            try:
+                energy_eV = self.xray_transition_energy_eV(element, xraytransition)
+            except:
+                energy_eV = ''
+
+            try:
+                probability = self.xray_transition_probability(element, xraytransition)
+            except:
+                probability = ''
+
+            rows.append([iupac, siegbahn, energy_eV, probability])
+
+        rows.sort(key=operator.itemgetter(2))
+
+        if tabulate_kwargs is None:
+            tabulate_kwargs = {}
+        file.write(tabulate.tabulate(rows, header, **tabulate_kwargs))
 
     @abc.abstractmethod
     @formatdoc(**_docextras)

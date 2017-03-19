@@ -31,7 +31,7 @@ class build_py(_build_py.build_py):
 with open(os.path.join(BASEDIR, 'README.rst'), 'r') as fp:
     LONG_DESCRIPTION = fp.read()
 
-INSTALL_REQUIRES = []
+INSTALL_REQUIRES = ['tabulate']
 EXTRAS_REQUIRE = {'build': ['requests', 'requests-cache', 'progressbar2'],
                   'develop': ['nose', 'coverage']}
 
