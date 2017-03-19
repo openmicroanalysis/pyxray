@@ -254,7 +254,7 @@ class SqlDatabase(SelectMixin, _Database):
         builder = SelectBuilder()
         builder.add_select(table, encoding)
         builder.add_from(table)
-        self._append_select_atomic_shell(self.connection, builder, table, 'atomic_subshell_id', atomic_subshell)
+        self._append_select_atomic_subshell(self.connection, builder, table, 'atomic_subshell_id', atomic_subshell)
         self._append_select_notation(self.connection, builder, table, notation)
         self._append_select_reference(self.connection, builder, table, reference)
         sql, params = builder.build()
@@ -278,7 +278,7 @@ class SqlDatabase(SelectMixin, _Database):
         builder.add_select(table, 'value_eV')
         builder.add_from(table)
         self._append_select_element(self.connection, builder, table, 'element_id', element)
-        self._append_select_atomic_shell(self.connection, builder, table, 'atomic_subshell_id', atomic_subshell)
+        self._append_select_atomic_subshell(self.connection, builder, table, 'atomic_subshell_id', atomic_subshell)
         self._append_select_reference(self.connection, builder, table, reference)
         sql, params = builder.build()
 
@@ -301,7 +301,7 @@ class SqlDatabase(SelectMixin, _Database):
         builder.add_select(table, 'value_eV')
         builder.add_from(table)
         self._append_select_element(self.connection, builder, table, 'element_id', element)
-        self._append_select_atomic_shell(self.connection, builder, table, 'atomic_subshell_id', atomic_subshell)
+        self._append_select_atomic_subshell(self.connection, builder, table, 'atomic_subshell_id', atomic_subshell)
         self._append_select_reference(self.connection, builder, table, reference)
         sql, params = builder.build()
 
@@ -324,7 +324,7 @@ class SqlDatabase(SelectMixin, _Database):
         builder.add_select(table, 'value_eV')
         builder.add_from(table)
         self._append_select_element(self.connection, builder, table, 'element_id', element)
-        self._append_select_atomic_shell(self.connection, builder, table, 'atomic_subshell_id', atomic_subshell)
+        self._append_select_atomic_subshell(self.connection, builder, table, 'atomic_subshell_id', atomic_subshell)
         self._append_select_reference(self.connection, builder, table, reference)
         sql, params = builder.build()
 
@@ -347,7 +347,7 @@ class SqlDatabase(SelectMixin, _Database):
         builder.add_select(table, 'value')
         builder.add_from(table)
         self._append_select_element(self.connection, builder, table, 'element_id', element)
-        self._append_select_atomic_shell(self.connection, builder, table, 'atomic_subshell_id', atomic_subshell)
+        self._append_select_atomic_subshell(self.connection, builder, table, 'atomic_subshell_id', atomic_subshell)
         self._append_select_reference(self.connection, builder, table, reference)
         sql, params = builder.build()
 
