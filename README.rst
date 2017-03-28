@@ -258,8 +258,11 @@ distributed version.
 It is therefore necessary to build the *SQLite* database when running *pyxray*
 in development mode.
 Building the database will take several minutes.
+In short,
 
-
+```
+python3 setup.py build
+```
 
 
 
