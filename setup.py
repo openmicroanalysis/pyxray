@@ -32,8 +32,9 @@ with open(os.path.join(BASEDIR, 'README.rst'), 'r') as fp:
     LONG_DESCRIPTION = fp.read()
 
 INSTALL_REQUIRES = ['tabulate']
-EXTRAS_REQUIRE = {'build': ['requests', 'requests-cache', 'progressbar2'],
-                  'develop': ['nose', 'coverage']}
+EXTRAS_REQUIRE = {'develop': ['requests', 'requests-cache', 'progressbar2',
+                              'nose', 'coverage']
+                  }
 
 CMDCLASS = versioneer.get_cmdclass()
 CMDCLASS['build_py'] = build_py
