@@ -2,7 +2,7 @@
 """ """
 
 # Standard library modules.
-import unittest
+import unittest.mock
 import logging
 
 # Third party modules.
@@ -18,10 +18,32 @@ class TestXrayLine(unittest.TestCase):
     def setUp(self):
         super().setUp()
 
-        self.x = XrayLine(13, 'Ka1')
+        return_value = pyxray.Element(118)
+        patcher = unittest.mock.patch('pyxray.element', return_value=return_value)
+        patcher.start()
+        self.addCleanup(patcher.stop)
+
+        return_value = 'Og'
+        patcher = unittest.mock.patch('pyxray.element_symbol', return_value=return_value)
+        patcher.start()
+        self.addCleanup(patcher.stop)
+
+        K = pyxray.AtomicSubshell(1, 0, 1)
+        L3 = pyxray.AtomicSubshell(2, 1, 3)
+        return_value = pyxray.XrayTransition(L3, K)
+        patcher = unittest.mock.patch('pyxray.xray_transition', return_value=return_value)
+        patcher.start()
+        self.addCleanup(patcher.stop)
+
+        return_value = 'K-L3'
+        patcher = unittest.mock.patch('pyxray.xray_transition_notation', return_value=return_value)
+        patcher.start()
+        self.addCleanup(patcher.stop)
+
+        self.x = XrayLine(118, 'Ka1')
 
     def testskeleton(self):
-        self.assertEqual(13, self.x.element.atomic_number)
+        self.assertEqual(118, self.x.element.atomic_number)
 
         self.assertEqual(2, self.x.line.source_subshell.n)
         self.assertEqual(1, self.x.line.destination_subshell.n)
@@ -35,37 +57,37 @@ class TestXrayLine(unittest.TestCase):
                           self.x, 'Ka1')
 
     def testcachable(self):
-        self.assertEqual(XrayLine(13, 'Ka1'), self.x)
-        self.assertIs(XrayLine(13, 'Ka1'), self.x)
+        self.assertEqual(XrayLine(118, 'Ka1'), self.x)
+        self.assertIs(XrayLine(118, 'Ka1'), self.x)
 
         K = pyxray.AtomicSubshell(1, 0, 1)
         L3 = pyxray.AtomicSubshell(2, 1, 3)
         line = pyxray.XrayTransition(L3, K)
-        x = XrayLine(pyxray.Element(13), line)
+        x = XrayLine(pyxray.Element(118), line)
         self.assertEqual(x, self.x)
         self.assertIs(x, self.x)
 
     def testreprable(self):
-        self.assertEqual('<XrayLine(Al K–L3)>', repr(self.x))
+        self.assertEqual('<XrayLine(Og K-L3)>', repr(self.x))
 
     def test__hash__(self):
         K = pyxray.AtomicSubshell(1, 0, 1)
         L3 = pyxray.AtomicSubshell(2, 1, 3)
         line = pyxray.XrayTransition(L3, K)
-        x = XrayLine(pyxray.Element(13), line)
+        x = XrayLine(pyxray.Element(118), line)
         self.assertEqual(hash(x), hash(self.x))
 
     def testiupac(self):
-        self.assertEqual('Al K\u2013L3', self.x.iupac)
+        self.assertEqual('Og K-L3', self.x.iupac)
 
     def testsiegbahn(self):
-        self.assertEqual('Al K\u03b11', self.x.siegbahn)
+        self.assertEqual('Og K-L3', self.x.siegbahn)
 
     def test__eq__(self):
         K = pyxray.AtomicSubshell(1, 0, 1)
         L3 = pyxray.AtomicSubshell(2, 1, 3)
         line = pyxray.XrayTransition(L3, K)
-        x = XrayLine(pyxray.Element(13), line)
+        x = XrayLine(pyxray.Element(118), line)
         self.assertEqual(x, self.x)
 
     def test__ne__(self):
@@ -78,7 +100,7 @@ class TestXrayLine(unittest.TestCase):
         K = pyxray.AtomicSubshell(1, 0, 1)
         L3 = pyxray.AtomicSubshell(3, 1, 3)
         line = pyxray.XrayTransition(L3, K)
-        x = XrayLine(pyxray.Element(13), line)
+        x = XrayLine(pyxray.Element(118), line)
         self.assertNotEqual(x, self.x)
 
 if __name__ == '__main__': #pragma: no cover
