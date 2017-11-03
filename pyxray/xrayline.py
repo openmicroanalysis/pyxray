@@ -14,6 +14,21 @@ class _XrayLineMeta(Validable, Cachable):
     pass
 
 class XrayLine(metaclass=_XrayLineMeta):
+    """
+    Object to represent an x-ray line, an x-ray line of an element.
+    The x-ray line can either be a :class:`XrayTransition` (a transition between
+    two atomic subshells) or a :class:`XrayTransitionSet` (a set of transitions,
+    normally indistinguishable X-ray transitions).
+    
+    The object is immutable and hashablem so it can be used as key of a :class:`dict`.
+    It is also cached to prevent multiple instances of the same x-ray line.
+    This means that::
+    
+        xrayline1 = XrayLine(13, 'Ka1')
+        xrayline2 = XrayLine('Al', 'Ka1')
+        xrayline1 == xrayline2 # True
+        xrayline1 is xrayline2 # True
+    """
 
     __slots__ = ('__weakref__', '_element', '_line', '_is_xray_transitionset', '_iupac', '_siegbahn')
 
@@ -31,6 +46,22 @@ class XrayLine(metaclass=_XrayLineMeta):
         return (element, line)
 
     def __init__(self, element, line):
+        """
+        Create an x-ray line.
+        
+        :arg element: either
+            * :class:`Element <pyxray.descriptor.Element>` object
+            * atomic number
+            * symbol (case insensitive)
+            * name (in any language, case insensitive)
+            * object with attribute :attr:`atomic_number` or :attr:`z`
+        :arg line: either
+            * :class:`XrayTransition <pyxray.descriptor.XrayTransition>` object
+            * :class:`XrayTransitionSet <pyxray.descriptor.XrayTransitionSet>` object
+            * a :class:`tuple` of source and destination subshells 
+            * a :class:`tuple` of x-ray transitions
+            * any notation (case insensitive)
+        """
         is_xray_transitionset = isinstance(line, pyxray.XrayTransitionSet)
 
         symbol = pyxray.element_symbol(element)
