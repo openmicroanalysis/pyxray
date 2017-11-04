@@ -268,6 +268,11 @@ It is also cached to prevent multiple instances of the same x-ray line.
 Release notes
 =============
 
+1.2.1
+-----
+
+* Fix in build process
+
 1.2.0
 -----
 
@@ -299,11 +304,11 @@ The library is provided under the MIT license.
 
 *pyxray* was partially developed as part of the doctorate thesis project of 
 Philippe T. Pinard at RWTH Aachen University (Aachen, Germany) under the 
-supervision of Dr. Silvia Richter, in collaboration with Hendrix Demers 
-(McGill University, Canada).
+supervision of Dr. Silvia Richter.
 
 Copyright (c) 2015-2016/06 Philippe Pinard and Silvia Richter
-Copyright (c) 2016/06=2017 Philippe Pinard
+
+Copyright (c) 2016/06-2017 Philippe Pinard
 
 
 
