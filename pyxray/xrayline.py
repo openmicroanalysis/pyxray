@@ -20,7 +20,7 @@ class XrayLine(metaclass=_XrayLineMeta):
     two atomic subshells) or a :class:`XrayTransitionSet` (a set of transitions,
     normally indistinguishable X-ray transitions).
     
-    The object is immutable and hashablem so it can be used as key of a :class:`dict`.
+    The object is immutable and hashable so it can be used as key of a :class:`dict`.
     It is also cached to prevent multiple instances of the same x-ray line.
     This means that::
     

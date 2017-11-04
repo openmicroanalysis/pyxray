@@ -18,13 +18,6 @@ different notations of the X-ray transitions.
 
 *pyxray* supports 3.x (no Python 2.x support).
 
-The library is provided under the MIT license.
-
-*pyxray* was partially developed as part of the doctorate thesis project of 
-Philippe T. Pinard at RWTH Aachen University (Aachen, Germany) under the 
-supervision of Dr. Silvia Richter, in collaboration with Hendrix Demers 
-(McGill University, Canada).
-
 Installation
 ============
 
@@ -193,7 +186,7 @@ a subdivision of atomic shells.
     Returns occupancy of an element and atomic subshell.
 
 X-ray transition properties
----------------------
+---------------------------
 
 Properties associated with an electron transition, relaxation process of an 
 electron between quantum states leading to X-rays emission.
@@ -245,6 +238,41 @@ Properties associated with an X-ray transition set, an indistinguishable X-ray t
 * ``pyxray.xray_transitionset_relative_weight(element, xraytransitionset, reference=None)``
     Returns relative weight of an element and X-ray transition set.
 
+X-ray line
+----------
+
+Object to represent an x-ray line, an x-ray line of an element.
+The x-ray line can either be a 
+`XrayTransition <http://github.com/openmicroanalysis/pyxray/blob/master/pyxray/descriptor.py>`_ 
+(a transition between two atomic subshells) or a 
+`XrayTransitionSet <http://github.com/openmicroanalysis/pyxray/blob/master/pyxray/descriptor.py>`_
+(a set of transitions, normally indistinguishable X-ray transitions).
+
+.. code:: python
+    
+   xrayline = pyxray.XrayLine(14, 'Ka1')
+   xrayline.atomic_number #=> 14
+   xrayline.iupac #=> Si K–L3
+   xrayline.siegbahn #=> Si Kα1
+   
+X-ray line objects are immutable and hashable so they can be used as keys of a dictionary.
+It is also cached to prevent multiple instances of the same x-ray line.
+
+.. code:: python
+    
+   xrayline1 = XrayLine(13, 'Ka1')
+   xrayline2 = XrayLine('Al', 'Ka1')
+   xrayline1 == xrayline2 #=> True
+   xrayline1 is xrayline2 #=> True
+
+Release notes
+=============
+
+1.2.0
+-----
+
+* Add ``XrayLine`` class.
+
 Development
 ===========
 
@@ -260,10 +288,22 @@ in development mode.
 Building the database will take several minutes.
 In short,
 
-```
-python3 setup.py build
-```
+.. code:: python
+   
+   python3 setup.py build
 
+License
+=======
+
+The library is provided under the MIT license.
+
+*pyxray* was partially developed as part of the doctorate thesis project of 
+Philippe T. Pinard at RWTH Aachen University (Aachen, Germany) under the 
+supervision of Dr. Silvia Richter, in collaboration with Hendrix Demers 
+(McGill University, Canada).
+
+Copyright (c) 2015-2016/06 Philippe Pinard and Silvia Richter
+Copyright (c) 2016/06=2017 Philippe Pinard
 
 
 
