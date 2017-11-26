@@ -17,6 +17,7 @@ from pyxray.descriptor import \
 from pyxray.property import \
     (XrayTransitionEnergy, XrayTransitionSetEnergy,
      XrayTransitionRelativeWeight, XrayTransitionSetRelativeWeight)
+from pyxray.util import wavelength_to_energy_eV
 
 # Globals and constants variables.
 
@@ -143,13 +144,10 @@ class JEOLTransitionParser(_Parser):
                 probability = line[20:23].strip()
                 if not probability:  # skip transition with no probability
                     continue
-
                 probability = float(probability) / 100.0
-                if probability > 1:  # skip sum of transitions
-                    continue
 
                 wavelength = float(line[26:35])
-                energy = (4.13566733e-15 * 299792458) / (wavelength * 1e-10)
+                energy = wavelength_to_energy_eV(wavelength * 1e-10)
 
                 if siegbahn in _TRANSITION_LOOKUP:
                     subshells = list(_TRANSITION_LOOKUP[siegbahn])
