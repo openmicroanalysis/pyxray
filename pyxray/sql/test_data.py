@@ -105,6 +105,26 @@ class TestSqlDatabase(unittest.TestCase):
         expected = descriptor.XrayTransition(L3, K)
         self.assertEqual(expected, transitions[0])
 
+    def testelement_xray_transitions2(self):
+        transitions = self.db.element_xray_transitions(118, 'a')
+        self.assertEqual(1, len(transitions))
+
+        K = descriptor.AtomicSubshell(1, 0, 1)
+        L3 = descriptor.AtomicSubshell(2, 1, 3)
+        expected = descriptor.XrayTransition(L3, K)
+        self.assertEqual(expected, transitions[0])
+
+    def testelement_xray_transition(self):
+        transition = self.db.element_xray_transition(118, 'a')
+
+        K = descriptor.AtomicSubshell(1, 0, 1)
+        L3 = descriptor.AtomicSubshell(2, 1, 3)
+        expected = descriptor.XrayTransition(L3, K)
+        self.assertEqual(expected, transition)
+
+        self.assertRaises(NotFound, self.db.element_xray_transition, 1, 'a')
+        self.assertRaises(NotFound, self.db.element_xray_transition, 118, 'g')
+
     def testatomic_shell(self):
         expected = descriptor.AtomicShell(1)
         self.assertEqual(expected, self.db.atomic_shell('a'))
@@ -176,19 +196,19 @@ class TestSqlDatabase(unittest.TestCase):
         transition = descriptor.XrayTransition(L3, K)
         self.assertAlmostEqual(0.2, self.db.xray_transition_energy_eV(118, transition), 4)
 
-    def testtransition_probability(self):
+    def testxray_transition_probability(self):
         K = descriptor.AtomicSubshell(1, 0, 1)
         L3 = descriptor.AtomicSubshell(2, 1, 3)
         transition = descriptor.XrayTransition(L3, K)
         self.assertAlmostEqual(0.02, self.db.xray_transition_probability(118, transition), 4)
 
-    def testtransition_relative_weight(self):
+    def testxray_transition_relative_weight(self):
         K = descriptor.AtomicSubshell(1, 0, 1)
         L3 = descriptor.AtomicSubshell(2, 1, 3)
         transition = descriptor.XrayTransition(L3, K)
         self.assertAlmostEqual(0.002, self.db.xray_transition_relative_weight(118, transition), 4)
 
-    def testtransitionset(self):
+    def testxray_transitionset(self):
         K = descriptor.AtomicSubshell(1, 0, 1)
         L3 = descriptor.AtomicSubshell(2, 1, 3)
         L2 = descriptor.AtomicSubshell(2, 1, 1)
@@ -209,7 +229,7 @@ class TestSqlDatabase(unittest.TestCase):
         transitionset = descriptor.XrayTransitionSet([transition, transition3])
         self.assertRaises(NotFound, self.db.xray_transitionset, transitionset)
 
-    def testtransitionset_notation(self):
+    def testxray_transitionset_notation(self):
         K = descriptor.AtomicSubshell(1, 0, 1)
         L3 = descriptor.AtomicSubshell(2, 1, 3)
         L2 = descriptor.AtomicSubshell(2, 1, 1)
@@ -221,7 +241,7 @@ class TestSqlDatabase(unittest.TestCase):
         self.assertEqual('c', self.db.xray_transitionset_notation(transitionset, 'mock', 'html'))
         self.assertEqual('d', self.db.xray_transitionset_notation(transitionset, 'mock', 'latex'))
 
-    def testtransitionset_energy_eV(self):
+    def testxray_transitionset_energy_eV(self):
         K = descriptor.AtomicSubshell(1, 0, 1)
         L3 = descriptor.AtomicSubshell(2, 1, 3)
         L2 = descriptor.AtomicSubshell(2, 1, 1)
@@ -230,7 +250,7 @@ class TestSqlDatabase(unittest.TestCase):
         transitionset = descriptor.XrayTransitionSet([transition, transition2])
         self.assertAlmostEqual(0.3, self.db.xray_transitionset_energy_eV(118, transitionset), 4)
 
-    def testtransitionset_relative_weight(self):
+    def testxray_transitionset_relative_weight(self):
         K = descriptor.AtomicSubshell(1, 0, 1)
         L3 = descriptor.AtomicSubshell(2, 1, 3)
         L2 = descriptor.AtomicSubshell(2, 1, 1)
@@ -238,6 +258,14 @@ class TestSqlDatabase(unittest.TestCase):
         transition2 = descriptor.XrayTransition(L2, K)
         transitionset = descriptor.XrayTransitionSet([transition, transition2])
         self.assertAlmostEqual(0.003, self.db.xray_transitionset_relative_weight(118, transitionset), 4)
+
+    def testxray_line(self):
+        xrayline = self.db.xray_line(118, 'aa')
+
+        self.assertEqual(xrayline.element.atomic_number, 118)
+        self.assertEqual(1, len(xrayline.transitions))
+        self.assertEqual('bb', xrayline.iupac)
+        self.assertEqual('bb', xrayline.siegbahn)
 
 if __name__ == '__main__': #pragma: no cover
     logging.getLogger().setLevel(logging.DEBUG)

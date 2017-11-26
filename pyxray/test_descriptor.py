@@ -9,23 +9,23 @@ import logging
 
 # Local modules.
 from pyxray.descriptor import \
-    (Element, AtomicShell, AtomicSubshell, Reference)
+    (Element, AtomicShell, AtomicSubshell, Reference, XrayLine, XrayTransition)
 
 # Globals and constants variables.
 
 class TestElement(unittest.TestCase):
 
     def setUp(self):
-        unittest.TestCase.setUp(self)
+        super().setUp()
 
         self.element = Element(6)
-
-    def tearDown(self):
-        unittest.TestCase.tearDown(self)
 
     def test__init__(self):
         self.assertEqual(6, self.element.z)
         self.assertEqual(6, self.element.atomic_number)
+
+    def test__hash__(self):
+        self.assertEqual(hash(Element(6)), hash(self.element))
 
     def testvalidable(self):
         self.assertRaises(ValueError, Element, 0)
@@ -51,12 +51,9 @@ class TestElement(unittest.TestCase):
 class TestAtomicShell(unittest.TestCase):
 
     def setUp(self):
-        unittest.TestCase.setUp(self)
+        super().setUp()
 
         self.atomicshell = AtomicShell(3)
-
-    def tearDown(self):
-        unittest.TestCase.tearDown(self)
 
     def test__init__(self):
         self.assertEqual(3, self.atomicshell.n)
@@ -84,12 +81,9 @@ class TestAtomicShell(unittest.TestCase):
 class TestAtomicSubshell(unittest.TestCase):
 
     def setUp(self):
-        unittest.TestCase.setUp(self)
+        super().setUp()
 
         self.atomicsubshell = AtomicSubshell(3, 0, 1)
-
-    def tearDown(self):
-        unittest.TestCase.tearDown(self)
 
     def test__init__(self):
         self.assertEqual(AtomicShell(3), self.atomicsubshell.atomic_shell)
@@ -128,12 +122,9 @@ class TestAtomicSubshell(unittest.TestCase):
 class TestReference(unittest.TestCase):
 
     def setUp(self):
-        unittest.TestCase.setUp(self)
+        super().setUp()
 
         self.ref = Reference('doe2016')
-
-    def tearDown(self):
-        unittest.TestCase.tearDown(self)
 
     def test__init__(self):
         self.assertEqual('doe2016', self.ref.bibtexkey)
@@ -159,6 +150,49 @@ class TestReference(unittest.TestCase):
 
     def testreprable(self):
         self.assertEqual('Reference(doe2016)', repr(self.ref))
+
+class TestXrayLine(unittest.TestCase):
+
+    def setUp(self):
+        super().setUp()
+
+        element = Element(118)
+        K = AtomicSubshell(1, 0, 1)
+        L3 = AtomicSubshell(2, 1, 3)
+        transition = XrayTransition(L3, K)
+        self.xrayline = XrayLine(element, [transition], 'a', 'b')
+
+    def test__init__(self):
+        self.assertEqual(118, self.xrayline.element.atomic_number)
+        self.assertEqual(1, len(self.xrayline.transitions))
+        self.assertEqual('a', self.xrayline.iupac)
+        self.assertEqual('b', self.xrayline.siegbahn)
+
+    def test__hash__(self):
+        K = AtomicSubshell(1, 0, 1)
+        L3 = AtomicSubshell(2, 1, 3)
+        transition = XrayTransition(L3, K)
+        other = XrayLine(118, [transition], 'a', 'b')
+        self.assertEqual(hash(self.xrayline), hash(other))
+        self.assertEqual(hash(self.xrayline), hash(self.xrayline))
+
+    def testimmutable(self):
+        self.assertRaises(AttributeError, setattr,
+                          self.xrayline, 'element', 'john')
+        self.assertRaises(AttributeError, delattr,
+                          self.xrayline, 'element')
+
+    def testcachable(self):
+        K = AtomicSubshell(1, 0, 1)
+        L3 = AtomicSubshell(2, 1, 3)
+        transition = XrayTransition(L3, K)
+        other = XrayLine(118, [transition], 'a', 'b')
+
+        self.assertEqual(other, self.xrayline)
+        self.assertIs(other, self.xrayline)
+
+    def testreprable(self):
+        self.assertEqual('XrayLine(a)', repr(self.xrayline))
 
 if __name__ == '__main__': #pragma: no cover
     logging.getLogger().setLevel(logging.DEBUG)

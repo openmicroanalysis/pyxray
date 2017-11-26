@@ -127,7 +127,7 @@ class SelectMixin:
     def _append_select_xray_transitionset(self, connection, builder, table, column, xraytransitionset):
         xraytransitions = set()
         if isinstance(xraytransitionset, descriptor.XrayTransitionSet):
-            xraytransitions.update(xraytransitionset.transitions)
+            xraytransitions.update(xraytransitionset.possible_transitions)
 
         elif isinstance(xraytransitionset, collections.Sequence):
             xraytransitions.update(xraytransitionset)

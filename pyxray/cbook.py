@@ -52,6 +52,9 @@ class Immutable(type):
         # Configure __slots__
         methods['__slots__'] = ('__weakref__', '_values', '_attrs')
 
+        # Configure __hash__
+        methods['__hash__'] = lambda s: hash((s.__class__, s._values))
+
         # Populate a dictionary of field property accessors
         methods.update({name: property(lambda s, n=n: s._values[n])
                         for n, name in enumerate(attrs)})

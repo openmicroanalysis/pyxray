@@ -470,7 +470,7 @@ class SqlDatabaseBuilder(SelectMixin, TableMixin, InsertMixin,
 
     def _require_xray_transitionset(self, connection, xraytransitionset):
         # Ensure transitions exist
-        for xraytransition in xraytransitionset.transitions:
+        for xraytransition in xraytransitionset.possible_transitions:
             self._require_xray_transition(connection, xraytransition)
 
         try:
@@ -537,7 +537,7 @@ class SqlDatabaseBuilder(SelectMixin, TableMixin, InsertMixin,
 
     def _insert_xray_transitionset(self, connection, xraytransitionset):
         xray_transition_ids = set()
-        for xraytransition in xraytransitionset.transitions:
+        for xraytransition in xraytransitionset.possible_transitions:
             xray_transition_id = self._require_xray_transition(connection, xraytransition)
             xray_transition_ids.add(xray_transition_id)
 

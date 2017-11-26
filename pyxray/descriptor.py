@@ -166,19 +166,32 @@ class XrayTransition(metaclass=_Descriptor,
                         dest=self.destination_subshell)
 
 class XrayTransitionSet(metaclass=_Descriptor,
-                        attrs=('transitions',)):
+                        attrs=('possible_transitions',)):
 
     @classmethod
-    def validate(cls, transitions):
+    def validate(cls, possible_transitions):
         transitions2 = set()
-        for transition in transitions:
+        for transition in possible_transitions:
             if not isinstance(transition, XrayTransition):
                 transition = XrayTransition(*transition)
             transitions2.add(transition)
         return (frozenset(transitions2),)
 
     def _repr_inner(self):
-        return '{0:d} transitions'.format(len(self.transitions))
+        return '{0:d} possible transitions'.format(len(self.possible_transitions))
+
+class XrayLine(metaclass=_Descriptor,
+               attrs=('element', 'transitions', 'iupac', 'siegbahn')):
+
+    @classmethod
+    def validate(cls, element, transitions, iupac, siegbahn):
+        if not isinstance(element, Element):
+            element = Element(element)
+        transitions = tuple(transitions)
+        return (element, transitions, iupac, siegbahn)
+
+    def _repr_inner(self):
+        return self.iupac
 
 class Language(metaclass=_Descriptor,
                attrs=('code',)):

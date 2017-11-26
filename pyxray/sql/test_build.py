@@ -33,6 +33,7 @@ class MockParser(_Parser):
         transition2 = descriptor.XrayTransition(L2, K)
         transitionset = descriptor.XrayTransitionSet([transition, transition2])
         notation = descriptor.Notation('mock')
+        notation_iupac = descriptor.Notation('iupac')
         language = descriptor.Language('en')
 
         yield property.ElementName(reference, element, language, 'Vibranium')
@@ -53,6 +54,8 @@ class MockParser(_Parser):
 
         yield property.XrayTransitionNotation(reference, transition, notation,
                                               'a', 'b', 'c', 'd')
+        yield property.XrayTransitionNotation(reference, transition, notation_iupac,
+                                              'aa', 'bb', 'cc', 'dd')
         yield property.XrayTransitionEnergy(reference, element, transition, 0.2)
         yield property.XrayTransitionProbability(reference, element, transition, 0.02)
         yield property.XrayTransitionRelativeWeight(reference, element, transition, 0.002)

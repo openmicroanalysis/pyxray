@@ -38,6 +38,9 @@ class MockDatabase(_Database):
     def element_xray_transitions(self, element, reference=None):
         pass
 
+    def element_xray_transition(self, element, xraytransitionset=None, reference=None):
+        pass
+
     def atomic_shell(self, atomic_shell):
         pass
 
@@ -87,6 +90,9 @@ class MockDatabase(_Database):
         pass
 
     def xray_transitionset_relative_weight(self, element, xraytransitionset, reference=None):
+        pass
+
+    def xray_line(self, element, line, reference=None):
         pass
 
 class Test_Database(unittest.TestCase):

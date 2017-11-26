@@ -13,6 +13,7 @@ __all__ = [
     'element_mass_density_kg_per_m3',
     'element_mass_density_g_per_cm3',
     'element_xray_transitions',
+    'element_xray_transition',
     'print_element_xray_transitions',
     'atomic_shell',
     'atomic_shell_notation',
@@ -30,7 +31,8 @@ __all__ = [
     'xray_transitionset',
     'xray_transitionset_notation',
     'xray_transitionset_energy_eV',
-    'xray_transitionset_relative_weight'
+    'xray_transitionset_relative_weight',
+    'xray_line',
     ]
 
 # Standard library modules.
@@ -72,6 +74,9 @@ class _EmptyDatabase(_Database):
         raise NotFound
 
     def element_xray_transitions(self, element, reference=None): #pragma: no cover
+        raise NotFound
+
+    def element_xray_transition(self, element, xraytransition, reference=None):
         raise NotFound
 
     def atomic_shell(self, atomic_shell): #pragma: no cover
@@ -125,6 +130,9 @@ class _EmptyDatabase(_Database):
     def xray_transitionset_relative_weight(self, element, xraytransitionset, reference=None): #pragma: no cover
         raise NotFound
 
+    def xray_line(self, element, line, reference=None): #pragma: no cover
+        raise NotFound
+
 connection = None
 
 def _init_sql_database():
@@ -160,6 +168,7 @@ element_atomic_weight = database.element_atomic_weight
 element_mass_density_kg_per_m3 = database.element_mass_density_kg_per_m3
 element_mass_density_g_per_cm3 = database.element_mass_density_g_per_cm3
 element_xray_transitions = database.element_xray_transitions
+element_xray_transition = database.element_xray_transition
 print_element_xray_transitions = database.print_element_xray_transitions
 atomic_shell = database.atomic_shell
 atomic_shell_notation = database.atomic_shell_notation
@@ -178,3 +187,4 @@ xray_transitionset = database.xray_transitionset
 xray_transitionset_notation = database.xray_transitionset_notation
 xray_transitionset_energy_eV = database.xray_transitionset_energy_eV
 xray_transitionset_relative_weight = database.xray_transitionset_relative_weight
+xray_line = database.xray_line

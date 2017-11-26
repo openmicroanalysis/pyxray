@@ -205,16 +205,36 @@ class _Database(object, metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     @formatdoc(**_docextras)
-    def element_xray_transitions(self, element, reference=None): #pragma: no cover
+    def element_xray_transitions(self, element, xraytransitionset=None, reference=None): #pragma: no cover
         """
         Returns all x-ray transitions which have a probability greater
-        than 0 for an element.
+        than 0 for that element.
+        If *xraytransitionset* is not ``None``, returns all x-ray transitions
+        for this x-ray transition set.
 
         {element}
+        {xraytransitionset}
         {reference}
 
-        :return: x-ray transitions
+        :return: X-ray transitions
         :rtype: :class:`tuple` of :class:`XrayTransition`
+        {exception}
+        """
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    @formatdoc(**_docextras)
+    def element_xray_transition(self, element, xraytransition, reference=None):
+        """
+        Returns X-ray transition descriptor if x-ray transition has a 
+        probability greater than 0 for that element.
+
+        {element}
+        {xraytransition}
+        {reference}
+
+        :return: X-ray transition descriptor
+        :rtype: :class:`XrayTransition`
         {exception}
         """
         raise NotImplementedError
@@ -525,6 +545,22 @@ class _Database(object, metaclass=abc.ABCMeta):
 
         :return: relative weight
         :rtype: :class:`float`
+        {exception}
+        """
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    @formatdoc(**_docextras)
+    def xray_line(self, element, line, reference=None):
+        """
+        Returns x-ray line descriptor.
+        
+        {element}
+        :arg line: either an x-ray transition or transition set
+        {reference}
+        
+        :return: x-ray line
+        :rtype: :class:`XrayLine`
         {exception}
         """
         raise NotImplementedError

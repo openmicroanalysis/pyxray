@@ -145,7 +145,7 @@ class SqlDatabase(SelectMixin, _Database):
         value_kg_per_m3, = row
         return value_kg_per_m3
 
-    def element_xray_transitions(self, element, reference=None):
+    def element_xray_transitions(self, element, xraytransitionset=None, reference=None):
         if not reference:
             reference = self.get_default_reference('xray_transition_probability')
 
@@ -159,12 +159,15 @@ class SqlDatabase(SelectMixin, _Database):
         builder.add_select('dstsubshell', 'total_angular_momentum_nominator')
         builder.add_from(table)
         builder.add_join('xray_transition', 'id', table, 'xray_transition_id')
+        builder.add_join('xray_transitionset_association', 'xray_transition_id', table, 'xray_transition_id')
         builder.add_join('atomic_subshell', 'id', 'xray_transition', 'source_subshell_id', 'srcsubshell')
         builder.add_join('atomic_subshell', 'id', 'xray_transition', 'destination_subshell_id', 'dstsubshell')
         builder.add_join('atomic_shell', 'id', 'srcsubshell', 'atomic_shell_id', 'srcshell')
         builder.add_join('atomic_shell', 'id', 'dstsubshell', 'atomic_shell_id', 'dstshell')
         self._append_select_element(self.connection, builder, table, 'element_id', element)
         self._append_select_reference(self.connection, builder, table, reference)
+        if xraytransitionset is not None:
+            self._append_select_xray_transitionset(self.connection, builder, 'xray_transitionset_association', 'xray_transitionset_id', xraytransitionset)
         builder.add_where(table, 'value', '>', 0.0)
         sql, params = builder.build()
 
@@ -173,7 +176,7 @@ class SqlDatabase(SelectMixin, _Database):
         rows = cur.fetchall()
         cur.close()
         if not rows:
-            raise NotFound('No X-ray transition found')
+            raise NotFound('No X-ray transition set found')
 
         transitions = []
         for src_n, src_l, src_j_n, dst_n, dst_l, dst_j_n in rows:
@@ -182,6 +185,37 @@ class SqlDatabase(SelectMixin, _Database):
             transitions.append(descriptor.XrayTransition(src, dst))
 
         return tuple(transitions)
+
+    def element_xray_transition(self, element, xraytransition, reference=None):
+        if not reference:
+            reference = self.get_default_reference('xray_transition_probability')
+
+        table = 'xray_transition_probability'
+        builder = SelectBuilder()
+        builder.add_select('srcshell', 'principal_quantum_number')
+        builder.add_select('srcsubshell', 'azimuthal_quantum_number')
+        builder.add_select('srcsubshell', 'total_angular_momentum_nominator')
+        builder.add_select('dstshell', 'principal_quantum_number')
+        builder.add_select('dstsubshell', 'azimuthal_quantum_number')
+        builder.add_select('dstsubshell', 'total_angular_momentum_nominator')
+        builder.add_from(table)
+        self._append_select_element(self.connection, builder, table, 'element_id', element)
+        self._append_select_reference(self.connection, builder, table, reference)
+        self._append_select_xray_transition(self.connection, builder, table, 'xray_transition_id', xraytransition)
+        builder.add_where(table, 'value', '>', 0.0)
+        sql, params = builder.build()
+
+        cur = self.connection.cursor()
+        cur.execute(sql, params)
+        row = cur.fetchone()
+        cur.close()
+        if row is None:
+            raise NotFound('No X-ray transition found')
+
+        src_n, src_l, src_j_n, dst_n, dst_l, dst_j_n = row
+        src = descriptor.AtomicSubshell(src_n, src_l, src_j_n)
+        dst = descriptor.AtomicSubshell(dst_n, dst_l, dst_j_n)
+        return descriptor.XrayTransition(src, dst)
 
     def atomic_shell(self, atomic_shell):
         table = 'atomic_shell'
@@ -581,3 +615,23 @@ class SqlDatabase(SelectMixin, _Database):
 
         value, = row
         return value
+
+    def xray_line(self, element, line, reference=None):
+        element = self.element(element)
+
+        try:
+            transitions = [self.element_xray_transition(element, line, reference)]
+            method_notation = self.xray_transition_notation
+
+        except NotFound:
+            transitions = self.element_xray_transitions(element, line, reference)
+            method_notation = self.xray_transitionset_notation
+
+        iupac = method_notation(line, 'iupac', 'utf16')
+
+        try:
+            siegbahn = method_notation(line, 'siegbahn', 'utf16')
+        except:
+            siegbahn = iupac
+
+        return descriptor.XrayLine(element, transitions, iupac, siegbahn)
