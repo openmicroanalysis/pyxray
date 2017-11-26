@@ -618,6 +618,7 @@ class SqlDatabase(SelectMixin, _Database):
 
     def xray_line(self, element, line, reference=None):
         element = self.element(element)
+        symbol = self.element_symbol(element)
 
         try:
             transitions = [self.element_xray_transition(element, line, reference)]
@@ -627,10 +628,10 @@ class SqlDatabase(SelectMixin, _Database):
             transitions = self.element_xray_transitions(element, line, reference)
             method_notation = self.xray_transitionset_notation
 
-        iupac = method_notation(line, 'iupac', 'utf16')
+        iupac = '{} {}'.format(symbol, method_notation(line, 'iupac', 'utf16'))
 
         try:
-            siegbahn = method_notation(line, 'siegbahn', 'utf16')
+            siegbahn = '{} {}'.format(symbol, method_notation(line, 'siegbahn', 'utf16'))
         except:
             siegbahn = iupac
 

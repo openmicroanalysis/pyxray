@@ -264,8 +264,8 @@ class TestSqlDatabase(unittest.TestCase):
 
         self.assertEqual(xrayline.element.atomic_number, 118)
         self.assertEqual(1, len(xrayline.transitions))
-        self.assertEqual('bb', xrayline.iupac)
-        self.assertEqual('bb', xrayline.siegbahn)
+        self.assertEqual('Vi bb', xrayline.iupac)
+        self.assertEqual('Vi bb', xrayline.siegbahn)
 
 if __name__ == '__main__': #pragma: no cover
     logging.getLogger().setLevel(logging.DEBUG)
