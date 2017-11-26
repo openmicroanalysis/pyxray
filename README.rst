@@ -143,9 +143,10 @@ where the number of protons equal the number of electrons.
     Returns X-ray transition descriptor if x-ray transition has a 
     probability greater than 0 for that element.
     
-* ``pyxray.element_xray_transitions(element, reference=None)``
+* ``pyxray.element_xray_transitions(element, xraytransitionset=None, reference=None)``
     Returns all X-ray transitions which have a probability greater than 0 
-    for that element.
+    for that element. If *xraytransitionset* is not ``None``, returns all 
+    x-ray transitions for this x-ray transition set.
 
 Atomic shell properties
 -----------------------
@@ -226,7 +227,7 @@ electron between quantum states leading to X-rays emission.
     Returns relative weight of an element and X-ray transition.
 
 X-ray transition set properties
--------------------------
+-------------------------------
 
 Properties associated with an X-ray transition set, an indistinguishable X-ray transition 
 (e.g. Ka from Ka1/Ka2).
@@ -285,6 +286,11 @@ It is also cached to prevent multiple instances of the same x-ray line.
 
 Release notes
 =============
+
+1.3.3
+-----
+
+* Fix method `element_xray_transitions` not to return duplicates.
 
 1.3.2
 -----
