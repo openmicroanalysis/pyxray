@@ -139,8 +139,13 @@ where the number of protons equal the number of electrons.
 * ``pyxray.element_mass_density_g_per_cm3(element, reference=None)``
     Returns mass density (in g/cm3) of an element.
     
+* ``pyxray.element_xray_transition(element, reference=None)``
+    Returns X-ray transition descriptor if x-ray transition has a 
+    probability greater than 0 for that element.
+    
 * ``pyxray.element_xray_transitions(element, reference=None)``
-    Returns all X-ray transitions which have a probability greater than 0 for an element.
+    Returns all X-ray transitions which have a probability greater than 0 
+    for that element.
 
 Atomic shell properties
 -----------------------
@@ -220,7 +225,7 @@ electron between quantum states leading to X-rays emission.
 * ``pyxray.xray_transition_relative_weight(element, xraytransition, reference=None)``
     Returns relative weight of an element and X-ray transition.
 
-Transition set properties
+X-ray transition set properties
 -------------------------
 
 Properties associated with an X-ray transition set, an indistinguishable X-ray transition 
@@ -248,20 +253,31 @@ The x-ray line can either be a
 `XrayTransitionSet <http://github.com/openmicroanalysis/pyxray/blob/master/pyxray/descriptor.py>`_
 (a set of transitions, normally indistinguishable X-ray transitions).
 
+* ``pyxray.xray_line(element, line, reference=None)``
+    Returns X-ray line descriptor.
+
 .. code:: python
     
-   xrayline = pyxray.XrayLine(14, 'Ka1')
+   xrayline = pyxray.xray_line(14, 'Ka1')
    xrayline.atomic_number #=> 14
    xrayline.iupac #=> Si K–L3
    xrayline.siegbahn #=> Si Kα1
+   xrayline.transitions #=> (XrayTransition([n=2, l=1, j=1.5] -> [n=1, l=0, j=0.5]),)
    
-X-ray line objects are immutable and hashable so they can be used as keys of a dictionary.
+   xrayline = pyxray.xray_line(14, 'Ka')
+   xrayline.atomic_number #=> 14
+   xrayline.iupac #=> Si K–L(2,3)
+   xrayline.siegbahn #=> Si Kα
+   xrayline.transitions #=> (XrayTransition([n=2, l=1, j=0.5] -> [n=1, l=0, j=0.5]), XrayTransition([n=2, l=1, j=1.5] -> [n=1, l=0, j=0.5]))
+   
+As any other descriptors, X-ray line objects are immutable and hashable so 
+they can be used as keys of a dictionary.
 It is also cached to prevent multiple instances of the same x-ray line.
 
 .. code:: python
     
-   xrayline1 = XrayLine(13, 'Ka1')
-   xrayline2 = XrayLine('Al', 'Ka1')
+   xrayline1 = pyxray.xray_line(13, 'Ka1')
+   xrayline2 = pyxray.xray_line('Al', 'Ka1')
    xrayline1 == xrayline2 #=> True
    xrayline1 is xrayline2 #=> True
 

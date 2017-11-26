@@ -205,6 +205,23 @@ class _Database(object, metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     @formatdoc(**_docextras)
+    def element_xray_transition(self, element, xraytransition, reference=None): #pragma: no cover
+        """
+        Returns X-ray transition descriptor if x-ray transition has a 
+        probability greater than 0 for that element.
+
+        {element}
+        {xraytransition}
+        {reference}
+
+        :return: X-ray transition descriptor
+        :rtype: :class:`XrayTransition`
+        {exception}
+        """
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    @formatdoc(**_docextras)
     def element_xray_transitions(self, element, xraytransitionset=None, reference=None): #pragma: no cover
         """
         Returns all x-ray transitions which have a probability greater
@@ -218,23 +235,6 @@ class _Database(object, metaclass=abc.ABCMeta):
 
         :return: X-ray transitions
         :rtype: :class:`tuple` of :class:`XrayTransition`
-        {exception}
-        """
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    @formatdoc(**_docextras)
-    def element_xray_transition(self, element, xraytransition, reference=None):
-        """
-        Returns X-ray transition descriptor if x-ray transition has a 
-        probability greater than 0 for that element.
-
-        {element}
-        {xraytransition}
-        {reference}
-
-        :return: X-ray transition descriptor
-        :rtype: :class:`XrayTransition`
         {exception}
         """
         raise NotImplementedError
