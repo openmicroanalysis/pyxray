@@ -623,10 +623,12 @@ class SqlDatabase(SelectMixin, _Database):
         try:
             transitions = [self.element_xray_transition(element, line, reference)]
             method_notation = self.xray_transition_notation
+            method_energy = self.xray_transition_energy_eV
 
         except NotFound:
             transitions = self.element_xray_transitions(element, line, reference)
             method_notation = self.xray_transitionset_notation
+            method_energy = self.xray_transitionset_energy_eV
 
         iupac = '{} {}'.format(symbol, method_notation(line, 'iupac', 'utf16'))
 
@@ -635,4 +637,9 @@ class SqlDatabase(SelectMixin, _Database):
         except:
             siegbahn = iupac
 
-        return descriptor.XrayLine(element, transitions, iupac, siegbahn)
+        try:
+            energy_eV = method_energy(element, line)
+        except NotFound:
+            energy_eV = 0.0
+
+        return descriptor.XrayLine(element, transitions, iupac, siegbahn, energy_eV)

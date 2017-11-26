@@ -160,19 +160,20 @@ class TestXrayLine(unittest.TestCase):
         K = AtomicSubshell(1, 0, 1)
         L3 = AtomicSubshell(2, 1, 3)
         transition = XrayTransition(L3, K)
-        self.xrayline = XrayLine(element, [transition], 'a', 'b')
+        self.xrayline = XrayLine(element, [transition], 'a', 'b', 0.1)
 
     def test__init__(self):
         self.assertEqual(118, self.xrayline.element.atomic_number)
         self.assertEqual(1, len(self.xrayline.transitions))
         self.assertEqual('a', self.xrayline.iupac)
         self.assertEqual('b', self.xrayline.siegbahn)
+        self.assertAlmostEqual(0.1, self.xrayline.energy_eV, 4)
 
     def test__hash__(self):
         K = AtomicSubshell(1, 0, 1)
         L3 = AtomicSubshell(2, 1, 3)
         transition = XrayTransition(L3, K)
-        other = XrayLine(118, [transition], 'a', 'b')
+        other = XrayLine(118, [transition], 'a', 'b', 0.1)
         self.assertEqual(hash(self.xrayline), hash(other))
         self.assertEqual(hash(self.xrayline), hash(self.xrayline))
 
@@ -186,7 +187,7 @@ class TestXrayLine(unittest.TestCase):
         K = AtomicSubshell(1, 0, 1)
         L3 = AtomicSubshell(2, 1, 3)
         transition = XrayTransition(L3, K)
-        other = XrayLine(118, [transition], 'a', 'b')
+        other = XrayLine(118, [transition], 'a', 'b', 0.1)
 
         self.assertEqual(other, self.xrayline)
         self.assertIs(other, self.xrayline)

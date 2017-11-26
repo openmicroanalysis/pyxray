@@ -181,17 +181,25 @@ class XrayTransitionSet(metaclass=_Descriptor,
         return '{0:d} possible transitions'.format(len(self.possible_transitions))
 
 class XrayLine(metaclass=_Descriptor,
-               attrs=('element', 'transitions', 'iupac', 'siegbahn')):
+               attrs=('element', 'transitions', 'iupac', 'siegbahn', 'energy_eV')):
 
     @classmethod
-    def validate(cls, element, transitions, iupac, siegbahn):
+    def validate(cls, element, transitions, iupac, siegbahn, energy_eV):
         if not isinstance(element, Element):
             element = Element(element)
         transitions = tuple(transitions)
-        return (element, transitions, iupac, siegbahn)
+        return (element, transitions, iupac, siegbahn, energy_eV)
 
     def _repr_inner(self):
         return self.iupac
+
+    @property
+    def atomic_number(self):
+        return self.element.atomic_number
+
+    @property
+    def z(self):
+        return self.element.atomic_number
 
 class Language(metaclass=_Descriptor,
                attrs=('code',)):
