@@ -24,7 +24,7 @@ class TestJEOLTransitionParser(unittest.TestCase):
 
     def test__iter__(self):
         props = list(self.parser)
-        self.assertEqual(2308, len(props))
+        self.assertEqual(2384, len(props))
 
 if __name__ == '__main__': #pragma: no cover
     logging.getLogger().setLevel(logging.DEBUG)
