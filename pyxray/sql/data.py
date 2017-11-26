@@ -151,6 +151,7 @@ class SqlDatabase(SelectMixin, _Database):
 
         table = 'xray_transition_probability'
         builder = SelectBuilder()
+        builder.distinct = True
         builder.add_select('srcshell', 'principal_quantum_number')
         builder.add_select('srcsubshell', 'azimuthal_quantum_number')
         builder.add_select('srcsubshell', 'total_angular_momentum_nominator')
