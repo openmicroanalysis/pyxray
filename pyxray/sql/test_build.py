@@ -87,7 +87,7 @@ class MockSqliteDatabaseBuilder(SqliteDatabaseBuilder):
 class Test_DatabaseBuilder(unittest.TestCase):
 
     def setUp(self):
-        unittest.TestCase.setUp(self)
+        super().setUp()
 
         self.tmpdir = tempfile.mkdtemp()
 
@@ -95,7 +95,7 @@ class Test_DatabaseBuilder(unittest.TestCase):
         self.builder = MockSqliteDatabaseBuilder(filepath)
 
     def tearDown(self):
-        unittest.TestCase.tearDown(self)
+        super().tearDown()
         shutil.rmtree(self.tmpdir, ignore_errors=True)
 
     def testbuild(self):

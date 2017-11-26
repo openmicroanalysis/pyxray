@@ -16,12 +16,9 @@ from pyxray.parser.sargent_welch import \
 class TestSargentWelchElementAtomicWeightParser(unittest.TestCase):
 
     def setUp(self):
-        unittest.TestCase.setUp(self)
+        super().setUp()
 
         self.parser = SargentWelchElementAtomicWeightParser()
-
-    def tearDown(self):
-        unittest.TestCase.tearDown(self)
 
     def test__iter__(self):
         props = list(self.parser)
@@ -30,12 +27,9 @@ class TestSargentWelchElementAtomicWeightParser(unittest.TestCase):
 class TestSargentWelchElementMassDensityParser(unittest.TestCase):
 
     def setUp(self):
-        unittest.TestCase.setUp(self)
+        super().setUp()
 
         self.parser = SargentWelchElementMassDensityParser()
-
-    def tearDown(self):
-        unittest.TestCase.tearDown(self)
 
     def test__iter__(self):
         props = list(self.parser)

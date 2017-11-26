@@ -98,12 +98,9 @@ class MockDatabase(_Database):
 class Test_Database(unittest.TestCase):
 
     def setUp(self):
-        unittest.TestCase.setUp(self)
+        super().setUp()
 
         self.database = MockDatabase()
-
-    def tearDown(self):
-        unittest.TestCase.tearDown(self)
 
     def testget_default_reference(self):
         self.assertIsNone(self.database.get_default_reference('element_symbol'))

@@ -15,12 +15,9 @@ from pyxray.parser.nist import NISTElementAtomicWeightParser
 class TestNISTElementAtomicWeightParser(unittest.TestCase):
 
     def setUp(self):
-        unittest.TestCase.setUp(self)
+        super().setUp()
 
         self.parser = NISTElementAtomicWeightParser()
-
-    def tearDown(self):
-        unittest.TestCase.tearDown(self)
 
     def test__iter__(self):
         props = list(self.parser)

@@ -25,12 +25,9 @@ class Testunattributed(unittest.TestCase):
 class TestElementSymbolPropertyParser(unittest.TestCase):
 
     def setUp(self):
-        unittest.TestCase.setUp(self)
+        super().setUp()
 
         self.parser = ElementSymbolPropertyParser()
-
-    def tearDown(self):
-        unittest.TestCase.tearDown(self)
 
     def test__iter__(self):
         props = list(self.parser)
@@ -39,12 +36,9 @@ class TestElementSymbolPropertyParser(unittest.TestCase):
 class TestAtomicShellNotationParser(unittest.TestCase):
 
     def setUp(self):
-        unittest.TestCase.setUp(self)
+        super().setUp()
 
         self.parser = AtomicShellNotationParser()
-
-    def tearDown(self):
-        unittest.TestCase.tearDown(self)
 
     def test__iter__(self):
         props = list(self.parser)
@@ -53,12 +47,9 @@ class TestAtomicShellNotationParser(unittest.TestCase):
 class TestAtomicSubshellNotationParser(unittest.TestCase):
 
     def setUp(self):
-        unittest.TestCase.setUp(self)
+        super().setUp()
 
         self.parser = AtomicSubshellNotationParser()
-
-    def tearDown(self):
-        unittest.TestCase.tearDown(self)
 
     def test__iter__(self):
         props = list(self.parser)
@@ -67,12 +58,9 @@ class TestAtomicSubshellNotationParser(unittest.TestCase):
 class TestTransitionNotationParser(unittest.TestCase):
 
     def setUp(self):
-        unittest.TestCase.setUp(self)
+        super().setUp()
 
         self.parser = TransitionNotationParser()
-
-    def tearDown(self):
-        unittest.TestCase.tearDown(self)
 
     def test__iter__(self):
         props = list(self.parser)

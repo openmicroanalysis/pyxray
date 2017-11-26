@@ -14,12 +14,9 @@ from pyxray.parser.perkins1991 import Perkins1991Parser
 class TestJenkins1991TransitionNotationParser(unittest.TestCase):
 
     def setUp(self):
-        unittest.TestCase.setUp(self)
+        super().setUp()
 
         self.parser = Perkins1991Parser()
-
-    def tearDown(self):
-        unittest.TestCase.tearDown(self)
 
     def test__iter__(self):
         props = list(self.parser)

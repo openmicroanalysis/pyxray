@@ -15,12 +15,9 @@ from pyxray.parser.jenkins1991 import Jenkins1991TransitionNotationParser
 class TestJenkins1991TransitionNotationParser(unittest.TestCase):
 
     def setUp(self):
-        unittest.TestCase.setUp(self)
+        super().setUp()
 
         self.parser = Jenkins1991TransitionNotationParser()
-
-    def tearDown(self):
-        unittest.TestCase.tearDown(self)
 
     def test__iter__(self):
         props = list(self.parser)

@@ -72,12 +72,9 @@ class MockProgressReport(ProgressReportMixin):
 class TestImmutable(unittest.TestCase):
 
     def setUp(self):
-        unittest.TestCase.setUp(self)
+        super().setUp()
 
         self.obj = MockImmutable('abc', 123)
-
-    def tearDown(self):
-        unittest.TestCase.tearDown(self)
 
     def test__init__(self):
         self.assertEqual('abc', self.obj.foo)
@@ -112,12 +109,9 @@ class TestImmutable(unittest.TestCase):
 class TestCachable(unittest.TestCase):
 
     def setUp(self):
-        unittest.TestCase.setUp(self)
+        super().setUp()
 
         self.obj = MockCachable('abc')
-
-    def tearDown(self):
-        unittest.TestCase.tearDown(self)
 
     def test__init__(self):
         self.assertEqual('abc', self.obj.foo)
@@ -136,14 +130,11 @@ class TestCachable(unittest.TestCase):
 class TestValidable(unittest.TestCase):
 
     def setUp(self):
-        unittest.TestCase.setUp(self)
+        super().setUp()
 
         self.obj = MockValidable('abc')
         self.obj2 = MockValidable2('abc')
         self.obj3 = MockValidable3('abc')
-
-    def tearDown(self):
-        unittest.TestCase.tearDown(self)
 
     def test__init__(self):
         self.assertEqual('abcd', self.obj.foo)
@@ -156,12 +147,9 @@ class TestValidable(unittest.TestCase):
 class TestCombined(unittest.TestCase):
 
     def setUp(self):
-        unittest.TestCase.setUp(self)
+        super().setUp()
 
         self.obj = MockCombined('abc', 123)
-
-    def tearDown(self):
-        unittest.TestCase.tearDown(self)
 
     def test__init__(self):
         self.assertRaises(TypeError, MockCombined, 'abc')
@@ -194,12 +182,9 @@ class TestCombined(unittest.TestCase):
 class TestProgressMixin(unittest.TestCase):
 
     def setUp(self):
-        unittest.TestCase.setUp(self)
+        super().setUp()
 
         self.obj = MockProgress()
-
-    def tearDown(self):
-        unittest.TestCase.tearDown(self)
 
     def testupdate(self):
         self.obj.update(50)
@@ -208,14 +193,11 @@ class TestProgressMixin(unittest.TestCase):
 class TestProgressReportMixin(unittest.TestCase):
 
     def setUp(self):
-        unittest.TestCase.setUp(self)
+        super().setUp()
 
         self.obj = MockProgressReport()
         self.obj.add_reporthook(self._hook)
         self.progress = 0
-
-    def tearDown(self):
-        unittest.TestCase.tearDown(self)
 
     def _hook(self, progress):
         self.progress = progress

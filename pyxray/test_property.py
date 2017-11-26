@@ -18,12 +18,9 @@ REFERENCE_TEST = Reference('test2016')
 class TestElementSymbol(unittest.TestCase):
 
     def setUp(self):
-        unittest.TestCase.setUp(self)
+        super().setUp()
 
         self.prop = ElementSymbol(REFERENCE_TEST, Element(6), 'C')
-
-    def tearDown(self):
-        unittest.TestCase.tearDown(self)
 
     def test__init__(self):
         self.assertEqual(REFERENCE_TEST, self.prop.reference)

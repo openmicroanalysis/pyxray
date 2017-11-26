@@ -15,12 +15,9 @@ from pyxray.parser.campbell2001 import CampbellAtomicSubshellRadiativeWidthParse
 class TestCampbellAtomicSubshellRadiativeWidthParser(unittest.TestCase):
 
     def setUp(self):
-        unittest.TestCase.setUp(self)
+        super().setUp()
 
         self.parser = CampbellAtomicSubshellRadiativeWidthParser()
-
-    def tearDown(self):
-        unittest.TestCase.tearDown(self)
 
     def test__iter__(self):
         props = list(self.parser)

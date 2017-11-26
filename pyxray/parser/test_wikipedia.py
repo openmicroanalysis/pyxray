@@ -15,12 +15,9 @@ from pyxray.parser.wikipedia import WikipediaElementNameParser
 class TestWikipediaElementNameParser(unittest.TestCase):
 
     def setUp(self):
-        unittest.TestCase.setUp(self)
+        super().setUp()
 
         self.parser = WikipediaElementNameParser()
-
-    def tearDown(self):
-        unittest.TestCase.tearDown(self)
 
     def test__iter__(self):
         props = list(self.parser)
