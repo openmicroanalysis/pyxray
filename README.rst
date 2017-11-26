@@ -284,6 +284,11 @@ It is also cached to prevent multiple instances of the same x-ray line.
 Release notes
 =============
 
+1.3.0
+-----
+
+* Make XrayLine a descriptor and add method to create it from database.
+
 1.2.1
 -----
 
