@@ -3,7 +3,7 @@ Definition of descriptors.
 """
 
 __all__ = ['Element', 'AtomicShell', 'AtomicSubshell', 'XrayTransition',
-           'XrayTransitionSet', 'Language', 'Notation', 'Reference']
+           'XrayTransitionSet', 'XrayLine', 'Language', 'Notation', 'Reference']
 
 # Standard library modules.
 
