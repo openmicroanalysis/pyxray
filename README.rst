@@ -263,12 +263,14 @@ The x-ray line can either be a
    xrayline.iupac #=> Si K–L3
    xrayline.siegbahn #=> Si Kα1
    xrayline.transitions #=> (XrayTransition([n=2, l=1, j=1.5] -> [n=1, l=0, j=0.5]),)
+   xrayline.energy_eV #=> 1740.0263764535946
    
    xrayline = pyxray.xray_line(14, 'Ka')
    xrayline.atomic_number #=> 14
    xrayline.iupac #=> Si K–L(2,3)
    xrayline.siegbahn #=> Si Kα
    xrayline.transitions #=> (XrayTransition([n=2, l=1, j=0.5] -> [n=1, l=0, j=0.5]), XrayTransition([n=2, l=1, j=1.5] -> [n=1, l=0, j=0.5]))
+   xrayline.energy_eV #=> 1739.826155631858
    
 As any other descriptors, X-ray line objects are immutable and hashable so 
 they can be used as keys of a dictionary.
@@ -284,6 +286,13 @@ It is also cached to prevent multiple instances of the same x-ray line.
 Release notes
 =============
 
+1.3.2
+-----
+
+* Add energy to XrayLine.
+* Fix missing energy property for x-ray transition sets from JEOL database.
+* Clean up of unit tests.
+
 1.3.1
 -----
 
@@ -292,7 +301,7 @@ Release notes
 1.2.1
 -----
 
-* Fix in build process
+* Fix in build process.
 
 1.2.0
 -----
