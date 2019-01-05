@@ -177,7 +177,8 @@ class SqlDatabase(SelectMixin, _Database):
         rows = cur.fetchall()
         cur.close()
         if not rows:
-            raise NotFound('No X-ray transition set found')
+            raise NotFound('No X-ray transition set found for element={!r} and xraytransitionset={!r}'
+                           .format(element, xraytransitionset))
 
         transitions = []
         for src_n, src_l, src_j_n, dst_n, dst_l, dst_j_n in rows:
@@ -211,7 +212,8 @@ class SqlDatabase(SelectMixin, _Database):
         row = cur.fetchone()
         cur.close()
         if row is None:
-            raise NotFound('No X-ray transition found')
+            raise NotFound('No X-ray transition found for element={!r} and xraytransition={!r}'
+                           .format(element, xraytransition))
 
         src_n, src_l, src_j_n, dst_n, dst_l, dst_j_n = row
         src = descriptor.AtomicSubshell(src_n, src_l, src_j_n)
