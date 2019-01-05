@@ -1,7 +1,7 @@
 """"""
 
 # Standard library modules.
-import collections
+from collections.abc import Sequence
 
 # Third party modules.
 
@@ -58,7 +58,7 @@ class SelectMixin:
             l = atomic_subshell.azimuthal_quantum_number
             j_n = atomic_subshell.total_angular_momentum_nominator
 
-        elif isinstance(atomic_subshell, collections.Sequence) and \
+        elif isinstance(atomic_subshell, Sequence) and \
                 len(atomic_subshell) == 3:
             n = atomic_subshell[0]
             l = atomic_subshell[1]
@@ -96,7 +96,7 @@ class SelectMixin:
             dst_n, dst_l, dst_j_n = \
                 self._expand_atomic_subshell(xraytransition.destination_subshell)
 
-        elif isinstance(xraytransition, collections.Sequence) and \
+        elif isinstance(xraytransition, Sequence) and \
                 len(xraytransition) >= 2:
             src_n, src_l, src_j_n = self._expand_atomic_subshell(xraytransition[0])
             dst_n, dst_l, dst_j_n = self._expand_atomic_subshell(xraytransition[1])
@@ -129,7 +129,7 @@ class SelectMixin:
         if isinstance(xraytransitionset, descriptor.XrayTransitionSet):
             xraytransitions.update(xraytransitionset.possible_transitions)
 
-        elif isinstance(xraytransitionset, collections.Sequence):
+        elif isinstance(xraytransitionset, Sequence):
             xraytransitions.update(xraytransitionset)
 
         if isinstance(xraytransitionset, str):
