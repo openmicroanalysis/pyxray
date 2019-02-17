@@ -9,16 +9,7 @@ import re
 import os
 
 # Third party modules.
-import requests
-
-try:
-    import requests_cache
-    dirpath = os.path.join(os.path.dirname(__file__), '..', 'data', 'cache')
-    os.makedirs(dirpath, exist_ok=True)
-    filepath = os.path.join(dirpath, 'nist_element_atomic_weight')
-    requests_cache.install_cache(filepath)
-except ImportError:
-    pass
+import pkg_resources
 
 # Local modules.
 from pyxray.parser.parser import _Parser
@@ -33,20 +24,21 @@ NIST = Reference('coursey2015',
                  organization='NIST Physical Measurement Laboratory',
                  year=2015)
 
-NIST_ATOMICWEIGHT_URL = 'http://physics.nist.gov/cgi-bin/Compositions/stand_alone.pl'
+NIST_ATOMICWEIGHT_URL = 'https://physics.nist.gov/cgi-bin/Compositions/stand_alone.pl'
 
 class NISTElementAtomicWeightParser(_Parser):
 
-    def __iter__(self):
-        params = {'ele': 'Li', 'all': 'all', 'ascii': 'ascii2', 'isotype': 'some'}
-        r = requests.get(NIST_ATOMICWEIGHT_URL, params=params, stream=True)
-        current_z = "1"
-        value = 0
 
-        try:
+    def __iter__(self):
+        relpath = os.path.join('..', 'data', 'nist_element_atomic_weight.html')
+        filepath = pkg_resources.resource_filename(__name__, relpath)
+
+        with open(filepath, 'r') as fp:
+            current_z = "1"
+            value = 0
+
             atomic_weights = []
-            for line in r.iter_lines():
-                line = line.decode('ascii')
+            for line in fp:
                 z = re.search(r"Atomic\sNumber\s=\s([0-9]*)", line)
                 relative_mass = re.search(r"Relative\sAtomic\sMass\s=\s([0-9]*.{0,1}[0-9]*)", line)
                 composition = re.search(r"Isotopic\sComposition\s=\s([0-9]*.{0,1}[0-9]*)", line)
@@ -68,9 +60,6 @@ class NISTElementAtomicWeightParser(_Parser):
                     else:
                         c = float(composition.group(1))
                     value = value + r_m * c
-
-        finally:
-            r.close()
 
         length = len(atomic_weights)
         for z, aw in enumerate(atomic_weights, 1):

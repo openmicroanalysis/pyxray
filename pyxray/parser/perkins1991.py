@@ -135,7 +135,7 @@ MAX_Z = 100
 class Perkins1991Parser(_Parser):
 
     def __iter__(self):
-        r = requests.get(EADL_URL, stream=True)
+        r = requests.get(EADL_URL, stream=True, verify=False)
 
         try:
             rows = []
