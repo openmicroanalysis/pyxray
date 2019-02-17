@@ -55,6 +55,13 @@ class Immutable(type):
         # Configure __hash__
         methods['__hash__'] = lambda s: hash((s.__class__, s._values))
 
+        # Configure copy
+        methods['__copy__'] = lambda s: s
+        methods['__deepcopy__'] = lambda s, memo: s
+
+        # Configure pickle
+        methods['__getnewargs_ex__'] = lambda s: (s._values, {})
+
         # Populate a dictionary of field property accessors
         methods.update({name: property(lambda s, n=n: s._values[n])
                         for n, name in enumerate(attrs)})
