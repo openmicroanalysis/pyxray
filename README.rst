@@ -287,6 +287,11 @@ It is also cached to prevent multiple instances of the same x-ray line.
 Release notes
 =============
 
+1.3.4
+-----
+
+* Fix descriptors can be copied and pickled.
+
 1.3.3
 -----
 
