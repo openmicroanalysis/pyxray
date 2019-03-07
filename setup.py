@@ -56,6 +56,7 @@ ENTRY_POINTS = {
         'nist atomic weight = pyxray.parser.nist:NISTElementAtomicWeightParser',
         'jeol transition = pyxray.parser.jeol:JEOLTransitionParser',
         'campbell2001 = pyxray.parser.campbell2001:CampbellAtomicSubshellRadiativeWidthParser',
+        'dtsa1992 subshell = pyxray.parser.dtsa:DtsaSubshellParser',
        ],
       }
 
