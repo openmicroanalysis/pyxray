@@ -339,6 +339,21 @@ In short, in the *pyxray folder*, run
    pip install -e .[develop]
    python3 setup.py build
 
+Build the documentation:
+
+.. code-block:: console
+
+    $ cd docs
+    $ make html
+
+Add or modify the API documentation:
+
+.. code-block:: console
+
+    $ cd docs
+    $ sphinx-apidoc -o source/api -e -f -P ../pyxray
+    $ make html
+
 License
 =======
 
