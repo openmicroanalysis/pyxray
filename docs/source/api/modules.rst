@@ -1,5 +1,5 @@
-API Reference
-=============
+pyxray
+======
 
 .. toctree::
    :maxdepth: 4
