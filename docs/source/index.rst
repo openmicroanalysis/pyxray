@@ -11,7 +11,7 @@ Welcome to pyxray's documentation!
    :caption: Contents:
 
    readme
-   api/modules
+   api
 
 Indices and tables
 ==================
