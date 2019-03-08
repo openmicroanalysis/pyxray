@@ -57,6 +57,7 @@ ENTRY_POINTS = {
         'jeol transition = pyxray.parser.jeol:JEOLTransitionParser',
         'campbell2001 = pyxray.parser.campbell2001:CampbellAtomicSubshellRadiativeWidthParser',
         'dtsa1992 subshell = pyxray.parser.dtsa:DtsaSubshellParser',
+        'dtsa1992 transition = pyxray.parser.dtsa:DtsaLineParser',
        ],
       }
 
