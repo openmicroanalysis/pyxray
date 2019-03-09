@@ -33,7 +33,7 @@ with open(os.path.join(BASEDIR, 'README.rst'), 'r') as fp:
 
 INSTALL_REQUIRES = ['tabulate']
 EXTRAS_REQUIRE = {'develop': ['requests', 'requests-cache', 'progressbar2',
-                              'nose', 'coverage']
+                              'pytest', 'coverage']
                   }
 
 CMDCLASS = versioneer.get_cmdclass()
@@ -81,8 +81,6 @@ setup(name="pyxray",
 
       install_requires=INSTALL_REQUIRES,
       extras_require=EXTRAS_REQUIRE,
-
-      test_suite='nose.collector',
 
       cmdclass=CMDCLASS,
 
