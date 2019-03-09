@@ -11,6 +11,10 @@ pyxray
 .. image:: https://img.shields.io/codecov/c/github/openmicroanalysis/pyxray.svg
    :target: https://codecov.io/github/openmicroanalysis/pyxray
 
+.. image:: https://readthedocs.org/projects/pyxray/badge/?version=latest
+   :target: https://pyxray.readthedocs.io/en/latest/?badge=latest
+   :alt: Documentation Status
+
 *pyxray* is a Python library that defines basic object to specify atomic
 subshells and X-ray transitions.
 The objects also provide critical information as the energy, existence and
@@ -338,6 +342,21 @@ In short, in the *pyxray folder*, run
 
    pip install -e .[develop]
    python3 setup.py build
+
+Build the documentation:
+
+.. code-block:: console
+
+    $ cd docs
+    $ make html
+
+Add or modify the API documentation:
+
+.. code-block:: console
+
+    $ cd docs
+    $ sphinx-apidoc -o source/api -e -f -P ../pyxray
+    $ make html
 
 License
 =======

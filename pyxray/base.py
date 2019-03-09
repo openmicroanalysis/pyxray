@@ -33,7 +33,7 @@ _docextras = {'element': """:arg element: either
             'atomic_subshell': """:arg atomic_subshell: either
             * :class:`AtomicSubshell <pyxray.descriptor.AtomicSubshell>` object
             * a :class:`tuple` of principal quantum number, 
-                azimuthal quantum number and total angular momentum_nominator
+            azimuthal quantum number, and total angular momentum_nominator
             * any notation (case insensitive)""",
 
             'xraytransition': """:arg xraytransition: either
@@ -73,11 +73,11 @@ class _Database(object, metaclass=abc.ABCMeta):
 
     def set_default_reference(self, method, reference):
         """
-        Set the default reference for a method. 
-        
+        Set the default reference for a method.
+
         :arg method: name of a method
         :type method: :class:`str`
-        
+
         {reference}
         """
         if method not in self._available_methods:
@@ -86,11 +86,11 @@ class _Database(object, metaclass=abc.ABCMeta):
 
     def get_default_reference(self, method):
         """
-        Returns the default reference for a method. 
-        
+        Returns the default reference for a method.
+
         :arg method: name of a method
         :type method: :class:`str`
-        
+
         :return: reference
         :rtype: :class:`Reference <pyxray.descriptor.Reference>` or :class:`str`
         """
@@ -105,7 +105,7 @@ class _Database(object, metaclass=abc.ABCMeta):
         Returns element descriptor.
 
         {element}
-        
+
         :return: element descriptor
         :rtype: :class:`Element`
         {exception}
@@ -207,7 +207,7 @@ class _Database(object, metaclass=abc.ABCMeta):
     @formatdoc(**_docextras)
     def element_xray_transition(self, element, xraytransition, reference=None): #pragma: no cover
         """
-        Returns X-ray transition descriptor if x-ray transition has a 
+        Returns X-ray transition descriptor if x-ray transition has a
         probability greater than 0 for that element.
 
         {element}
@@ -244,9 +244,9 @@ class _Database(object, metaclass=abc.ABCMeta):
         """
         Prints all x-ray transitions for an element, with their different
         notations and energy.
-        
+
         {element}
-        
+
         :arg file: file for output, default to standard out
         """
         header = ['IUPAC', 'Siegbahn', 'Energy (eV)', 'Probability']
@@ -412,9 +412,9 @@ class _Database(object, metaclass=abc.ABCMeta):
     def xray_transition(self, xraytransition): #pragma: no cover
         """
         Returns x-ray transition descriptor.
-        
+
         {xraytransition}
-        
+
         :return: x-ray transition descriptor
         :rtype: :class:`XrayTransition`
         {exception}
@@ -426,7 +426,7 @@ class _Database(object, metaclass=abc.ABCMeta):
     def xray_transition_notation(self, xraytransition, notation, encoding='utf16', reference=None): #pragma: no cover
         """
         Returns notation of an x-ray transition.
-        
+
         {xraytransition}
         {notation}
         {encoding}
@@ -554,11 +554,11 @@ class _Database(object, metaclass=abc.ABCMeta):
     def xray_line(self, element, line, reference=None):
         """
         Returns x-ray line descriptor.
-        
+
         {element}
         :arg line: either an x-ray transition or transition set
         {reference}
-        
+
         :return: x-ray line
         :rtype: :class:`XrayLine`
         {exception}
