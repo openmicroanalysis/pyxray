@@ -6,82 +6,73 @@ __all__ = ['Element', 'AtomicShell', 'AtomicSubshell', 'XrayTransition',
            'XrayTransitionSet', 'XrayLine', 'Language', 'Notation', 'Reference']
 
 # Standard library modules.
+import dataclasses
+import typing
 
 # Third party modules.
 
 # Local modules.
-from pyxray.cbook import Immutable, Cachable, Validable, Reprable
 
 # Globals and constants variables.
 
-class _Descriptor(Immutable, Validable, Cachable, Reprable):
-    pass
-
-class Element(metaclass=_Descriptor,
-              attrs=('atomic_number',)):
-
-    @classmethod
-    def validate(cls, atomic_number):
-        if atomic_number < 1 or atomic_number > 118:
+@dataclasses.dataclass(frozen=True)
+class Element:
+    atomic_number: int
+    
+    def __post_init__(self):
+        if self.atomic_number < 1 or self.atomic_number > 118:
             raise ValueError('Atomic number ({0}) must be [1, 118]'
-                             .format(atomic_number))
+                             .format(self.atomic_number))
 
-    def _repr_inner(self):
-        return 'z={0}'.format(self.z)
+    def __repr__(self):
+        return '{}(z={})'.format(self.__class__.__name__, self.atomic_number)
 
     @property
     def z(self):
         return self.atomic_number
 
-class AtomicShell(metaclass=_Descriptor,
-                  attrs=('principal_quantum_number',)):
-
-    @classmethod
-    def validate(cls, principal_quantum_number):
-        if principal_quantum_number < 1:
+@dataclasses.dataclass(frozen=True)
+class AtomicShell:
+    principal_quantum_number: int
+    
+    def __post_init__(self):
+        if self.principal_quantum_number < 1:
             raise ValueError('Principal quantum number ({0}) must be [1, inf['
-                             .format(principal_quantum_number))
+                             .format(self.principal_quantum_number))
 
-    def _repr_inner(self):
-        return 'n={0}'.format(self.n)
+    def __repr__(self):
+        return '{}(n={})'.format(self.__class__.__name__, self.principal_quantum_number)
 
     @property
     def n(self):
         return self.principal_quantum_number
 
-class AtomicSubshell(metaclass=_Descriptor,
-                     attrs=('atomic_shell',
-                            'azimuthal_quantum_number',
-                            'total_angular_momentum_nominator')):
+@dataclasses.dataclass(frozen=True)
+class AtomicSubshell:
+    atomic_shell: AtomicShell
+    azimuthal_quantum_number: int
+    total_angular_momentum_nominator: int
 
-    @classmethod
-    def validate(cls,
-                 atomic_shell,
-                 azimuthal_quantum_number,
-                 total_angular_momentum_nominator):
-        if not isinstance(atomic_shell, AtomicShell):
-            atomic_shell = AtomicShell(atomic_shell)
+    def __post_init__(self):
+        if not isinstance(self.atomic_shell, AtomicShell):
+            object.__setattr__(self, 'atomic_shell', AtomicShell(self.atomic_shell))
 
         lmin = 0
-        lmax = atomic_shell.principal_quantum_number - 1
-        jmin_n = 2 * abs(azimuthal_quantum_number - 0.5)
-        jmax_n = 2 * abs(azimuthal_quantum_number + 0.5)
+        lmax = self.atomic_shell.principal_quantum_number - 1
+        jmin_n = 2 * abs(self.azimuthal_quantum_number - 0.5)
+        jmax_n = 2 * abs(self.azimuthal_quantum_number + 0.5)
 
-        if azimuthal_quantum_number < lmin or \
-                azimuthal_quantum_number > lmax:
+        if self.azimuthal_quantum_number < lmin or \
+                self.azimuthal_quantum_number > lmax:
             raise ValueError('Azimuthal quantum number ({0}) must be between [{1}, {2}]'
-                             .format(azimuthal_quantum_number, lmin, lmax))
-        if total_angular_momentum_nominator < jmin_n or \
-                total_angular_momentum_nominator > jmax_n:
+                             .format(self.azimuthal_quantum_number, lmin, lmax))
+        if self.total_angular_momentum_nominator < jmin_n or \
+                self.total_angular_momentum_nominator > jmax_n:
             raise ValueError('Total angular momentum ({0}) must be between [{1}, {2}]'
-                             .format(total_angular_momentum_nominator, jmin_n, jmax_n))
-
-        return (atomic_shell,
-                azimuthal_quantum_number,
-                total_angular_momentum_nominator)
-
-    def _repr_inner(self):
-        return 'n={0}, l={1}, j={2:.1f}'.format(self.n, self.l, self.j)
+                             .format(self.total_angular_momentum_nominator, jmin_n, jmax_n))
+    
+    def __repr__(self):
+        return '{}(n={}, l={}, j={:.1f})'.format(self.__class__.__name__, self.n, self.l, self.j)
 
     @property
     def principal_quantum_number(self):
@@ -107,9 +98,17 @@ class AtomicSubshell(metaclass=_Descriptor,
     def j(self):
         return self.total_angular_momentum
 
-class XrayTransition(metaclass=_Descriptor,
-                     attrs=('source_subshell',
-                            'destination_subshell')):
+@dataclasses.dataclass(frozen=True)
+class XrayTransition:
+    source_subshell: AtomicSubshell
+    destination_subshell: AtomicSubshell
+    
+    def __post_init__(self):
+        if not isinstance(self.source_subshell, AtomicSubshell):
+            object.__setattr__(self, 'source_subshell', AtomicSubshell(*self.source_subshell))
+        
+        if not isinstance(self.destination_subshell, AtomicSubshell):
+            object.__setattr__(self, 'destination_subshell', AtomicSubshell(*self.destination_subshell))
 
     @classmethod
     def is_radiative(cls, source_subshell, destination_subshell):
@@ -150,48 +149,47 @@ class XrayTransition(metaclass=_Descriptor,
 
         return True
 
-    @classmethod
-    def validate(cls, source_subshell, destination_subshell):
-        if not isinstance(source_subshell, AtomicSubshell):
-            source_subshell = AtomicSubshell(source_subshell)
-        if not isinstance(destination_subshell, AtomicSubshell):
-            destination_subshell = AtomicSubshell(destination_subshell)
+    def __repr__(self):
+        return '{}([n={src.n}, l={src.l}, j={src.j:.1f}] -> [n={dest.n}, l={dest.l}, j={dest.j:.1f}])'\
+            .format(self.__class__.__name__, 
+                    src=self.source_subshell,
+                    dest=self.destination_subshell)
 
-        return (source_subshell, destination_subshell)
-
-    def _repr_inner(self):
-        r = '[n={src.n}, l={src.l}, j={src.j:.1f}]'
-        r += ' -> [n={dest.n}, l={dest.l}, j={dest.j:.1f}]'
-        return r.format(src=self.source_subshell,
-                        dest=self.destination_subshell)
-
-class XrayTransitionSet(metaclass=_Descriptor,
-                        attrs=('possible_transitions',)):
-
-    @classmethod
-    def validate(cls, possible_transitions):
-        transitions2 = set()
-        for transition in possible_transitions:
+@dataclasses.dataclass(frozen=True)
+class XrayTransitionSet:
+    possible_transitions: typing.Tuple[XrayTransition]
+    
+    def __post_init__(self):
+        possible_transitions = set()
+        for transition in self.possible_transitions:
             if not isinstance(transition, XrayTransition):
                 transition = XrayTransition(*transition)
-            transitions2.add(transition)
-        return (frozenset(transitions2),)
+            possible_transitions.add(transition)
+            
+        if not possible_transitions:
+            raise ValueError('At least one transition must be defined')
+        
+        object.__setattr__(self, 'possible_transitions', tuple(possible_transitions))
 
-    def _repr_inner(self):
-        return '{0:d} possible transitions'.format(len(self.possible_transitions))
+    def __repr__(self):
+        return '{}({:d} possible transitions)'.format(self.__class__.__name__, len(self.possible_transitions))
 
-class XrayLine(metaclass=_Descriptor,
-               attrs=('element', 'transitions', 'iupac', 'siegbahn', 'energy_eV')):
+@dataclasses.dataclass(frozen=True)
+class XrayLine:
+    element: Element
+    transitions: typing.Tuple[XrayTransition]
+    iupac: str
+    siegbahn: str
+    energy_eV: float
+    
+    def __post_init__(self):
+        if not isinstance(self.element, Element):
+            object.__setattr__(self, 'element', Element(self.element))
+        
+        object.__setattr__(self, 'transitions', tuple(self.transitions))
 
-    @classmethod
-    def validate(cls, element, transitions, iupac, siegbahn, energy_eV):
-        if not isinstance(element, Element):
-            element = Element(element)
-        transitions = tuple(transitions)
-        return (element, transitions, iupac, siegbahn, energy_eV)
-
-    def _repr_inner(self):
-        return self.iupac
+    def __repr__(self):
+        return '{}({})'.format(self.__class__.__name__, self.iupac)
 
     @property
     def atomic_number(self):
@@ -201,48 +199,58 @@ class XrayLine(metaclass=_Descriptor,
     def z(self):
         return self.element.atomic_number
 
-class Language(metaclass=_Descriptor,
-               attrs=('code',)):
+@dataclasses.dataclass(frozen=True)
+class Language:
+    code: str
 
-    @classmethod
-    def validate(cls, code):
-        lencode = len(code)
+    def __post_init__(self):
+        lencode = len(self.code)
         if lencode < 2 or lencode > 3:
             raise ValueError('Code must be between 2 and 3 characters')
-        code = code.lower()
-        return (code,)
+        
+        object.__setattr__(self, 'code', self.code.lower())
+        
+    def __repr__(self):
+        return '{}({})'.format(self.__class__.__name__, self.code)
 
-class Notation(metaclass=_Descriptor,
-               attrs=('name',)):
-
-    @classmethod
-    def validate(cls, name):
-        if not name:
+@dataclasses.dataclass(frozen=True)
+class Notation:
+    name: str
+    
+    def __post_init__(self):
+        if not self.name:
             raise ValueError('Name cannot be empty')
-        name = name.lower()
-        return (name,)
+        
+        object.__setattr__(self, 'name', self.name.lower())
+        
+    def __repr__(self):
+        return '{}({})'.format(self.__class__.__name__, self.name)
 
-class Reference(metaclass=_Descriptor,
-                attrs=('bibtexkey', 'author', 'year', 'title', 'type',
-                       'booktitle', 'editor', 'pages', 'edition',
-                       'journal', 'school', 'address', 'url', 'note',
-                       'number', 'series', 'volume', 'publisher',
-                       'organization', 'chapter', 'howpublished', 'doi')):
+@dataclasses.dataclass(frozen=True)
+class Reference:
+    bibtexkey: str
+    author: str = None
+    year: str = None
+    title: str = None
+    type: str = None
+    booktitle: str = None
+    editor: str = None
+    pages: str = None
+    edition: str = None
+    journal: str = None
+    school: str = None
+    address: str = None
+    url: str = None
+    note: str = None
+    number: str = None
+    series: str = None
+    volume: str = None
+    publisher: str = None
+    organization: str = None
+    chapter: str = None
+    howpublished: str = None
+    doi: str = None
 
-    @classmethod
-    def validate(cls, bibtexkey, author=None, year=None, title=None,
-                type=None, booktitle=None, editor=None, pages=None, #@ReservedAssignment
-                edition=None, journal=None, school=None, address=None,
-                url=None, note=None, number=None, series=None, volume=None,
-                publisher=None, organization=None, chapter=None,
-                howpublished=None, doi=None):
-        if not bibtexkey:
-            raise ValueError('A BibTeX key must be defined')
-
-        return (bibtexkey, author, year, title, type, booktitle, editor,
-                pages, edition, journal, school, address, url, note,
-                number, series, volume, publisher, organization,
-                chapter, howpublished, doi)
-
-    def _repr_inner(self):
-        return '{0}'.format(self.bibtexkey)
+    def __repr__(self):
+        return '{}({})'.format(self.__class__.__name__, self.bibtexkey)
+    

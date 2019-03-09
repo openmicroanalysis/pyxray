@@ -3,153 +3,160 @@ Definition of properties.
 """
 
 # Standard library modules.
+import dataclasses
 
 # Third party modules.
 
 # Local modules.
-from pyxray.cbook import Immutable, Validable, Reprable
+from pyxray.descriptor import \
+    (Element, Reference, AtomicShell, AtomicSubshell, XrayTransition, 
+     XrayTransitionSet, Notation, Language)
 
 # Globals and constants variables.
 
-class _Property(Immutable, Validable, Reprable):
-    pass
+@dataclasses.dataclass(frozen=True)
+class ElementSymbol:
+    reference: Reference
+    element: Element
+    symbol: str
 
-class ElementSymbol(metaclass=_Property,
-                    attrs=('reference', 'element', 'symbol')):
-
-    @classmethod
-    def validate(cls, reference, element, symbol):
-        if len(symbol) == 0 or len(symbol) > 3:
+    def __post_init__(self):
+        if len(self.symbol) == 0 or len(self.symbol) > 3:
             raise ValueError('Symbol should be between 1 and 3 characters')
-        if not symbol[0].isupper():
+        
+        if not self.symbol[0].isupper():
             raise ValueError("Symbol should start with a capital letter")
 
-class ElementName(metaclass=_Property,
-                  attrs=('reference', 'element', 'language', 'name')):
-
-    @classmethod
-    def validate(cls, reference, element, language, name):
-        if not name:
+@dataclasses.dataclass(frozen=True)
+class ElementName:
+    reference: Reference
+    element: Element
+    language: Language
+    name: str
+    
+    def __post_init__(self):
+        if not self.name:
             raise ValueError('A name must be specified')
 
-class ElementAtomicWeight(metaclass=_Property,
-                          attrs=('reference', 'element', 'value')):
+@dataclasses.dataclass(frozen=True)
+class ElementAtomicWeight:
+    reference: Reference
+    element: Element
+    value: float
 
-    @classmethod
-    def validate(cls, reference, element, value):
-        if value <= 0.0:
+    def __post_init__(self):
+        if self.value <= 0.0:
             raise ValueError('Value must be greater than 0.0')
 
-class ElementMassDensity(metaclass=_Property,
-                          attrs=('reference', 'element', 'value_kg_per_m3')):
+@dataclasses.dataclass(frozen=True)
+class ElementMassDensity:
+    reference: Reference
+    element: Element
+    value_kg_per_m3: float
 
-    @classmethod
-    def validate(cls, reference, element, value_kg_per_m3):
-        if value_kg_per_m3 <= 0.0:
+    def __post_init__(self):
+        if self.value_kg_per_m3 <= 0.0:
             raise ValueError('Value must be greater than 0.0')
-        return reference, element, value_kg_per_m3
 
-class AtomicShellNotation(metaclass=_Property,
-                          attrs=('reference', 'atomic_shell', 'notation',
-                                 'ascii', 'utf16', 'html', 'latex')):
+@dataclasses.dataclass(frozen=True)
+class AtomicShellNotation:
+    reference: Reference
+    atomic_shell: AtomicShell
+    notation: Notation
+    ascii: str
+    utf16: str
+    html: str
+    latex: str
 
-    @classmethod
-    def validate(cls, reference, atomic_shell, notation,
-                 ascii, utf16=None, html=None, latex=None):
-        pass
+@dataclasses.dataclass(frozen=True)
+class AtomicSubshellNotation:
+    reference: Reference
+    atomic_subshell: AtomicSubshell
+    notation: Notation
+    ascii: str
+    utf16: str
+    html: str
+    latex: str
 
-class AtomicSubshellNotation(metaclass=_Property,
-                             attrs=('reference', 'atomic_subshell', 'notation',
-                                    'ascii', 'utf16', 'html', 'latex')):
+@dataclasses.dataclass(frozen=True)
+class AtomicSubshellBindingEnergy:
+    reference: Reference
+    element: Element
+    atomic_subshell: AtomicSubshell
+    value_eV: float
 
-    @classmethod
-    def validate(cls, reference, atomic_subshell, notation,
-                 ascii, utf16=None, html=None, latex=None):
-        pass
+@dataclasses.dataclass(frozen=True)
+class AtomicSubshellRadiativeWidth:
+    reference: Reference
+    element: Element
+    atomic_subshell: AtomicSubshell
+    value_eV: float
 
-class AtomicSubshellBindingEnergy(metaclass=_Property,
-                                  attrs=('reference', 'element', 'atomic_subshell',
-                                         'value_eV')):
+@dataclasses.dataclass(frozen=True)
+class AtomicSubshellNonRadiativeWidth:
+    reference: Reference
+    element: Element
+    atomic_subshell: AtomicSubshell
+    value_eV: float
 
-    @classmethod
-    def validate(cls, reference, element, atomic_subshell, value_eV):
-        pass
+@dataclasses.dataclass(frozen=True)
+class AtomicSubshellOccupancy:
+    reference: Reference
+    element: Element
+    atomic_subshell: AtomicSubshell
+    value: float
 
-class AtomicSubshellRadiativeWidth(metaclass=_Property,
-                                   attrs=('reference', 'element', 'atomic_subshell',
-                                          'value_eV')):
+@dataclasses.dataclass(frozen=True)
+class XrayTransitionNotation:
+    reference: Reference
+    xraytransition: XrayTransition
+    notation: Notation
+    ascii: str
+    utf16: str
+    html: str
+    latex: str
 
-    @classmethod
-    def validate(cls, reference, element, atomic_subshell, value_eV):
-        pass
+@dataclasses.dataclass(frozen=True)
+class XrayTransitionEnergy:
+    reference: Reference
+    element: Element
+    xraytransition: XrayTransition
+    value_eV: float
 
-class AtomicSubshellNonRadiativeWidth(metaclass=_Property,
-                                      attrs=('reference', 'element', 'atomic_subshell',
-                                             'value_eV')):
+@dataclasses.dataclass(frozen=True)
+class XrayTransitionProbability:
+    reference: Reference
+    element: Element
+    xraytransition: XrayTransition
+    value: float
 
-    @classmethod
-    def validate(cls, reference, element, atomic_subshell, value_eV):
-        pass
+@dataclasses.dataclass(frozen=True)
+class XrayTransitionRelativeWeight:
+    reference: Reference
+    element: Element
+    xraytransition: XrayTransition
+    value: float
 
-class AtomicSubshellOccupancy(metaclass=_Property,
-                              attrs=('reference', 'element', 'atomic_subshell',
-                                     'value')):
+@dataclasses.dataclass(frozen=True)
+class XrayTransitionSetNotation:
+    reference: Reference
+    xraytransitionset: XrayTransitionSet
+    notation: Notation
+    ascii: str
+    utf16: str
+    html: str
+    latex: str
 
-    @classmethod
-    def validate(cls, reference, element, atomic_subshell, value_eV):
-        pass
+@dataclasses.dataclass(frozen=True)
+class XrayTransitionSetEnergy:
+    reference: Reference
+    element: Element
+    xraytransitionset: XrayTransitionSet
+    value_eV: float
 
-class XrayTransitionNotation(metaclass=_Property,
-                             attrs=('reference', 'xraytransition', 'notation',
-                                    'ascii', 'utf16', 'html', 'latex')):
-
-    @classmethod
-    def validate(cls, reference, xraytransition, notation,
-                 ascii, utf16=None, html=None, latex=None):
-        pass
-
-class XrayTransitionEnergy(metaclass=_Property,
-                           attrs=('reference', 'element', 'xraytransition', 'value_eV')):
-
-    @classmethod
-    def validate(cls, reference, element, xraytransition, value_eV):
-        pass
-
-class XrayTransitionProbability(metaclass=_Property,
-                                attrs=('reference', 'element', 'xraytransition', 'value')):
-
-    @classmethod
-    def validate(cls, reference, element, xraytransition, value):
-        pass
-
-class XrayTransitionRelativeWeight(metaclass=_Property,
-                                   attrs=('reference', 'element', 'xraytransition', 'value')):
-
-    @classmethod
-    def validate(cls, reference, element, xraytransition, value):
-        pass
-
-class XrayTransitionSetNotation(metaclass=_Property,
-                                attrs=('reference', 'xraytransitionset', 'notation',
-                                       'ascii', 'utf16', 'html', 'latex')):
-
-    @classmethod
-    def validate(cls, reference, xraytransitionset, notation,
-                 ascii, utf16=None, html=None, latex=None):
-        pass
-
-class XrayTransitionSetEnergy(metaclass=_Property,
-                              attrs=('reference', 'element', 'xraytransitionset',
-                                     'value_eV')):
-
-    @classmethod
-    def validate(cls, reference, element, xraytransitionset, value_eV):
-        pass
-
-class XrayTransitionSetRelativeWeight(metaclass=_Property,
-                                      attrs=('reference', 'element', 'xraytransitionset',
-                                             'value')):
-
-    @classmethod
-    def validate(cls, reference, element, xraytransitionset, value):
-        pass
+@dataclasses.dataclass(frozen=True)
+class XrayTransitionSetRelativeWeight:
+    reference: Reference
+    element: Element
+    xraytransitionset: XrayTransitionSet
+    value: float
