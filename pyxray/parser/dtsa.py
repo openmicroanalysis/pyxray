@@ -85,6 +85,12 @@ def line_label_lookup(line_label):
         line_label = 'Kb5I'
     elif line_label == 'Leta':
         line_label = 'Ln'
+    elif line_label == 'Lb5':
+        line_label = 'L3-O5'
+    elif line_label == 'Lg11':
+        line_label = 'L1-N5'
+    elif line_label == 'Lu':
+        line_label = 'L3-N7'
     elif line_label == 'L1M1':
         line_label = 'L1-M1'
     elif line_label == 'L1N1':
@@ -155,6 +161,10 @@ def line_label_lookup(line_label):
         line_label = 'M4-O2'
     elif line_label == 'M5O3':
         line_label = 'M5-O3'
+    elif line_label == 'Mz1':
+        line_label = 'M5-N3'
+    elif line_label == 'Mz2':
+        line_label = 'M4-N2'
 
     return line_label
 
@@ -185,6 +195,7 @@ class DtsaLineParser(_Parser):
                 except ValueError:
                     pass
 
+        unparse_lines = set()
         length = 2 * len(line_data)
         for atomic_number, energy_eV, fraction, line_label in line_data:
             line_label = line_label_lookup(line_label)
@@ -194,14 +205,17 @@ class DtsaLineParser(_Parser):
                 element = Element(atomic_number)
 
                 prop = XrayTransitionEnergy(DTSA1992, element, transition, energy_eV)
-                logger.debug('Parsed: {0}'.format(prop))
+                # logger.debug('Parsed: {0}'.format(prop))
                 self.update(int((atomic_number - 1) / length * 100.0))
                 yield prop
 
                 prop = XrayTransitionProbability(DTSA1992, element, transition, fraction)
-                logger.debug('Parsed: {0}'.format(prop))
+                # logger.debug('Parsed: {0}'.format(prop))
                 self.update(int((atomic_number - 1) / length * 100.0))
                 yield prop
 
             except NotFound:
-                logger.debug('Line not found: {}'.format(line_label))
+                logger.debug('Line not found: {} for {}'.format(line_label, atomic_number))
+                unparse_lines.add(line_label)
+
+        logger.debug('Lines not found: {}'.format(sorted(unparse_lines)))

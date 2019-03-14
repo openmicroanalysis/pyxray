@@ -40,7 +40,7 @@ class TestDtsaLineParser(unittest.TestCase):
 
     def test__iter__(self):
         props = list(self.parser)
-        self.assertEqual(5938, len(props))
+        self.assertEqual(6434, len(props))
 
         self.assertEqual(3, props[0].element.z)
         self.assertAlmostEqual(54.3000, props[0].value_eV, 4)
@@ -51,6 +51,8 @@ class TestDtsaLineParser(unittest.TestCase):
         self.assertAlmostEqual(378.5100, props[-2].value_eV, 4)
         self.assertEqual(95, props[-1].element.z)
         self.assertAlmostEqual(0.01000, props[-1].value, 2)
+
+        # self.fail("Test if the testcase is working.")
 
 
 if __name__ == '__main__':  # pragma: no cover
