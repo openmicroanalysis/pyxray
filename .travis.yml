@@ -10,6 +10,7 @@ matrix:
 install:
 - pip install --cache-dir $HOME/.pip-cache --upgrade pip codecov
 - pip install --cache-dir $HOME/.pip-cache --upgrade -e .[build,develop]
+- python3 setup.py build
 script:
 - nosetests
 after_success: codecov
