@@ -41,9 +41,9 @@ class build_py(_build_py.build_py):
 with open(os.path.join(BASEDIR, 'README.rst'), 'r') as fp:
     LONG_DESCRIPTION = fp.read()
 
-INSTALL_REQUIRES = ['tabulate']
+INSTALL_REQUIRES = ['tabulate', 'dataclasses;python_version~="3.6"']
 EXTRAS_REQUIRE = {'develop': ['requests', 'requests-cache', 'progressbar2',
-                              'pytest', 'coverage']
+                              'pytest', 'pytest-cov']
                   }
 
 CMDCLASS = versioneer.get_cmdclass()
