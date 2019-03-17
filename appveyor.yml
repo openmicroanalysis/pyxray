@@ -11,4 +11,4 @@ install:
 build: off
 
 test_script:
-  - "%PYTHON%\\Scripts\\pytest.exe" --log-cli-level=DEBUG
+  - "%PYTHON%\\Scripts\\pytest.exe --log-cli-level=DEBUG"
