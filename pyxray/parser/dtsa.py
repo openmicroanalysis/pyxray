@@ -205,12 +205,12 @@ class DtsaLineParser(_Parser):
                 element = Element(atomic_number)
 
                 prop = XrayTransitionEnergy(DTSA1992, element, transition, energy_eV)
-                # logger.debug('Parsed: {0}'.format(prop))
+                logger.debug('Parsed: {0}'.format(prop))
                 self.update(int((atomic_number - 1) / length * 100.0))
                 yield prop
 
                 prop = XrayTransitionRelativeWeight(DTSA1992, element, transition, fraction)
-                # logger.debug('Parsed: {0}'.format(prop))
+                logger.debug('Parsed: {0}'.format(prop))
                 self.update(int((atomic_number - 1) / length * 100.0))
                 yield prop
 
