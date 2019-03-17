@@ -18,13 +18,13 @@ from pyxray.descriptor import \
 class ElementSymbol:
     reference: Reference
     element: Element
-    symbol: str
+    value: str
 
     def __post_init__(self):
-        if len(self.symbol) == 0 or len(self.symbol) > 3:
+        if len(self.value) == 0 or len(self.value) > 3:
             raise ValueError('Symbol should be between 1 and 3 characters')
         
-        if not self.symbol[0].isupper():
+        if not self.value[0].isupper():
             raise ValueError("Symbol should start with a capital letter")
 
 @dataclasses.dataclass(frozen=True)
@@ -32,10 +32,10 @@ class ElementName:
     reference: Reference
     element: Element
     language: Language
-    name: str
+    value: str
     
     def __post_init__(self):
-        if not self.name:
+        if not self.value:
             raise ValueError('A name must be specified')
 
 @dataclasses.dataclass(frozen=True)
@@ -109,7 +109,7 @@ class AtomicSubshellOccupancy:
 @dataclasses.dataclass(frozen=True)
 class XrayTransitionNotation:
     reference: Reference
-    xraytransition: XrayTransition
+    xray_transition: XrayTransition
     notation: Notation
     ascii: str
     utf16: str
@@ -120,27 +120,27 @@ class XrayTransitionNotation:
 class XrayTransitionEnergy:
     reference: Reference
     element: Element
-    xraytransition: XrayTransition
+    xray_transition: XrayTransition
     value_eV: float
 
 @dataclasses.dataclass(frozen=True)
 class XrayTransitionProbability:
     reference: Reference
     element: Element
-    xraytransition: XrayTransition
+    xray_transition: XrayTransition
     value: float
 
 @dataclasses.dataclass(frozen=True)
 class XrayTransitionRelativeWeight:
     reference: Reference
     element: Element
-    xraytransition: XrayTransition
+    xray_transition: XrayTransition
     value: float
 
 @dataclasses.dataclass(frozen=True)
 class XrayTransitionSetNotation:
     reference: Reference
-    xraytransitionset: XrayTransitionSet
+    xray_transition_set: XrayTransitionSet
     notation: Notation
     ascii: str
     utf16: str
@@ -151,12 +151,12 @@ class XrayTransitionSetNotation:
 class XrayTransitionSetEnergy:
     reference: Reference
     element: Element
-    xraytransitionset: XrayTransitionSet
+    xray_transition_set: XrayTransitionSet
     value_eV: float
 
 @dataclasses.dataclass(frozen=True)
 class XrayTransitionSetRelativeWeight:
     reference: Reference
     element: Element
-    xraytransitionset: XrayTransitionSet
+    xray_transition_set: XrayTransitionSet
     value: float

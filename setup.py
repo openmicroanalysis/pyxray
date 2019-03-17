@@ -2,6 +2,7 @@
 
 # Standard library modules.
 import os
+import sys
 
 # Third party modules.
 from setuptools import setup, find_packages
@@ -17,8 +18,17 @@ class build_py(_build_py.build_py):
 
     def run(self):
         # Build SQL database
+        import sqlalchemy
         import pyxray.sql.build
-        builder = pyxray.sql.build.SqliteDatabaseBuilder()
+        from loguru import logger
+
+        logger.remove()
+        logger.add(sys.stderr, level="INFO")
+
+        filepath = os.path.abspath(os.path.join(BASEDIR, 'pyxray', 'data', 'pyxray.db'))
+        engine = sqlalchemy.create_engine('sqlite:///' + filepath)
+
+        builder = pyxray.sql.build.SqlDatabaseBuilder(engine)
         builder.build()
 
         try:
@@ -46,15 +56,15 @@ ENTRY_POINTS = {
         'unattributed atomic shell notation = pyxray.parser.unattributed:AtomicShellNotationParser',
         'unattributed atomic subshell notation = pyxray.parser.unattributed:AtomicSubshellNotationParser',
         'unattributed transition notation = pyxray.parser.unattributed:TransitionNotationParser',
-        'unattributed family series transitionset notation = pyxray.parser.unattributed:FamilySeriesTransitionSetNotationParser',
-        'unattributed common transitionset notation = pyxray.parser.unattributed:CommonTransitionSetNotationParser',
+#        'unattributed family series transitionset notation = pyxray.parser.unattributed:FamilySeriesTransitionSetNotationParser',
+#        'unattributed common transitionset notation = pyxray.parser.unattributed:CommonTransitionSetNotationParser',
         'wikipedia element name = pyxray.parser.wikipedia:WikipediaElementNameParser',
         'sargent-welch element atomic weight = pyxray.parser.sargent_welch:SargentWelchElementAtomicWeightParser',
         'sargent-welch element mass density = pyxray.parser.sargent_welch:SargentWelchElementMassDensityParser',
         'jenkins1991 transition notation = pyxray.parser.jenkins1991:Jenkins1991TransitionNotationParser',
         'perkins1991 = pyxray.parser.perkins1991:Perkins1991Parser',
         'nist atomic weight = pyxray.parser.nist:NISTElementAtomicWeightParser',
-        'jeol transition = pyxray.parser.jeol:JEOLTransitionParser',
+#        'jeol transition = pyxray.parser.jeol:JEOLTransitionParser',
         'campbell2001 = pyxray.parser.campbell2001:CampbellAtomicSubshellRadiativeWidthParser',
        ],
       }

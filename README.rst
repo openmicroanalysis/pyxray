@@ -73,14 +73,14 @@ Variables of the methods are defined as follows
       subshell ``1s^{0.5}``
     * any notation (case insensitive)
 
-* ``xraytransition``:
+* ``xray_transition``:
     either
 
     * `XrayTransition <http://github.com/openmicroanalysis/pyxray/blob/master/pyxray/descriptor.py>`_ object
     * a ``tuple`` of source and destination subshells
     * any notation (case insensitive)
 
-* ``xraytransitionset``:
+* ``xray_transition_set``:
     either
 
     * `XrayTransitionSet <http://github.com/openmicroanalysis/pyxray/blob/master/pyxray/descriptor.py>`_ object
@@ -147,9 +147,9 @@ where the number of protons equal the number of electrons.
     Returns X-ray transition descriptor if x-ray transition has a
     probability greater than 0 for that element.
 
-* ``pyxray.element_xray_transitions(element, xraytransitionset=None, reference=None)``
+* ``pyxray.element_xray_transitions(element, xray_transition_set=None, reference=None)``
     Returns all X-ray transitions which have a probability greater than 0
-    for that element. If *xraytransitionset* is not ``None``, returns all
+    for that element. If *xray_transition_set* is not ``None``, returns all
     x-ray transitions for this x-ray transition set.
 
 Atomic shell properties
@@ -201,10 +201,10 @@ X-ray transition properties
 Properties associated with an electron transition, relaxation process of an
 electron between quantum states leading to X-rays emission.
 
-* ``pyxray.xray_transition(xraytransition)``
+* ``pyxray.xray_transition(xray_transition)``
     Returns X-ray transition descriptor.
 
-* ``pyxray.xray_transition_notation(xraytransition, notation, encoding='utf16', reference=None)``
+* ``pyxray.xray_transition_notation(xray_transition, notation, encoding='utf16', reference=None)``
     Returns notation of an X-ray transition.
 
     Examples:
@@ -214,7 +214,7 @@ electron between quantum states leading to X-rays emission.
         pyxray.transition_notation('Ka1', 'iupac') #=> 'K-L3'
         pyxray.transition_notation('L3-M1', 'siegbahn', 'ascii') #=> 'Ll'
 
-* ``pyxray.xray_transition_energy_eV(element, xraytransition, reference=None)``
+* ``pyxray.xray_transition_energy_eV(element, xray_transition, reference=None)``
     Returns energy of an element and X-ray transition (in eV).
 
     Examples:
@@ -224,10 +224,10 @@ electron between quantum states leading to X-rays emission.
         pyxray.xray_transition_energy_eV(14, 'Ka1') #=> 1740.0263764535946
         pyxray.xray_transition_energy_eV(14, 'Ma1') #=> NotFound exception
 
-* ``pyxray.xray_transition_probability(element, xraytransition, reference=None)``
+* ``pyxray.xray_transition_probability(element, xray_transition, reference=None)``
     Returns probability of an element and X-ray transition.
 
-* ``pyxray.xray_transition_relative_weight(element, xraytransition, reference=None)``
+* ``pyxray.xray_transition_relative_weight(element, xray_transition, reference=None)``
     Returns relative weight of an element and X-ray transition.
 
 X-ray transition set properties
@@ -236,16 +236,16 @@ X-ray transition set properties
 Properties associated with an X-ray transition set, an indistinguishable X-ray transition
 (e.g. Ka from Ka1/Ka2).
 
-* ``pyxray.xray_transitionset(xraytransitionset)``
+* ``pyxray.xray_transition_set(xray_transition_set)``
     Returns X-ray transition set descriptor.
 
-* ``pyxray.xray_transitionset_notation(xraytransitionset, notation, encoding='utf16', reference=None)``
+* ``pyxray.xray_transition_set_notation(xray_transition_set, notation, encoding='utf16', reference=None)``
     Returns notation of an X-ray transition set.
 
-* ``pyxray.xray_transitionset_energy_eV(element, xraytransitionset, reference=None)``
+* ``pyxray.xray_transition_set_energy_eV(element, xray_transition_set, reference=None)``
     Returns energy of an element and X-ray transition set (in eV).
 
-* ``pyxray.xray_transitionset_relative_weight(element, xraytransitionset, reference=None)``
+* ``pyxray.xray_transition_set_relative_weight(element, xray_transition_set, reference=None)``
     Returns relative weight of an element and X-ray transition set.
 
 X-ray line

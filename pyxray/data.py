@@ -3,8 +3,6 @@ Current implementation of the database
 """
 
 __all__ = [
-    'set_default_reference',
-    'get_default_reference',
     'element',
     'element_atomic_number',
     'element_symbol',
@@ -28,29 +26,28 @@ __all__ = [
     'xray_transition_energy_eV',
     'xray_transition_probability',
     'xray_transition_relative_weight',
-    'xray_transitionset',
-    'xray_transitionset_notation',
-    'xray_transitionset_energy_eV',
-    'xray_transitionset_relative_weight',
+    'xray_transition_set',
+    'xray_transition_set_notation',
+    'xray_transition_set_energy_eV',
+    'xray_transition_set_relative_weight',
     'xray_line',
     ]
 
 # Standard library modules.
 import os
-import logging
-logger = logging.getLogger(__name__)
-import sqlite3
-import atexit
 
 # Third party modules.
+import sqlalchemy
+
+from loguru import logger
 
 # Local modules.
-from pyxray.base import _Database, NotFound
+from pyxray.base import _DatabaseMixin, NotFound
 from pyxray.sql.data import SqlDatabase
 
 # Globals and constants variables.
 
-class _EmptyDatabase(_Database):
+class _EmptyDatabase(_DatabaseMixin):
 
     def element(self, element): #pragma: no cover
         raise NotFound
@@ -118,39 +115,30 @@ class _EmptyDatabase(_Database):
     def xray_transition_relative_weight(self, element, xraytransition, reference=None): #pragma: no cover
         raise NotFound
 
-    def xray_transitionset(self, xraytransitionset): #pragma: no cover
+    def xray_transition_set(self, xraytransitionset): #pragma: no cover
         raise NotFound
 
-    def xray_transitionset_notation(self, xraytransitionset, notation, encoding='utf16', reference=None): #pragma: no cover
+    def xray_transition_set_notation(self, xraytransitionset, notation, encoding='utf16', reference=None): #pragma: no cover
         raise NotFound
 
-    def xray_transitionset_energy_eV(self, element, xraytransitionset, reference=None): #pragma: no cover
+    def xray_transition_set_energy_eV(self, element, xraytransitionset, reference=None): #pragma: no cover
         raise NotFound
 
-    def xray_transitionset_relative_weight(self, element, xraytransitionset, reference=None): #pragma: no cover
+    def xray_transition_set_relative_weight(self, element, xraytransitionset, reference=None): #pragma: no cover
         raise NotFound
 
     def xray_line(self, element, line, reference=None): #pragma: no cover
         raise NotFound
 
-connection = None
-
 def _init_sql_database():
     basedir = os.path.abspath(os.path.dirname(__file__))
-    filepath = os.path.join(basedir, 'data', 'pyxray.sql')
+    filepath = os.path.join(basedir, 'data', 'pyxray.db')
     if not os.path.exists(filepath):
         raise RuntimeError('Cannot find SQL database at location {0}'
                            .format(filepath))
 
-    global connection
-    connection = sqlite3.connect(filepath, check_same_thread=False)
-    return SqlDatabase(connection)
-
-@atexit.register
-def _close_sql_database():
-    global connection
-    if hasattr(connection, 'close'):
-        connection.close()
+    engine = sqlalchemy.create_engine('sqlite:///' + filepath)
+    return SqlDatabase(engine)
 
 try:
     database = _init_sql_database()
@@ -158,8 +146,6 @@ except:
     logger.error("No SQL database found")
     database = _EmptyDatabase()
 
-set_default_reference = database.set_default_reference
-get_default_reference = database.get_default_reference
 element = database.element
 element_atomic_number = database.element_atomic_number
 element_symbol = database.element_symbol
@@ -183,8 +169,8 @@ xray_transition_notation = database.xray_transition_notation
 xray_transition_energy_eV = database.xray_transition_energy_eV
 xray_transition_probability = database.xray_transition_probability
 xray_transition_relative_weight = database.xray_transition_relative_weight
-xray_transitionset = database.xray_transitionset
-xray_transitionset_notation = database.xray_transitionset_notation
-xray_transitionset_energy_eV = database.xray_transitionset_energy_eV
-xray_transitionset_relative_weight = database.xray_transitionset_relative_weight
+xray_transition_set = database.xray_transition_set
+xray_transition_set_notation = database.xray_transition_set_notation
+xray_transition_set_energy_eV = database.xray_transition_set_energy_eV
+xray_transition_set_relative_weight = database.xray_transition_set_relative_weight
 xray_line = database.xray_line

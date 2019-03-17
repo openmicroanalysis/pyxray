@@ -12,6 +12,7 @@ import tabulate
 
 # Local modules.
 from pyxray.cbook import formatdoc
+import pyxray.descriptor as descriptor
 
 # Globals and constants variables.
 
@@ -36,12 +37,12 @@ _docextras = {'element': """:arg element: either
             azimuthal quantum number, and total angular momentum_nominator
             * any notation (case insensitive)""",
 
-            'xraytransition': """:arg xraytransition: either
+            'xray_transition': """:arg xray_transition: either
             * :class:`XrayTransition <pyxray.descriptor.XrayTransition>` object
             * a :class:`tuple` of source and destination subshells 
             * any notation (case insensitive)""",
 
-            'xraytransitionset': """:arg xraytransitionset: either
+            'xray_transition_set': """:arg xray_transition_set: either
             * :class:`XrayTransitionSet <pyxray.descriptor.XrayTransitionSet>` object
             * a :class:`tuple` of x-ray transitions
             * any notation (case insensitive)""",
@@ -62,41 +63,7 @@ _docextras = {'element': """:arg element: either
             'exception': """:raise NotFound:""",
 }
 
-class _Database(object, metaclass=abc.ABCMeta):
-
-    def __init__(self):
-        self._default_references = {}
-        self._available_methods = set()
-        for attr in self.__class__.__dict__:
-            if attr.startswith('_'): continue
-            self._available_methods.add(attr)
-
-    def set_default_reference(self, method, reference):
-        """
-        Set the default reference for a method.
-
-        :arg method: name of a method
-        :type method: :class:`str`
-
-        {reference}
-        """
-        if method not in self._available_methods:
-            raise ValueError('Unknown method: {0}'.format(method))
-        self._default_references[method] = reference
-
-    def get_default_reference(self, method):
-        """
-        Returns the default reference for a method.
-
-        :arg method: name of a method
-        :type method: :class:`str`
-
-        :return: reference
-        :rtype: :class:`Reference <pyxray.descriptor.Reference>` or :class:`str`
-        """
-        if method not in self._available_methods:
-            raise ValueError('Unknown method: {0}'.format(method))
-        return self._default_references.get(method)
+class _DatabaseMixin(metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     @formatdoc(**_docextras)
@@ -205,13 +172,13 @@ class _Database(object, metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     @formatdoc(**_docextras)
-    def element_xray_transition(self, element, xraytransition, reference=None): #pragma: no cover
+    def element_xray_transition(self, element, xray_transition, reference=None): #pragma: no cover
         """
         Returns X-ray transition descriptor if x-ray transition has a
         probability greater than 0 for that element.
 
         {element}
-        {xraytransition}
+        {xray_transition}
         {reference}
 
         :return: X-ray transition descriptor
@@ -222,15 +189,15 @@ class _Database(object, metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     @formatdoc(**_docextras)
-    def element_xray_transitions(self, element, xraytransitionset=None, reference=None): #pragma: no cover
+    def element_xray_transitions(self, element, xray_transition_set=None, reference=None): #pragma: no cover
         """
         Returns all x-ray transitions which have a probability greater
         than 0 for that element.
-        If *xraytransitionset* is not ``None``, returns all x-ray transitions
+        If *xray_transition_set* is not ``None``, returns all x-ray transitions
         for this x-ray transition set.
 
         {element}
-        {xraytransitionset}
+        {xray_transition_set}
         {reference}
 
         :return: X-ray transitions
@@ -252,24 +219,24 @@ class _Database(object, metaclass=abc.ABCMeta):
         header = ['IUPAC', 'Siegbahn', 'Energy (eV)', 'Probability']
 
         rows = []
-        for xraytransition in self.element_xray_transitions(element):
+        for xray_transition in self.element_xray_transitions(element):
             try:
-                iupac = self.xray_transition_notation(xraytransition, 'iupac')
+                iupac = self.xray_transition_notation(xray_transition, 'iupac')
             except:
                 iupac = ''
 
             try:
-                siegbahn = self.xray_transition_notation(xraytransition, 'siegbahn')
+                siegbahn = self.xray_transition_notation(xray_transition, 'siegbahn')
             except:
                 siegbahn = ''
 
             try:
-                energy_eV = self.xray_transition_energy_eV(element, xraytransition)
+                energy_eV = self.xray_transition_energy_eV(element, xray_transition)
             except:
                 energy_eV = ''
 
             try:
-                probability = self.xray_transition_probability(element, xraytransition)
+                probability = self.xray_transition_probability(element, xray_transition)
             except:
                 probability = ''
 
@@ -409,11 +376,11 @@ class _Database(object, metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     @formatdoc(**_docextras)
-    def xray_transition(self, xraytransition): #pragma: no cover
+    def xray_transition(self, xray_transition): #pragma: no cover
         """
         Returns x-ray transition descriptor.
 
-        {xraytransition}
+        {xray_transition}
 
         :return: x-ray transition descriptor
         :rtype: :class:`XrayTransition`
@@ -423,11 +390,11 @@ class _Database(object, metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     @formatdoc(**_docextras)
-    def xray_transition_notation(self, xraytransition, notation, encoding='utf16', reference=None): #pragma: no cover
+    def xray_transition_notation(self, xray_transition, notation, encoding='utf16', reference=None): #pragma: no cover
         """
         Returns notation of an x-ray transition.
 
-        {xraytransition}
+        {xray_transition}
         {notation}
         {encoding}
         {reference}
@@ -440,12 +407,12 @@ class _Database(object, metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     @formatdoc(**_docextras)
-    def xray_transition_energy_eV(self, element, xraytransition, reference=None): #pragma: no cover
+    def xray_transition_energy_eV(self, element, xray_transition, reference=None): #pragma: no cover
         """
         Returns energy of an element and X-ray transition (in eV).
 
         {element}
-        {xraytransition}
+        {xray_transition}
         {reference}
 
         :return: energy (in eV)
@@ -456,12 +423,12 @@ class _Database(object, metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     @formatdoc(**_docextras)
-    def xray_transition_probability(self, element, xraytransition, reference=None): #pragma: no cover
+    def xray_transition_probability(self, element, xray_transition, reference=None): #pragma: no cover
         """
         Returns probability of an element and X-ray transition.
 
         {element}
-        {xraytransition}
+        {xray_transition}
         {reference}
 
         :return: probability
@@ -472,12 +439,12 @@ class _Database(object, metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     @formatdoc(**_docextras)
-    def xray_transition_relative_weight(self, element, xraytransition, reference=None): #pragma: no cover
+    def xray_transition_relative_weight(self, element, xray_transition, reference=None): #pragma: no cover
         """
         Returns relative weight of an element and X-ray transition.
 
         {element}
-        {xraytransition}
+        {xray_transition}
         {reference}
 
         :return: relative weight
@@ -488,11 +455,11 @@ class _Database(object, metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     @formatdoc(**_docextras)
-    def xray_transitionset(self, xraytransitionset): #pragma: no cover
+    def xray_transition_set(self, xray_transition_set): #pragma: no cover
         """
         Returns X-ray transition set descriptor.
 
-        {xraytransitionset}
+        {xray_transition_set}
 
         :return: X-ray transition set descriptor
         :rtype: :class:`XrayTransitionSet`
@@ -502,11 +469,11 @@ class _Database(object, metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     @formatdoc(**_docextras)
-    def xray_transitionset_notation(self, xraytransitionset, notation, encoding='utf16', reference=None): #pragma: no cover
+    def xray_transition_set_notation(self, xray_transition_set, notation, encoding='utf16', reference=None): #pragma: no cover
         """
         Returns notation of an X-ray transition set.
 
-        {xraytransitionset}
+        {xray_transition_set}
         {notation}
         {encoding}
         {reference}
@@ -519,12 +486,12 @@ class _Database(object, metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     @formatdoc(**_docextras)
-    def xray_transitionset_energy_eV(self, element, xraytransitionset, reference=None): #pragma: no cover
+    def xray_transition_set_energy_eV(self, element, xray_transition_set, reference=None): #pragma: no cover
         """
         Returns energy of an element and X-ray transition set (in eV).
 
         {element}
-        {xraytransitionset}
+        {xray_transition_set}
         {reference}
 
         :return: energy (in eV)
@@ -535,12 +502,12 @@ class _Database(object, metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     @formatdoc(**_docextras)
-    def xray_transitionset_relative_weight(self, element, xraytransitionset, reference=None): #pragma: no cover
+    def xray_transition_set_relative_weight(self, element, xray_transition_set, reference=None): #pragma: no cover
         """
         Returns relative weight of an element and X-ray transition set.
 
         {element}
-        {xraytransitionset}
+        {xray_transition_set}
         {reference}
 
         :return: relative weight
@@ -563,4 +530,29 @@ class _Database(object, metaclass=abc.ABCMeta):
         :rtype: :class:`XrayLine`
         {exception}
         """
-        raise NotImplementedError
+        element = self.element(element)
+        symbol = self.element_symbol(element)
+
+        try:
+            transitions = [self.element_xray_transition(element, line, reference)]
+            method_notation = self.xray_transition_notation
+            method_energy = self.xray_transition_energy_eV
+
+        except NotFound:
+            transitions = self.element_xray_transitions(element, line, reference)
+            method_notation = self.xray_transitionset_notation
+            method_energy = self.xray_transitionset_energy_eV
+
+        iupac = '{} {}'.format(symbol, method_notation(line, 'iupac', 'utf16'))
+
+        try:
+            siegbahn = '{} {}'.format(symbol, method_notation(line, 'siegbahn', 'utf16'))
+        except:
+            siegbahn = iupac
+
+        try:
+            energy_eV = method_energy(element, line)
+        except NotFound:
+            energy_eV = 0.0
+
+        return descriptor.XrayLine(element, transitions, iupac, siegbahn, energy_eV)
