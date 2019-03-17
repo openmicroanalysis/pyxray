@@ -13,7 +13,7 @@ import pkg_resources
 # Local modules.
 from pyxray.parser.parser import _Parser
 from pyxray.descriptor import Reference, Element, AtomicSubshell
-from pyxray.property import AtomicSubshellBindingEnergy, XrayTransitionEnergy, XrayTransitionProbability
+from pyxray.property import AtomicSubshellBindingEnergy, XrayTransitionEnergy, XrayTransitionRelativeWeight
 from pyxray import xray_transition
 from pyxray.base import NotFound
 
@@ -209,7 +209,7 @@ class DtsaLineParser(_Parser):
                 self.update(int((atomic_number - 1) / length * 100.0))
                 yield prop
 
-                prop = XrayTransitionProbability(DTSA1992, element, transition, fraction)
+                prop = XrayTransitionRelativeWeight(DTSA1992, element, transition, fraction)
                 # logger.debug('Parsed: {0}'.format(prop))
                 self.update(int((atomic_number - 1) / length * 100.0))
                 yield prop
