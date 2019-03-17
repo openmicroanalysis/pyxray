@@ -1,17 +1,16 @@
 sudo: false
+dist: xenial
 language: python
-cache:
-  directories:
-  - $HOME/.pip-cache/
-matrix:
-  include:
-  - python: '3.6'
-    os: linux
+cache: pip
+python:
+  - '3.6'
+  - '3.7'
 install:
-- pip install --cache-dir $HOME/.pip-cache --upgrade pip codecov
-- pip install --cache-dir $HOME/.pip-cache --upgrade -e .[build,develop]
+- pip install --upgrade pip codecov
+- pip install --upgrade -e .[build,develop]
 script:
-- nosetests
-after_success: codecov
+- pytest
+after_success:
+- codecov
 notifications:
   email: false

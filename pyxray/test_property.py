@@ -2,10 +2,9 @@
 """ """
 
 # Standard library modules.
-import unittest
-import logging
 
 # Third party modules.
+import pytest
 
 # Local modules.
 from pyxray.descriptor import Reference, Element
@@ -13,49 +12,22 @@ from pyxray.property import ElementSymbol
 
 # Globals and constants variables.
 
-REFERENCE_TEST = Reference('test2016')
+@pytest.fixture
+def reference():
+    return Reference('test2016')
 
-class TestElementSymbol(unittest.TestCase):
+@pytest.fixture
+def element_symbol(reference):
+    return ElementSymbol(reference, Element(6), 'C')
 
-    def setUp(self):
-        super().setUp()
+def test_element_symbol(element_symbol, reference):
+    assert element_symbol.reference == reference
+    assert element_symbol.element == Element(6)
+    assert element_symbol.symbol == 'C'
 
-        self.prop = ElementSymbol(REFERENCE_TEST, Element(6), 'C')
+def test_element_symbol_validate(reference):
+    with pytest.raises(ValueError):
+        ElementSymbol(reference, Element(6), '')
+        ElementSymbol(reference, Element(6), 'CCC')
+        ElementSymbol(reference, Element(6), 'c')
 
-    def test__init__(self):
-        self.assertEqual(REFERENCE_TEST, self.prop.reference)
-        self.assertIs(REFERENCE_TEST, self.prop.reference)
-        self.assertEqual(Element(6), self.prop.element)
-        self.assertIs(Element(6), self.prop.element)
-        self.assertEqual('C', self.prop.symbol)
-
-    def testvalidable(self):
-        self.assertRaises(ValueError, ElementSymbol,
-                          REFERENCE_TEST, Element(6), '')
-        self.assertRaises(ValueError, ElementSymbol,
-                          REFERENCE_TEST, Element(6), 'CCCC')
-        self.assertRaises(ValueError, ElementSymbol,
-                          REFERENCE_TEST, Element(6), 'c')
-
-    def testimmutable(self):
-        self.assertRaises(AttributeError, setattr,
-                          self.prop, 'reference', None)
-        self.assertRaises(AttributeError, delattr,
-                          self.prop, 'reference')
-        self.assertRaises(AttributeError, setattr,
-                          self.prop, 'element', None)
-        self.assertRaises(AttributeError, delattr,
-                          self.prop, 'element')
-        self.assertRaises(AttributeError, setattr,
-                          self.prop, 'symbol', None)
-        self.assertRaises(AttributeError, delattr,
-                          self.prop, 'symbol')
-        self.assertRaises(AttributeError, setattr,
-                          self.prop, 'abc', 7)
-
-    def testreprable(self):
-        self.assertEqual('ElementSymbol(test2016, z=6, symbol=C)', repr(self.prop))
-
-if __name__ == '__main__': #pragma: no cover
-    logging.getLogger().setLevel(logging.DEBUG)
-    unittest.main()
