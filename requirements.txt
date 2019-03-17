@@ -1,2 +1,3 @@
 tabulate
 sqlalchemy
+loguru
