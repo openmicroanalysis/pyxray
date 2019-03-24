@@ -287,9 +287,37 @@ It is also cached to prevent multiple instances of the same x-ray line.
    xrayline2 = pyxray.xray_line('Al', 'Ka1')
    xrayline1 == xrayline2 #=> True
    xrayline1 is xrayline2 #=> True
+   
+Composition
+-----------
+
+Defines a composition of a compound.
+
+To create a composition, use the class methods:
+
+    - ``Composition.from_pure(z)``
+    - ``Composition.from_formula(formula)``
+    - ``Composition.from_mass_fractions(mass_fractions, formula=None)``
+    - ``Composition.from_atomic_fractions(atomic_fractions, formula=None)``
+
+Use the following attributes to access the composition values:
+
+    - ``mass_fractions``: ``dict`` where the keys are atomic numbers and the values weight fractions.
+    - ``atomic_fractions``: ``dict`` where the keys are atomic numbers and the values atomic fractions.
+    - ``formula``: chemical formula
+
+The composition object is immutable, i.e. it cannot be modified once created.
+Equality can be checked.
+It is hashable.
+It can be pickled or copied.
 
 Release notes
 =============
+
+1.5
+---
+
+- Add composition object
 
 1.4
 ---
@@ -380,7 +408,7 @@ supervision of Dr. Silvia Richter.
 
 Copyright (c) 2015-2016/06 Philippe Pinard and Silvia Richter
 
-Copyright (c) 2016/06-2017 Philippe Pinard
+Copyright (c) 2016/06-2019 Philippe Pinard
 
 
 
