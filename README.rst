@@ -295,16 +295,16 @@ Defines a composition of a compound.
 
 To create a composition, use the class methods:
 
-    - ``Composition.from_pure(z)``
-    - ``Composition.from_formula(formula)``
-    - ``Composition.from_mass_fractions(mass_fractions, formula=None)``
-    - ``Composition.from_atomic_fractions(atomic_fractions, formula=None)``
+* ``Composition.from_pure(z)``
+* ``Composition.from_formula(formula)``
+* ``Composition.from_mass_fractions(mass_fractions, formula=None)``
+* ``Composition.from_atomic_fractions(atomic_fractions, formula=None)``
 
 Use the following attributes to access the composition values:
 
-    - ``mass_fractions``: ``dict`` where the keys are atomic numbers and the values weight fractions.
-    - ``atomic_fractions``: ``dict`` where the keys are atomic numbers and the values atomic fractions.
-    - ``formula``: chemical formula
+* ``mass_fractions``: ``dict`` where the keys are atomic numbers and the values weight fractions.
+* ``atomic_fractions``: ``dict`` where the keys are atomic numbers and the values atomic fractions.
+* ``formula``: chemical formula
 
 The composition object is immutable, i.e. it cannot be modified once created.
 Equality can be checked.
