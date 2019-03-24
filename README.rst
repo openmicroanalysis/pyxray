@@ -20,7 +20,7 @@ subshells and X-ray transitions.
 The objects also provide critical information as the energy, existence and
 different notations of the X-ray transitions.
 
-*pyxray* supports 3.x (no Python 2.x support).
+*pyxray* supports 3.6+ (no Python 2.x support).
 
 Installation
 ============
@@ -291,6 +291,12 @@ It is also cached to prevent multiple instances of the same x-ray line.
 Release notes
 =============
 
+1.4
+---
+
+* `#13 <https://github.com/openmicroanalysis/pyxray/pull/13>`_ Add DTSA X-ray subshell and line data
+* `#14 <https://github.com/openmicroanalysis/pyxray/pull/14>`_ Use dataclasses for descriptors and properties
+
 1.3.4
 -----
 
@@ -322,6 +328,11 @@ Release notes
 -----
 
 * Add ``XrayLine`` class.
+
+Contributors
+============
+
+* `@drix00 <https://github.com/drix00>`_
 
 Development
 ===========
