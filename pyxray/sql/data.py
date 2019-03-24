@@ -624,12 +624,12 @@ class SqlDatabase(SelectMixin, _Database):
         symbol = self.element_symbol(element)
 
         try:
-            transitions = [self.element_xray_transition(element, line, reference)]
+            transitions = [self.element_xray_transition(element, line)]
             method_notation = self.xray_transition_notation
             method_energy = self.xray_transition_energy_eV
 
         except NotFound:
-            transitions = self.element_xray_transitions(element, line, reference)
+            transitions = self.element_xray_transitions(element, line)
             method_notation = self.xray_transitionset_notation
             method_energy = self.xray_transitionset_energy_eV
 
@@ -641,7 +641,7 @@ class SqlDatabase(SelectMixin, _Database):
             siegbahn = iupac
 
         try:
-            energy_eV = method_energy(element, line)
+            energy_eV = method_energy(element, line, reference)
         except NotFound:
             energy_eV = 0.0
 
