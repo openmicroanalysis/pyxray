@@ -159,16 +159,16 @@ class Composition:
     Defines a composition of a compound.
     
     To create a composition, use the class methods:
+    
         - :meth:`from_pure`
         - :meth:`from_formula`
         - :meth:`from_mass_fractions`
         - :meth:`from_atomic_fractions`
     
     Use the following attributes to access the composition values:
-        - :attr:`mass_fractions`: :class:`dict` where 
-            the keys are atomic numbers and the values weight fractions.
-        - :attr:`atomic_fractions`: :class:`dict` where 
-            the keys are atomic numbers and the values atomic fractions.
+    
+        - :attr:`mass_fractions`: :class:`dict` where the keys are atomic numbers and the values weight fractions.
+        - :attr:`atomic_fractions`: :class:`dict` where the keys are atomic numbers and the values atomic fractions.
         - :attr:`formula`: chemical formula
         
     The composition object is immutable, i.e. it cannot be modified once created.

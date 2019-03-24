@@ -6,14 +6,18 @@ Submodules
 
 .. toctree::
 
+   pyxray.parser.bearden1967
    pyxray.parser.campbell2001
+   pyxray.parser.dtsa
    pyxray.parser.jenkins1991
    pyxray.parser.jeol
    pyxray.parser.nist
    pyxray.parser.parser
    pyxray.parser.perkins1991
    pyxray.parser.sargent_welch
+   pyxray.parser.test_bearden1967
    pyxray.parser.test_campbell2001
+   pyxray.parser.test_dtsa
    pyxray.parser.test_jenkins1991
    pyxray.parser.test_jeol
    pyxray.parser.test_nist
