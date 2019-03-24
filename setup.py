@@ -31,7 +31,7 @@ class build_py(_build_py.build_py):
 with open(os.path.join(BASEDIR, 'README.rst'), 'r') as fp:
     LONG_DESCRIPTION = fp.read()
 
-INSTALL_REQUIRES = ['tabulate', 'dataclasses;python_version~="3.6"']
+INSTALL_REQUIRES = ['tabulate', 'dataclasses;python_version=="3.6.*"']
 EXTRAS_REQUIRE = {'develop': ['requests', 'requests-cache', 'progressbar2',
                               'pytest', 'pytest-cov']
                   }
@@ -56,6 +56,9 @@ ENTRY_POINTS = {
         'nist atomic weight = pyxray.parser.nist:NISTElementAtomicWeightParser',
         'jeol transition = pyxray.parser.jeol:JEOLTransitionParser',
         'campbell2001 = pyxray.parser.campbell2001:CampbellAtomicSubshellRadiativeWidthParser',
+        'dtsa1992 subshell = pyxray.parser.dtsa:DtsaSubshellParser',
+        'dtsa1992 transition = pyxray.parser.dtsa:DtsaLineParser',
+        'bearden1967 transition notation = pyxray.parser.bearden1967:Bearden1967XrayTransitionNotationParser',
        ],
       }
 
