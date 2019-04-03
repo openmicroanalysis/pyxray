@@ -1,5 +1,7 @@
 """"""
 
+__all__ = ['Composition']
+
 # Standard library modules.
 import math
 from types import MappingProxyType
@@ -40,7 +42,7 @@ def process_wildcard(fractions):
 def convert_mass_to_atomic_fractions(mass_fractions):
     """
     Converts a mass fraction :class:`dict` to an atomic fraction :class:`dict`.
-    
+
     Args:
         mass_fractions (dict): mass fraction :class:`dict`.
             The composition is specified by a dictionary.
@@ -65,7 +67,7 @@ def convert_mass_to_atomic_fractions(mass_fractions):
 def convert_atomic_to_mass_fractions(atomic_fractions):
     """
     Converts an atomic fraction :class:`dict` to a mass fraction :class:`dict`.
-    
+
     Args:
         atomic_fractions (dict): atomic fraction :class:`dict`.
             The composition is specified by a dictionary.
@@ -90,7 +92,7 @@ def convert_atomic_to_mass_fractions(atomic_fractions):
 def convert_formula_to_atomic_fractions(formula):
     """
     Converts a chemical formula to an atomic fraction :class:`dict`.
-    
+
     Args:
         formula (str): chemical formula, like Al2O3. No wildcard are accepted.
     """
@@ -123,7 +125,7 @@ def generate_name(atomic_fractions):
     The name is generated on the basis of a classical chemical formula.
     """
     if not atomic_fractions:
-        raise ValueError('At least one fraction must be defined')
+        return ''
 
     if len(atomic_fractions) == 1:
         z = list(atomic_fractions.keys())[0]
@@ -157,20 +159,20 @@ def generate_name(atomic_fractions):
 class Composition:
     """
     Defines a composition of a compound.
-    
+
     To create a composition, use the class methods:
-    
+
         - :meth:`from_pure`
         - :meth:`from_formula`
         - :meth:`from_mass_fractions`
         - :meth:`from_atomic_fractions`
-    
+
     Use the following attributes to access the composition values:
-    
+
         - :attr:`mass_fractions`: :class:`dict` where the keys are atomic numbers and the values weight fractions.
         - :attr:`atomic_fractions`: :class:`dict` where the keys are atomic numbers and the values atomic fractions.
         - :attr:`formula`: chemical formula
-        
+
     The composition object is immutable, i.e. it cannot be modified once created.
     Equality can be checked.
     It is hashable.
@@ -182,7 +184,7 @@ class Composition:
 
     def __init__(self, key, mass_fractions, atomic_fractions, formula):
         """
-        Private constructor. It should never be used. 
+        Private constructor. It should never be used.
         """
         if key != Composition._key:
             raise TypeError('Composition cannot be created using constructor')
@@ -197,7 +199,7 @@ class Composition:
     def from_pure(cls, z):
         """
         Creates a pure composition.
-        
+
         Args:
             z (int): atomic number
         """
@@ -207,7 +209,7 @@ class Composition:
     def from_formula(cls, formula):
         """
         Creates a composition from a chemical formula.
-        
+
         Args:
             formula (str): chemical formula
         """
@@ -218,11 +220,11 @@ class Composition:
     def from_mass_fractions(cls, mass_fractions, formula=None):
         """
         Creates a composition from a mass fraction :class:`dict`.
-        
+
         Args:
             mass_fractions (dict): mass fraction :class:`dict`.
                 The keys are atomic numbers and the values weight fractions.
-                Wildcard are accepted, e.g. ``{5: '?', 25: 0.4}`` where boron 
+                Wildcard are accepted, e.g. ``{5: '?', 25: 0.4}`` where boron
                 will get a mass fraction of 0.6.
             formula (str): optional chemical formula for the composition.
                 If ``None``, a formula will be generated for the composition.
@@ -237,11 +239,11 @@ class Composition:
     def from_atomic_fractions(cls, atomic_fractions, formula=None):
         """
         Creates a composition from an atomic fraction :class:`dict`.
-        
+
         Args:
             atomic_fractions (dict): atomic fraction :class:`dict`.
                 The keys are atomic numbers and the values atomic fractions.
-                Wildcard are accepted, e.g. ``{5: '?', 25: 0.4}`` where boron 
+                Wildcard are accepted, e.g. ``{5: '?', 25: 0.4}`` where boron
                 will get a atomic fraction of 0.6.
             formula (str): optional chemical formula for the composition.
                 If ``None``, a formula will be generated for the composition.
