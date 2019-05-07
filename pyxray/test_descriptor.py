@@ -227,6 +227,11 @@ def test_xrayline_eq(xrayline):
     assert xrayline != XrayLine(118, (XrayTransition((2, 1, 3), (1, 0, 1)),), 'a', 'z', 0.1)
     assert xrayline != XrayLine(118, (XrayTransition((2, 1, 3), (1, 0, 1)),), 'a', 'b', 999)
 
+def test_xrayline_compare(xrayline):
+    assert xrayline > XrayLine(117, (XrayTransition((2, 1, 3), (1, 0, 1)),), 'a', 'b', 0.1)
+    assert xrayline > XrayLine(118, (XrayTransition((2, 1, 3), (1, 0, 1)),), 'a', 'b', 0.01)
+    assert xrayline > XrayLine(118, (XrayTransition((2, 1, 3), (1, 0, 1)),), 'a', 'b', 0.2)
+
 def test_xrayline_hash(xrayline):
     assert hash(xrayline) == hash(XrayLine(118, (XrayTransition((2, 1, 3), (1, 0, 1)),), 'a', 'b', 0.1))
 

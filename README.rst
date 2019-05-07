@@ -280,6 +280,7 @@ The x-ray line can either be a
 As any other descriptors, X-ray line objects are immutable and hashable so
 they can be used as keys of a dictionary.
 It is also cached to prevent multiple instances of the same x-ray line.
+X-ray line are ordered by their atomic number and energy.
 
 .. code:: python
 
@@ -287,7 +288,8 @@ It is also cached to prevent multiple instances of the same x-ray line.
    xrayline2 = pyxray.xray_line('Al', 'Ka1')
    xrayline1 == xrayline2 #=> True
    xrayline1 is xrayline2 #=> True
-   
+   pyxray.xray_line(13, 'Ka1') < pyxray.xray_line(14, 'Ka1')
+
 Composition
 -----------
 
@@ -313,6 +315,11 @@ It can be pickled or copied.
 
 Release notes
 =============
+
+Development
+-----------
+
+- Add ordering of Element, AtomicShell, AtomicSubshell and XrayLine.
 
 1.5
 ---
