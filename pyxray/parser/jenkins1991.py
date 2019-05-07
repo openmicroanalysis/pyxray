@@ -54,13 +54,13 @@ O9 = AtomicSubshell(5, 4, 9)
 KA1 = XrayTransition(L3, K)
 KA2 = XrayTransition(L2, K)
 KB1 = XrayTransition(M3, K)
-KB2_1 = XrayTransition(N3, K)
+KB2 = XrayTransition(N3, K)
 KB2_2 = XrayTransition(N2, K)
 KB3 = XrayTransition(M2, K)
-KB4_1 = XrayTransition(N5, K)
+KB4 = XrayTransition(N5, K)
 KB4_2 = XrayTransition(N4, K)
 KB4x = XrayTransition(N4, K)
-KB5_1 = XrayTransition(M5, K)
+KB5 = XrayTransition(M5, K)
 KB5_2 = XrayTransition(M4, K)
 
 LA1 = XrayTransition(M5, L3)
@@ -69,6 +69,7 @@ LB1 = XrayTransition(M4, L2)
 LB2 = XrayTransition(N5, L3)
 LB3 = XrayTransition(M3, L1)
 LB4 = XrayTransition(M2, L1)
+LB5 = XrayTransition(O4, L3)
 LB6 = XrayTransition(N1, L3)
 LB7 = XrayTransition(O1, L3)
 LB9 = XrayTransition(M5, L1)
@@ -83,17 +84,19 @@ LG4_p = XrayTransition(O2, L1)
 LG5 = XrayTransition(N1, L2)
 LG6 = XrayTransition(O4, L2)
 LG8 = XrayTransition(O1, L2)
-LG8_p = XrayTransition(N6, L2)
 LN = XrayTransition(M1, L2)
 LL = XrayTransition(M1, L3)
 LS = XrayTransition(M3, L3)
 LT = XrayTransition(M2, L3)
+LU = XrayTransition(N6, L3)
 LV = XrayTransition(N6, L2)
 
 MA1 = XrayTransition(N7, M5)
 MA2 = XrayTransition(N6, M5)
 MB = XrayTransition(N6, M4)
 MG = XrayTransition(N5, M3)
+MZ1 = XrayTransition(N3, M5) # From EPQ Library
+MZ2 = XrayTransition(N2, M4) # From EPQ Library
 
 class Jenkins1991TransitionNotationParser(_Parser):
 
@@ -113,11 +116,11 @@ class Jenkins1991TransitionNotationParser(_Parser):
                                      'K\u03b21',
                                      'K&beta;<sub>1</sub>',
                                      '\\ensuremath{\\mathrm{K}\\beta_1}')
-        yield XrayTransitionNotation(JENKINS1991, KB2_1, SIEGBAHN,
-                                     'Kb2I',
-                                     'K\u03b22I',
-                                     'K&beta;<sub>2</sub><sup>I</sup>',
-                                     '\\ensuremath{\\mathrm{K}\\beta_2^I}')
+        yield XrayTransitionNotation(JENKINS1991, KB2, SIEGBAHN,
+                                     'Kb2',
+                                     'K\u03b22',
+                                     'K&beta;<sub>2</sub>',
+                                     '\\ensuremath{\\mathrm{K}\\beta_2}')
         yield XrayTransitionNotation(JENKINS1991, KB2_2, SIEGBAHN,
                                      'Kb2II',
                                      'K\u03b22II',
@@ -128,11 +131,11 @@ class Jenkins1991TransitionNotationParser(_Parser):
                                      'K\u03b23',
                                      'K&beta;<sub>3</sub>',
                                     '\\ensuremath{\\mathrm{K}\\beta_3}')
-        yield XrayTransitionNotation(JENKINS1991, KB4_1, SIEGBAHN,
-                                     'Kb4I',
-                                     'K\u03b24I',
-                                     'K&beta;<sub>4</sub><sup>I</sup>',
-                                     '\\ensuremath{\\mathrm{K}\\beta_4^I}')
+        yield XrayTransitionNotation(JENKINS1991, KB4, SIEGBAHN,
+                                     'Kb4',
+                                     'K\u03b24',
+                                     'K&beta;<sub>4</sub>',
+                                     '\\ensuremath{\\mathrm{K}\\beta_4}')
         yield XrayTransitionNotation(JENKINS1991, KB4_2, SIEGBAHN,
                                      'Kb4II',
                                      'K\u03b24II',
@@ -143,11 +146,11 @@ class Jenkins1991TransitionNotationParser(_Parser):
                                      'K\u03b24x',
                                      'K&beta;<sub>4x</sub>',
                                      '\\ensuremath{\\mathrm{K}\\beta_{4x}}')
-        yield XrayTransitionNotation(JENKINS1991, KB5_1, SIEGBAHN,
-                                     'Kb5I',
-                                     'K\u03b25I',
-                                     'K&beta;<sub>5</sub><sup>I</sup>',
-                                     '\\ensuremath{\\mathrm{K}\\beta_5^I}')
+        yield XrayTransitionNotation(JENKINS1991, KB5, SIEGBAHN,
+                                     'Kb5',
+                                     'K\u03b25',
+                                     'K&beta;<sub>5</sub>',
+                                     '\\ensuremath{\\mathrm{K}\\beta_5}')
         yield XrayTransitionNotation(JENKINS1991, KB5_2, SIEGBAHN,
                                      'Kb5II',
                                      'K\u03b25II',
@@ -184,6 +187,11 @@ class Jenkins1991TransitionNotationParser(_Parser):
                                      'L\u03b24',
                                      'L&beta;<sub>4</sub>',
                                      '\\ensuremath{\\mathrm{L}\\beta_4}')
+        yield XrayTransitionNotation(JENKINS1991, LB5, SIEGBAHN, # From EPQ Library
+                                     'Lb5',
+                                     'L\u03b25',
+                                     'L&beta;<sub>5</sub>',
+                                     '\\ensuremath{\\mathrm{L}\\beta_5}')
         yield XrayTransitionNotation(JENKINS1991, LB6, SIEGBAHN,
                                      'Lb6',
                                      'L\u03b26',
@@ -254,11 +262,6 @@ class Jenkins1991TransitionNotationParser(_Parser):
                                      'L\u03b38',
                                      'L&gamma;<sub>8</sub>',
                                      '\\ensuremath{\\mathrm{L}\\gamma_8}')
-        yield XrayTransitionNotation(JENKINS1991, LG8_p, SIEGBAHN,
-                                     "Lg8'",
-                                     "L\u03b38\u2032",
-                                     'L&gamma;<sub>8&prime;</sub>',
-                                     '\\ensuremath{\\mathrm{L}\\gamma_{8\\prime}}')
         yield XrayTransitionNotation(JENKINS1991, LN, SIEGBAHN,
                                      'Ln',
                                      'L\u03b7',
@@ -279,11 +282,16 @@ class Jenkins1991TransitionNotationParser(_Parser):
                                      'Lt',
                                      'Lt',
                                      '\\ensuremath{\\mathrm{L}t}')
+        yield XrayTransitionNotation(JENKINS1991, LU, SIEGBAHN, # From EPQ Library
+                                     'Lu',
+                                     'Lu',
+                                     'Lu',
+                                     '\\ensuremath{\\mathrm{L}u}')
         yield XrayTransitionNotation(JENKINS1991, LV, SIEGBAHN,
                                      'Lv',
-                                     'Lv',
-                                     'Lv',
-                                     '\\ensuremath{\\mathrm{L}v}')
+                                     'L\u03bd',
+                                     'L&nu;',
+                                     '\\ensuremath{\\mathrm{L}\\nu}')
 
         yield XrayTransitionNotation(JENKINS1991, MA1, SIEGBAHN,
                                      'Ma1',
@@ -305,5 +313,15 @@ class Jenkins1991TransitionNotationParser(_Parser):
                                      'M\u03b3',
                                      'M&gamma;',
                                      '\\ensuremath{\\mathrm{M}\\gamma}')
+        yield XrayTransitionNotation(JENKINS1991, MZ1, SIEGBAHN, # From EPQ Library
+                                     'Mz1',
+                                     'M\u03b61',
+                                     'M&zeta;<sub>1</sub>',
+                                     '\\ensuremath{\\mathrm{M}\\zeta_1}')
+        yield XrayTransitionNotation(JENKINS1991, MZ2, SIEGBAHN, # From EPQ Library
+                                     'Mz2',
+                                     'M\u03b62',
+                                     'M&zeta;<sub>2</sub>',
+                                     '\\ensuremath{\\mathrm{M}\\zeta_2}')
 
 

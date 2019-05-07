@@ -12,4 +12,4 @@ from pyxray.parser.jenkins1991 import Jenkins1991TransitionNotationParser
 
 def test_jenkins1991():
     parser = Jenkins1991TransitionNotationParser()
-    assert len(list(parser)) == 41
+    assert len(list(parser)) == 44
