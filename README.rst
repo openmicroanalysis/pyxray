@@ -279,7 +279,6 @@ The x-ray line can either be a
 
 As any other descriptors, X-ray line objects are immutable and hashable so
 they can be used as keys of a dictionary.
-It is also cached to prevent multiple instances of the same x-ray line.
 X-ray line are ordered by their atomic number and energy.
 
 .. code:: python
