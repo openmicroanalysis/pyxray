@@ -14,14 +14,15 @@ Submodules
 
 .. toctree::
 
-   pyxray._version
    pyxray.base
    pyxray.cbook
+   pyxray.composition
    pyxray.data
    pyxray.descriptor
    pyxray.property
    pyxray.test_base
    pyxray.test_cbook
+   pyxray.test_composition
    pyxray.test_descriptor
    pyxray.test_property
    pyxray.util

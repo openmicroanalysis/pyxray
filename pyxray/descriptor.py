@@ -8,6 +8,7 @@ __all__ = ['Element', 'AtomicShell', 'AtomicSubshell', 'XrayTransition',
 # Standard library modules.
 import dataclasses
 import typing
+import functools
 
 # Third party modules.
 
@@ -15,10 +16,10 @@ import typing
 
 # Globals and constants variables.
 
-@dataclasses.dataclass(frozen=True)
+@dataclasses.dataclass(frozen=True, order=True)
 class Element:
     atomic_number: int
-    
+
     def __post_init__(self):
         if self.atomic_number < 1 or self.atomic_number > 118:
             raise ValueError('Atomic number ({0}) must be [1, 118]'
@@ -31,10 +32,10 @@ class Element:
     def z(self):
         return self.atomic_number
 
-@dataclasses.dataclass(frozen=True)
+@dataclasses.dataclass(frozen=True, order=True)
 class AtomicShell:
     principal_quantum_number: int
-    
+
     def __post_init__(self):
         if self.principal_quantum_number < 1:
             raise ValueError('Principal quantum number ({0}) must be [1, inf['
@@ -47,7 +48,7 @@ class AtomicShell:
     def n(self):
         return self.principal_quantum_number
 
-@dataclasses.dataclass(frozen=True)
+@dataclasses.dataclass(frozen=True, order=True)
 class AtomicSubshell:
     atomic_shell: AtomicShell
     azimuthal_quantum_number: int
@@ -70,7 +71,7 @@ class AtomicSubshell:
                 self.total_angular_momentum_nominator > jmax_n:
             raise ValueError('Total angular momentum ({0}) must be between [{1}, {2}]'
                              .format(self.total_angular_momentum_nominator, jmin_n, jmax_n))
-    
+
     def __repr__(self):
         return '{}(n={}, l={}, j={:.1f})'.format(self.__class__.__name__, self.n, self.l, self.j)
 
@@ -102,11 +103,11 @@ class AtomicSubshell:
 class XrayTransition:
     source_subshell: AtomicSubshell
     destination_subshell: AtomicSubshell
-    
+
     def __post_init__(self):
         if not isinstance(self.source_subshell, AtomicSubshell):
             object.__setattr__(self, 'source_subshell', AtomicSubshell(*self.source_subshell))
-        
+
         if not isinstance(self.destination_subshell, AtomicSubshell):
             object.__setattr__(self, 'destination_subshell', AtomicSubshell(*self.destination_subshell))
 
@@ -151,29 +152,30 @@ class XrayTransition:
 
     def __repr__(self):
         return '{}([n={src.n}, l={src.l}, j={src.j:.1f}] -> [n={dest.n}, l={dest.l}, j={dest.j:.1f}])'\
-            .format(self.__class__.__name__, 
+            .format(self.__class__.__name__,
                     src=self.source_subshell,
                     dest=self.destination_subshell)
 
 @dataclasses.dataclass(frozen=True)
 class XrayTransitionSet:
     possible_transitions: typing.Tuple[XrayTransition]
-    
+
     def __post_init__(self):
         possible_transitions = set()
         for transition in self.possible_transitions:
             if not isinstance(transition, XrayTransition):
                 transition = XrayTransition(*transition)
             possible_transitions.add(transition)
-            
+
         if not possible_transitions:
             raise ValueError('At least one transition must be defined')
-        
+
         object.__setattr__(self, 'possible_transitions', tuple(possible_transitions))
 
     def __repr__(self):
         return '{}({:d} possible transitions)'.format(self.__class__.__name__, len(self.possible_transitions))
 
+@functools.total_ordering
 @dataclasses.dataclass(frozen=True)
 class XrayLine:
     element: Element
@@ -181,15 +183,20 @@ class XrayLine:
     iupac: str
     siegbahn: str
     energy_eV: float
-    
+
     def __post_init__(self):
         if not isinstance(self.element, Element):
             object.__setattr__(self, 'element', Element(self.element))
-        
+
         object.__setattr__(self, 'transitions', tuple(self.transitions))
 
     def __repr__(self):
         return '{}({})'.format(self.__class__.__name__, self.iupac)
+
+    def __lt__(self, other):
+        if not isinstance(other, self.__class__):
+            return NotImplemented
+        return self.element < other.element and self.energy_eV < other.energy_eV
 
     @property
     def atomic_number(self):
@@ -207,22 +214,22 @@ class Language:
         lencode = len(self.code)
         if lencode < 2 or lencode > 3:
             raise ValueError('Code must be between 2 and 3 characters')
-        
+
         object.__setattr__(self, 'code', self.code.lower())
-        
+
     def __repr__(self):
         return '{}({})'.format(self.__class__.__name__, self.code)
 
 @dataclasses.dataclass(frozen=True)
 class Notation:
     name: str
-    
+
     def __post_init__(self):
         if not self.name:
             raise ValueError('Name cannot be empty')
-        
+
         object.__setattr__(self, 'name', self.name.lower())
-        
+
     def __repr__(self):
         return '{}({})'.format(self.__class__.__name__, self.name)
 
@@ -253,4 +260,3 @@ class Reference:
 
     def __repr__(self):
         return '{}({})'.format(self.__class__.__name__, self.bibtexkey)
-    

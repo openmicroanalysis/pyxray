@@ -33,13 +33,13 @@ _docextras = {'element': """:arg element: either
 
             'atomic_subshell': """:arg atomic_subshell: either
             * :class:`AtomicSubshell <pyxray.descriptor.AtomicSubshell>` object
-            * a :class:`tuple` of principal quantum number, 
+            * a :class:`tuple` of principal quantum number,
             azimuthal quantum number, and total angular momentum_nominator
             * any notation (case insensitive)""",
 
             'xray_transition': """:arg xray_transition: either
             * :class:`XrayTransition <pyxray.descriptor.XrayTransition>` object
-            * a :class:`tuple` of source and destination subshells 
+            * a :class:`tuple` of source and destination subshells
             * any notation (case insensitive)""",
 
             'xray_transition_set': """:arg xray_transition_set: either
@@ -49,10 +49,10 @@ _docextras = {'element': """:arg element: either
 
             'language': """:arg language: language code (e.g. ``en``, ``fr``, ``de``)""",
 
-            'notation': """:arg notation: name of a notation (case insensitive), 
+            'notation': """:arg notation: name of a notation (case insensitive),
                 ``iupac``, ``siegbahn`` and ``orbital`` are usually supported""",
 
-            'encoding': """:arg encoding: type of encoding, either 
+            'encoding': """:arg encoding: type of encoding, either
                 ``ascii``, ``utf16``, ``html`` or ``latex``""",
 
             'reference': """:arg reference: reference to use to retrieve this value, either
@@ -455,7 +455,7 @@ class _DatabaseMixin(metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     @formatdoc(**_docextras)
-    def xray_transition_set(self, xray_transition_set): #pragma: no cover
+    def xray_transitionset(self, xray_transition_set): #pragma: no cover
         """
         Returns X-ray transition set descriptor.
 
@@ -469,7 +469,7 @@ class _DatabaseMixin(metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     @formatdoc(**_docextras)
-    def xray_transition_set_notation(self, xray_transition_set, notation, encoding='utf16', reference=None): #pragma: no cover
+    def xray_transitionset_notation(self, xray_transition_set, notation, encoding='utf16', reference=None): #pragma: no cover
         """
         Returns notation of an X-ray transition set.
 
@@ -486,7 +486,7 @@ class _DatabaseMixin(metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     @formatdoc(**_docextras)
-    def xray_transition_set_energy_eV(self, element, xray_transition_set, reference=None): #pragma: no cover
+    def xray_transitionset_energy_eV(self, element, xray_transition_set, reference=None): #pragma: no cover
         """
         Returns energy of an element and X-ray transition set (in eV).
 
@@ -502,7 +502,7 @@ class _DatabaseMixin(metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     @formatdoc(**_docextras)
-    def xray_transition_set_relative_weight(self, element, xray_transition_set, reference=None): #pragma: no cover
+    def xray_transitionset_relative_weight(self, element, xray_transition_set, reference=None): #pragma: no cover
         """
         Returns relative weight of an element and X-ray transition set.
 

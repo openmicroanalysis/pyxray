@@ -1,32 +1,27 @@
-""""""
+#!/usr/bin/env python
+""" """
 
 # Standard library modules.
+import os
+import tempfile
+import shutil
+import sqlite3
 
 # Third party modules.
 import pytest
 
-import sqlalchemy
-
 # Local modules.
-from pyxray.sql.test_build import MockParser
-from pyxray.sql.build import SqlDatabaseBuilder
-from pyxray.sql.data import SqlDatabase
 import pyxray.descriptor as descriptor
-from pyxray.base import NotFound
+from pyxray.sql.data import SqlDatabase, NotFound
 
 # Globals and constants variables.
+K = descriptor.AtomicSubshell(1, 0, 1)
+L3 = descriptor.AtomicSubshell(2, 1, 3)
+L2 = descriptor.AtomicSubshell(2, 1, 1)
 
-@pytest.fixture(scope='module')
-def engine():
-    return sqlalchemy.create_engine('sqlite:///:memory:')
-
-@pytest.fixture(scope='module')
-def database(engine):
-    builder = SqlDatabaseBuilder(engine)
-    builder._find_parsers = lambda: [('mock', MockParser())]
-    builder.build()
-
-    return SqlDatabase(engine)
+@pytest.fixture
+def database(builder):
+    return SqlDatabase(builder.engine)
 
 @pytest.mark.parametrize('element', [118, 'Vi', 'Vibranium'])
 def test_element(database, element):
@@ -90,34 +85,23 @@ def test_element_mass_density_kg_per_m3(database, element):
 def test_element_mass_density_g_per_cm3(database, element):
     assert database.element_mass_density_g_per_cm3(element) == pytest.approx(0.9992, abs=1e-4)
 
-#def testelement_xray_transitions(self):
-#    transitions = self.db.element_xray_transitions(118)
-#    self.assertEqual(1, len(transitions))
-#
-#    K = descriptor.AtomicSubshell(1, 0, 1)
-#    L3 = descriptor.AtomicSubshell(2, 1, 3)
-#    expected = descriptor.XrayTransition(L3, K)
-#    self.assertEqual(expected, transitions[0])
-#
-#def testelement_xray_transitions2(self):
-#    transitions = self.db.element_xray_transitions(118, 'a')
-#    self.assertEqual(1, len(transitions))
-#
-#    K = descriptor.AtomicSubshell(1, 0, 1)
-#    L3 = descriptor.AtomicSubshell(2, 1, 3)
-#    expected = descriptor.XrayTransition(L3, K)
-#    self.assertEqual(expected, transitions[0])
-#
-#def testelement_xray_transition(self):
-#    transition = self.db.element_xray_transition(118, 'a')
-#
-#    K = descriptor.AtomicSubshell(1, 0, 1)
-#    L3 = descriptor.AtomicSubshell(2, 1, 3)
-#    expected = descriptor.XrayTransition(L3, K)
-#    self.assertEqual(expected, transition)
-#
-#    self.assertRaises(NotFound, self.db.element_xray_transition, 1, 'a')
-#    self.assertRaises(NotFound, self.db.element_xray_transition, 118, 'g')
+# @pytest.mark.parametrize('element,reference', [(118, None), (118, 'a')])
+# def test_element_xray_transitions(database, element, reference):
+#    transitions = database.element_xray_transitions(element, reference)
+#    assert len(transitions) == 2
+
+#    assert descriptor.XrayTransition(L3, K) in transitions
+#    assert descriptor.XrayTransition(L2, K) in transitions
+
+# def test_element_xray_transition(database):
+#    transition = database.element_xray_transition(118, 'a')
+
+#    assert transition == descriptor.XrayTransition(L3, K)
+
+# @pytest.mark.parametrize('element,reference', [(1, 'a'), (118, 'g')])
+# def test_element_xray_transition_notfound(database, element, reference):
+#     with pytest.raises(NotFound):
+#         database.element_xray_transition(element, reference)
 
 @pytest.mark.parametrize('atomic_shell', [1, 'a', 'b'])
 def test_atomic_shell(database, atomic_shell):
@@ -161,34 +145,34 @@ def testatomic_subshell_nonradiative_width_eV(database, atomic_subshell):
 def testatomic_subshell_occupancy(database, atomic_subshell):
     assert database.atomic_subshell_occupancy(118, atomic_subshell) == 1
 
-@pytest.mark.parametrize('xray_transition', ['a', ((2, 1, 3), (1, 0, 1)), (MockParser.L3, MockParser.K), descriptor.XrayTransition(MockParser.L3, MockParser.K)])
+@pytest.mark.parametrize('xray_transition', ['a', ((2, 1, 3), (1, 0, 1)), (L3, K), descriptor.XrayTransition(L3, K)])
 def test_xray_transition(database, xray_transition):
-    assert database.xray_transition(xray_transition) == descriptor.XrayTransition(MockParser.L3, MockParser.K)
+    assert database.xray_transition(xray_transition) == descriptor.XrayTransition(L3, K)
 
 @pytest.mark.parametrize('encoding,expected', [('ascii', 'a'), ('utf16', 'b'), ('html', 'c'), ('latex', 'd')])
 def test_xray_transition_notation(database, encoding, expected):
-    xray_transition = descriptor.XrayTransition(MockParser.L3, MockParser.K)
+    xray_transition = descriptor.XrayTransition(L3, K)
     assert database.xray_transition_notation(xray_transition, 'mock', encoding) == expected
 
-@pytest.mark.parametrize('xray_transition', ['a', ((2, 1, 3), (1, 0, 1)), (MockParser.L3, MockParser.K), descriptor.XrayTransition(MockParser.L3, MockParser.K)])
+@pytest.mark.parametrize('xray_transition', ['a', ((2, 1, 3), (1, 0, 1)), (L3, K), descriptor.XrayTransition(L3, K)])
 def test_xray_transition_energy_eV_KL3(database, xray_transition):
     assert database.xray_transition_energy_eV(118, xray_transition) == pytest.approx(0.2, abs=1e-4)
 
-@pytest.mark.parametrize('xray_transition', ['e', ((2, 1, 1), (1, 0, 1)), (MockParser.L2, MockParser.K), descriptor.XrayTransition(MockParser.L2, MockParser.K)])
+@pytest.mark.parametrize('xray_transition', ['e', ((2, 1, 1), (1, 0, 1)), (L2, K), descriptor.XrayTransition(L2, K)])
 def test_xray_transition_energy_eV_KL2(database, xray_transition):
     assert database.xray_transition_energy_eV(118, xray_transition) == pytest.approx(0.4, abs=1e-4)
 
-@pytest.mark.parametrize('xray_transition', ['a', ((2, 1, 3), (1, 0, 1)), (MockParser.L3, MockParser.K), descriptor.XrayTransition(MockParser.L3, MockParser.K)])
+@pytest.mark.parametrize('xray_transition', ['a', ((2, 1, 3), (1, 0, 1)), (L3, K), descriptor.XrayTransition(L3, K)])
 def test_xray_transition_probability(database, xray_transition):
     assert database.xray_transition_probability(118, xray_transition) == pytest.approx(0.02, abs=1e-4)
 
-@pytest.mark.parametrize('xray_transition', ['a', ((2, 1, 3), (1, 0, 1)), (MockParser.L3, MockParser.K), descriptor.XrayTransition(MockParser.L3, MockParser.K)])
+@pytest.mark.parametrize('xray_transition', ['a', ((2, 1, 3), (1, 0, 1)), (L3, K), descriptor.XrayTransition(L3, K)])
 def test_xray_transition_relative_weight(database, xray_transition):
     assert database.xray_transition_relative_weight(118, xray_transition) == pytest.approx(0.002, abs=1e-4)
 
-#def test_xray_line(database):
+# def test_xray_line(database):
 #    xrayline = database.xray_line(118, 'aa')
-#
+
 #    assert xrayline.element.atomic_number == 118
 #    assert len(xrayline.transitions) == 1
 #    assert xrayline.iupac == 'Vi bb'

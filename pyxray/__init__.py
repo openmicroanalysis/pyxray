@@ -9,3 +9,4 @@ del get_versions
 from pyxray.base import NotFound
 from pyxray.descriptor import *
 from pyxray.data import *
+from pyxray.composition import *

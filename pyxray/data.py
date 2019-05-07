@@ -26,10 +26,10 @@ __all__ = [
     'xray_transition_energy_eV',
     'xray_transition_probability',
     'xray_transition_relative_weight',
-    'xray_transition_set',
-    'xray_transition_set_notation',
-    'xray_transition_set_energy_eV',
-    'xray_transition_set_relative_weight',
+    'xray_transitionset',
+    'xray_transitionset_notation',
+    'xray_transitionset_energy_eV',
+    'xray_transitionset_relative_weight',
     'xray_line',
     ]
 
@@ -115,16 +115,16 @@ class _EmptyDatabase(_DatabaseMixin):
     def xray_transition_relative_weight(self, element, xraytransition, reference=None): #pragma: no cover
         raise NotFound
 
-    def xray_transition_set(self, xraytransitionset): #pragma: no cover
+    def xray_transitionset(self, xraytransitionset): #pragma: no cover
         raise NotFound
 
-    def xray_transition_set_notation(self, xraytransitionset, notation, encoding='utf16', reference=None): #pragma: no cover
+    def xray_transitionset_notation(self, xraytransitionset, notation, encoding='utf16', reference=None): #pragma: no cover
         raise NotFound
 
-    def xray_transition_set_energy_eV(self, element, xraytransitionset, reference=None): #pragma: no cover
+    def xray_transitionset_energy_eV(self, element, xraytransitionset, reference=None): #pragma: no cover
         raise NotFound
 
-    def xray_transition_set_relative_weight(self, element, xraytransitionset, reference=None): #pragma: no cover
+    def xray_transitionset_relative_weight(self, element, xraytransitionset, reference=None): #pragma: no cover
         raise NotFound
 
     def xray_line(self, element, line, reference=None): #pragma: no cover
@@ -169,8 +169,8 @@ xray_transition_notation = database.xray_transition_notation
 xray_transition_energy_eV = database.xray_transition_energy_eV
 xray_transition_probability = database.xray_transition_probability
 xray_transition_relative_weight = database.xray_transition_relative_weight
-xray_transition_set = database.xray_transition_set
-xray_transition_set_notation = database.xray_transition_set_notation
-xray_transition_set_energy_eV = database.xray_transition_set_energy_eV
-xray_transition_set_relative_weight = database.xray_transition_set_relative_weight
+xray_transitionset = database.xray_transitionset
+xray_transitionset_notation = database.xray_transitionset_notation
+xray_transitionset_energy_eV = database.xray_transitionset_energy_eV
+xray_transitionset_relative_weight = database.xray_transitionset_relative_weight
 xray_line = database.xray_line

@@ -453,16 +453,16 @@ class SqlDatabase(_DatabaseMixin, SqlBase):
 
         return self._execute_select(statement)
 
-    def xray_transition_set(self, xray_transition_set):
+    def xray_transitionset(self, xray_transition_set):
         raise NotFound
 
-    def xray_transition_set_notation(self, xray_transition_set, notation, encoding='utf16', reference=None):
+    def xray_transitionset_notation(self, xray_transition_set, notation, encoding='utf16', reference=None):
         raise NotFound
 
-    def xray_transition_set_energy_eV(self, element, xray_transition_set, reference=None):
+    def xray_transitionset_energy_eV(self, element, xray_transition_set, reference=None):
         raise NotFound
 
-    def xray_transition_set_relative_weight(self, element, xray_transition_set, reference=None):
+    def xray_transitionset_relative_weight(self, element, xray_transition_set, reference=None):
         raise NotFound
 
     def xray_line(self, element, line, reference=None):

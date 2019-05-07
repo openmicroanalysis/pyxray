@@ -20,7 +20,7 @@ subshells and X-ray transitions.
 The objects also provide critical information as the energy, existence and
 different notations of the X-ray transitions.
 
-*pyxray* supports 3.x (no Python 2.x support).
+*pyxray* supports 3.6+ (no Python 2.x support).
 
 Installation
 ============
@@ -279,7 +279,7 @@ The x-ray line can either be a
 
 As any other descriptors, X-ray line objects are immutable and hashable so
 they can be used as keys of a dictionary.
-It is also cached to prevent multiple instances of the same x-ray line.
+X-ray line are ordered by their atomic number and energy.
 
 .. code:: python
 
@@ -287,9 +287,49 @@ It is also cached to prevent multiple instances of the same x-ray line.
    xrayline2 = pyxray.xray_line('Al', 'Ka1')
    xrayline1 == xrayline2 #=> True
    xrayline1 is xrayline2 #=> True
+   pyxray.xray_line(13, 'Ka1') < pyxray.xray_line(14, 'Ka1')
+
+Composition
+-----------
+
+Defines a composition of a compound.
+
+To create a composition, use the class methods:
+
+* ``Composition.from_pure(z)``
+* ``Composition.from_formula(formula)``
+* ``Composition.from_mass_fractions(mass_fractions, formula=None)``
+* ``Composition.from_atomic_fractions(atomic_fractions, formula=None)``
+
+Use the following attributes to access the composition values:
+
+* ``mass_fractions``: ``dict`` where the keys are atomic numbers and the values weight fractions.
+* ``atomic_fractions``: ``dict`` where the keys are atomic numbers and the values atomic fractions.
+* ``formula``: chemical formula
+
+The composition object is immutable, i.e. it cannot be modified once created.
+Equality can be checked.
+It is hashable.
+It can be pickled or copied.
 
 Release notes
 =============
+
+Development
+-----------
+
+- Add ordering of Element, AtomicShell, AtomicSubshell and XrayLine.
+
+1.5
+---
+
+- Add composition object
+
+1.4
+---
+
+* `#13 <https://github.com/openmicroanalysis/pyxray/pull/13>`_ Add DTSA X-ray subshell and line data
+* `#14 <https://github.com/openmicroanalysis/pyxray/pull/14>`_ Use dataclasses for descriptors and properties
 
 1.3.4
 -----
@@ -322,6 +362,11 @@ Release notes
 -----
 
 * Add ``XrayLine`` class.
+
+Contributors
+============
+
+* `@drix00 <https://github.com/drix00>`_
 
 Development
 ===========
@@ -369,7 +414,7 @@ supervision of Dr. Silvia Richter.
 
 Copyright (c) 2015-2016/06 Philippe Pinard and Silvia Richter
 
-Copyright (c) 2016/06-2017 Philippe Pinard
+Copyright (c) 2016/06-2019 Philippe Pinard
 
 
 
