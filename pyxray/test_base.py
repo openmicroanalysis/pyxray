@@ -2,10 +2,9 @@
 """ """
 
 # Standard library modules.
-import unittest
-import logging
 
 # Third party modules.
+import pytest
 
 # Local modules.
 from pyxray.base import _Database
@@ -95,23 +94,21 @@ class MockDatabase(_Database):
     def xray_line(self, element, line, reference=None):
         pass
 
-class Test_Database(unittest.TestCase):
+@pytest.fixture
+def database():
+    return MockDatabase()
 
-    def setUp(self):
-        super().setUp()
+def test_base_get_default_reference(database):
+    assert database.get_default_reference('element_symbol') is None
 
-        self.database = MockDatabase()
+    with pytest.raises(ValueError):
+        database.get_default_reference('foo')
 
-    def testget_default_reference(self):
-        self.assertIsNone(self.database.get_default_reference('element_symbol'))
-        self.assertRaises(ValueError, self.database.get_default_reference, 'foo')
+def test_base_set_default_reference(database):
+    database.set_default_reference('element_symbol', 'doe2016')
 
-    def testset_default_reference(self):
-        self.database.set_default_reference('element_symbol', 'doe2016')
+    assert database.get_default_reference('element_symbol') == 'doe2016'
 
-        self.assertEqual('doe2016', self.database.get_default_reference('element_symbol'))
-        self.assertRaises(ValueError, self.database.set_default_reference, 'foo', 'doe2016')
+    with pytest.raises(ValueError):
+        database.set_default_reference('foo', 'doe2016')
 
-if __name__ == '__main__': #pragma: no cover
-    logging.getLogger().setLevel(logging.DEBUG)
-    unittest.main()

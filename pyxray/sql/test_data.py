@@ -2,271 +2,179 @@
 """ """
 
 # Standard library modules.
-import unittest
-import logging
 import os
 import tempfile
 import shutil
 import sqlite3
 
 # Third party modules.
+import pytest
 
 # Local modules.
 import pyxray.descriptor as descriptor
 from pyxray.sql.data import SqlDatabase, NotFound
-from pyxray.sql.test_build import MockSqliteDatabaseBuilder
 
 # Globals and constants variables.
+K = descriptor.AtomicSubshell(1, 0, 1)
+L3 = descriptor.AtomicSubshell(2, 1, 3)
+L2 = descriptor.AtomicSubshell(2, 1, 1)
 
-class TestSqlDatabase(unittest.TestCase):
+@pytest.fixture
+def database(builder):
+    with sqlite3.connect(builder.filepath) as connection:
+        yield SqlDatabase(connection)
 
-    @classmethod
-    def setUpClass(cls):
-        super().setUpClass()
+@pytest.mark.parametrize('element', [118, 'Vi', 'Vibranium'])
+def test_element(database, element):
+    assert database.element(element) == descriptor.Element(118)
 
-        cls.tmpdir = tempfile.mkdtemp()
-        cls.filepath = os.path.join(cls.tmpdir, 'pyxray.sql')
-        builder = MockSqliteDatabaseBuilder(cls.filepath)
-        builder.build()
+@pytest.mark.parametrize('element', ['Al', 13, 'Aluminum'])
+def test_element_notfound(database, element):
+    with pytest.raises(NotFound):
+        database.element(element)
 
-    @classmethod
-    def tearDownClass(cls):
-        super().tearDownClass()
-        shutil.rmtree(cls.tmpdir, ignore_errors=True)
+@pytest.mark.parametrize('element', [118, 'Vi', 'Vibranium'])
+def test_element_atomic_number(database, element):
+    assert database.element_atomic_number(element) == 118
 
-    def setUp(self):
-        super().setUp()
+@pytest.mark.parametrize('element', ['Al', 13, 'Aluminum'])
+def test_element_atomic_number_notfound(database, element):
+    with pytest.raises(NotFound):
+        database.element_atomic_number(element)
 
-        self.connection = sqlite3.connect(self.filepath)
-        self.db = SqlDatabase(self.connection)
+@pytest.mark.parametrize('element', [118, 'Vi', 'Vibranium'])
+def test_element_symbol(database, element):
+    assert database.element_symbol(element) == 'Vi'
 
-    def tearDown(self):
-        super().tearDown()
-        self.connection.close()
+@pytest.mark.parametrize('element', ['Al', 13, 'Aluminum'])
+def test_element_symbol_notfound(database, element):
+    with pytest.raises(NotFound):
+        database.element_symbol(element)
 
-    def testelement(self):
-        self.assertEqual(descriptor.Element(118), self.db.element('Vi'))
-        self.assertEqual(descriptor.Element(118), self.db.element(118))
-        self.assertEqual(descriptor.Element(118), self.db.element('Vibranium'))
-        self.assertRaises(NotFound, self.db.element, 'Al')
-        self.assertRaises(NotFound, self.db.element, 13)
-        self.assertRaises(NotFound, self.db.element, 'Aluminium')
+@pytest.mark.parametrize('element', [118, 'Vi', 'Vibranium'])
+def test_element_name(database, element):
+    assert database.element_name(element, 'en') == 'Vibranium'
+    assert database.element_name(element, 'en', 'lee1966') == 'Vibranium'
 
-    def testelement_atomic_number(self):
-        self.assertEqual(118, self.db.element_atomic_number('Vi'))
-        self.assertEqual(118, self.db.element_atomic_number(118))
-        self.assertEqual(118, self.db.element_atomic_number('Vibranium'))
-        self.assertRaises(NotFound, self.db.element_atomic_number, 'Al')
-        self.assertRaises(NotFound, self.db.element_atomic_number, 13)
-        self.assertRaises(NotFound, self.db.element_atomic_number, 'Aluminium')
+@pytest.mark.parametrize('element', ['Al', 13, 'Aluminum'])
+def test_element_name_notfound(database, element):
+    with pytest.raises(NotFound):
+        database.element_name(element, 'en')
 
-    def testelement_symbol(self):
-        self.assertEqual('Vi', self.db.element_symbol('Vi'))
-        self.assertEqual('Vi', self.db.element_symbol(118))
-        self.assertEqual('Vi', self.db.element_symbol('Vibranium'))
-        self.assertRaises(NotFound, self.db.element_symbol, 'Al')
-        self.assertRaises(NotFound, self.db.element_symbol, 13)
-        self.assertRaises(NotFound, self.db.element_symbol, 'Aluminium')
+def test_element_name_notfound_wrong_language(database):
+    with pytest.raises(NotFound):
+        database.element_name(118, 'fr')
 
-    def testelement_name(self):
-        self.assertEqual('Vibranium', self.db.element_name('Vi', 'en'))
-        self.assertEqual('Vibranium', self.db.element_name(118, 'en'))
-        self.assertEqual('Vibranium', self.db.element_name('Vibranium', 'en'))
-        self.assertEqual('Vibranium', self.db.element_name(118, 'en', 'lee1966'))
-        self.assertRaises(NotFound, self.db.element_name, 'Al', 'en')
-        self.assertRaises(NotFound, self.db.element_name, 13, 'en')
-        self.assertRaises(NotFound, self.db.element_name, 'Aluminium', 'en')
-        self.assertRaises(NotFound, self.db.element_name, 118, 'en', 'doe2016')
+def test_element_name_notfound_wrong_reference(database):
+    with pytest.raises(NotFound):
+        database.element_name(118, 'en', 'doe2016')
 
-    def testelement_atomic_weight(self):
-        self.assertAlmostEqual(999.1, self.db.element_atomic_weight(118), 2)
-        self.assertAlmostEqual(999.1, self.db.element_atomic_weight(118, 'lee1966'), 2)
-        self.assertAlmostEqual(111.1, self.db.element_atomic_weight(118, 'doe2016'), 2)
+def test_element_atomic_weight_no_reference(database):
+    assert database.element_atomic_weight(118) == pytest.approx(999.1, abs=1e-2)
 
-        self.db.set_default_reference('element_atomic_weight', 'doe2016')
-        self.assertAlmostEqual(111.1, self.db.element_atomic_weight(118), 2)
+def test_element_atomic_weight_lee1966(database):
+    assert database.element_atomic_weight(118, 'lee1966') == pytest.approx(999.1, abs=1e-2)
 
-    def testelement_mass_density_kg_per_m3(self):
-        self.assertAlmostEqual(999.2, self.db.element_mass_density_kg_per_m3('Vi'), 2)
-        self.assertAlmostEqual(999.2, self.db.element_mass_density_kg_per_m3(118), 2)
-        self.assertAlmostEqual(999.2, self.db.element_mass_density_kg_per_m3('Vibranium'), 2)
+def test_element_atomic_weight_doe2016(database):
+    assert database.element_atomic_weight(118, 'doe2016') == pytest.approx(111.1, abs=1e-2)
 
-    def testelement_mass_density_g_per_cm3(self):
-        self.assertAlmostEqual(0.9992, self.db.element_mass_density_g_per_cm3('Vi'), 4)
-        self.assertAlmostEqual(0.9992, self.db.element_mass_density_g_per_cm3(118), 4)
-        self.assertAlmostEqual(0.9992, self.db.element_mass_density_g_per_cm3('Vibranium'), 4)
+@pytest.mark.parametrize('element', [118, 'Vi', 'Vibranium'])
+def test_element_mass_density_kg_per_m3(database, element):
+    assert database.element_mass_density_kg_per_m3(element) == pytest.approx(999.2, abs=1e-2)
 
-    def testelement_xray_transitions(self):
-        transitions = self.db.element_xray_transitions(118)
-        self.assertEqual(1, len(transitions))
+@pytest.mark.parametrize('element', [118, 'Vi', 'Vibranium'])
+def test_element_mass_density_g_per_cm3(database, element):
+    assert database.element_mass_density_g_per_cm3(element) == pytest.approx(0.9992, abs=1e-4)
 
-        K = descriptor.AtomicSubshell(1, 0, 1)
-        L3 = descriptor.AtomicSubshell(2, 1, 3)
-        expected = descriptor.XrayTransition(L3, K)
-        self.assertEqual(expected, transitions[0])
+@pytest.mark.parametrize('element,reference', [(118, None), (118, 'a')])
+def test_element_xray_transitions(database, element, reference):
+   transitions = database.element_xray_transitions(element, reference)
+   assert len(transitions) == 2
 
-    def testelement_xray_transitions2(self):
-        transitions = self.db.element_xray_transitions(118, 'a')
-        self.assertEqual(1, len(transitions))
+   assert descriptor.XrayTransition(L3, K) in transitions
+   assert descriptor.XrayTransition(L2, K) in transitions
 
-        K = descriptor.AtomicSubshell(1, 0, 1)
-        L3 = descriptor.AtomicSubshell(2, 1, 3)
-        expected = descriptor.XrayTransition(L3, K)
-        self.assertEqual(expected, transitions[0])
+def test_element_xray_transition(database):
+   transition = database.element_xray_transition(118, 'a')
 
-    def testelement_xray_transition(self):
-        transition = self.db.element_xray_transition(118, 'a')
+   assert transition == descriptor.XrayTransition(L3, K)
 
-        K = descriptor.AtomicSubshell(1, 0, 1)
-        L3 = descriptor.AtomicSubshell(2, 1, 3)
-        expected = descriptor.XrayTransition(L3, K)
-        self.assertEqual(expected, transition)
+@pytest.mark.parametrize('element,reference', [(1, 'a'), (118, 'g')])
+def test_element_xray_transition_notfound(database, element, reference):
+    with pytest.raises(NotFound):
+        database.element_xray_transition(element, reference)
 
-        self.assertRaises(NotFound, self.db.element_xray_transition, 1, 'a')
-        self.assertRaises(NotFound, self.db.element_xray_transition, 118, 'g')
+@pytest.mark.parametrize('atomic_shell', [1, 'a', 'b'])
+def test_atomic_shell(database, atomic_shell):
+    assert database.atomic_shell(atomic_shell) == descriptor.AtomicShell(1)
 
-    def testatomic_shell(self):
-        expected = descriptor.AtomicShell(1)
-        self.assertEqual(expected, self.db.atomic_shell('a'))
-        self.assertEqual(expected, self.db.atomic_shell('b'))
-        self.assertEqual(expected, self.db.atomic_shell(1))
-        self.assertRaises(NotFound, self.db.atomic_shell, 'c')
-        self.assertRaises(NotFound, self.db.atomic_shell, 3)
+@pytest.mark.parametrize('atomic_shell', ['c', 3])
+def test_atomic_shell_notfound(database, atomic_shell):
+    with pytest.raises(NotFound):
+        database.atomic_shell(atomic_shell)
 
-    def testatomic_shell_notation(self):
-        self.assertEqual('a', self.db.atomic_shell_notation(1, 'mock', 'ascii'))
-        self.assertEqual('b', self.db.atomic_shell_notation(1, 'mock', 'utf16'))
-        self.assertEqual('c', self.db.atomic_shell_notation(1, 'mock', 'html'))
-        self.assertEqual('d', self.db.atomic_shell_notation(1, 'mock', 'latex'))
-        self.assertEqual('c', self.db.atomic_shell_notation('a', 'mock', 'html'))
-        self.assertEqual('c', self.db.atomic_shell_notation('b', 'mock', 'html'))
+@pytest.mark.parametrize('encoding,expected', [('ascii', 'a'), ('utf16', 'b'), ('html', 'c'), ('latex', 'd')])
+def test_atomic_shell_notation(database, encoding, expected):
+    assert database.atomic_shell_notation(1, 'mock', encoding) == expected
 
-    def testatomic_subshell(self):
-        expected = descriptor.AtomicSubshell(1, 0, 1)
-        self.assertEqual(expected, self.db.atomic_subshell('a'))
-        self.assertEqual(expected, self.db.atomic_subshell('b'))
-        self.assertEqual(expected, self.db.atomic_subshell((1, 0, 1)))
-        self.assertEqual(expected, self.db.atomic_subshell(descriptor.AtomicSubshell(1, 0, 1)))
-        self.assertRaises(NotFound, self.db.atomic_subshell, 'c')
-        self.assertRaises(NotFound, self.db.atomic_subshell, (3, 3, 3))
+@pytest.mark.parametrize('atomic_subshell', [descriptor.AtomicSubshell(1, 0, 1), (1, 0, 1), 'a', 'b'])
+def test_atomic_subshell(database, atomic_subshell):
+    assert database.atomic_subshell(atomic_subshell) == descriptor.AtomicSubshell(1, 0, 1)
 
-    def testatomic_subshell_notation(self):
-        ashell = descriptor.AtomicSubshell(1, 0, 1)
-        self.assertEqual('a', self.db.atomic_subshell_notation(ashell, 'mock', 'ascii'))
-        self.assertEqual('b', self.db.atomic_subshell_notation(ashell, 'mock', 'utf16'))
-        self.assertEqual('c', self.db.atomic_subshell_notation(ashell, 'mock', 'html'))
-        self.assertEqual('d', self.db.atomic_subshell_notation(ashell, 'mock', 'latex'))
+@pytest.mark.parametrize('atomic_subshell', ['c', (3, 3, 3)])
+def test_atomic_subshell_notfound(database, atomic_subshell):
+    with pytest.raises(NotFound):
+        database.atomic_subshell(atomic_subshell)
 
-    def testatomic_subshell_binding_energy_eV(self):
-        ashell = descriptor.AtomicSubshell(1, 0, 1)
-        self.assertAlmostEqual(0.1, self.db.atomic_subshell_binding_energy_eV(118, ashell), 4)
+@pytest.mark.parametrize('encoding,expected', [('ascii', 'a'), ('utf16', 'b'), ('html', 'c'), ('latex', 'd')])
+def testatomic_subshell_notation(database, encoding, expected):
+    assert database.atomic_subshell_notation(descriptor.AtomicSubshell(1, 0, 1), 'mock', encoding) == expected
 
-    def testatomic_subshell_radiative_width_eV(self):
-        ashell = descriptor.AtomicSubshell(1, 0, 1)
-        self.assertAlmostEqual(0.01, self.db.atomic_subshell_radiative_width_eV(118, ashell), 4)
+@pytest.mark.parametrize('atomic_subshell', [descriptor.AtomicSubshell(1, 0, 1), (1, 0, 1), 'a', 'b'])
+def test_atomic_subshell_binding_energy_eV(database, atomic_subshell):
+    assert database.atomic_subshell_binding_energy_eV(118, atomic_subshell) == pytest.approx(0.1, abs=1e-4)
 
-    def testatomic_subshell_nonradiative_width_eV(self):
-        ashell = descriptor.AtomicSubshell(1, 0, 1)
-        self.assertAlmostEqual(0.001, self.db.atomic_subshell_nonradiative_width_eV(118, ashell), 4)
+@pytest.mark.parametrize('atomic_subshell', [descriptor.AtomicSubshell(1, 0, 1), (1, 0, 1), 'a', 'b'])
+def testatomic_subshell_radiative_width_eV(database, atomic_subshell):
+    assert database.atomic_subshell_radiative_width_eV(118, atomic_subshell) == pytest.approx(0.01, abs=1e-4)
 
-    def testatomic_subshell_occupancy(self):
-        ashell = descriptor.AtomicSubshell(1, 0, 1)
-        self.assertEqual(1, self.db.atomic_subshell_occupancy(118, ashell))
+@pytest.mark.parametrize('atomic_subshell', [descriptor.AtomicSubshell(1, 0, 1), (1, 0, 1), 'a', 'b'])
+def testatomic_subshell_nonradiative_width_eV(database, atomic_subshell):
+    assert database.atomic_subshell_nonradiative_width_eV(118, atomic_subshell) == pytest.approx(0.001, abs=1e-4)
 
-    def testxray_transition(self):
-        K = descriptor.AtomicSubshell(1, 0, 1)
-        L3 = descriptor.AtomicSubshell(2, 1, 3)
-        expected = descriptor.XrayTransition(L3, K)
-        self.assertEqual(expected, self.db.xray_transition('a'))
-        self.assertEqual(expected, self.db.xray_transition((L3, K)))
-        self.assertEqual(expected, self.db.xray_transition(descriptor.XrayTransition(L3, K)))
+@pytest.mark.parametrize('atomic_subshell', [descriptor.AtomicSubshell(1, 0, 1), (1, 0, 1), 'a', 'b'])
+def testatomic_subshell_occupancy(database, atomic_subshell):
+    assert database.atomic_subshell_occupancy(118, atomic_subshell) == 1
 
-    def testxray_transition_notation(self):
-        K = descriptor.AtomicSubshell(1, 0, 1)
-        L3 = descriptor.AtomicSubshell(2, 1, 3)
-        transition = descriptor.XrayTransition(L3, K)
-        self.assertEqual('a', self.db.xray_transition_notation(transition, 'mock', 'ascii'))
-        self.assertEqual('b', self.db.xray_transition_notation(transition, 'mock', 'utf16'))
-        self.assertEqual('c', self.db.xray_transition_notation(transition, 'mock', 'html'))
-        self.assertEqual('d', self.db.xray_transition_notation(transition, 'mock', 'latex'))
+@pytest.mark.parametrize('xray_transition', ['a', ((2, 1, 3), (1, 0, 1)), (L3, K), descriptor.XrayTransition(L3, K)])
+def test_xray_transition(database, xray_transition):
+    assert database.xray_transition(xray_transition) == descriptor.XrayTransition(L3, K)
 
-    def testxray_transition_energy_eV(self):
-        K = descriptor.AtomicSubshell(1, 0, 1)
-        L3 = descriptor.AtomicSubshell(2, 1, 3)
-        transition = descriptor.XrayTransition(L3, K)
-        self.assertAlmostEqual(0.2, self.db.xray_transition_energy_eV(118, transition), 4)
+@pytest.mark.parametrize('encoding,expected', [('ascii', 'a'), ('utf16', 'b'), ('html', 'c'), ('latex', 'd')])
+def test_xray_transition_notation(database, encoding, expected):
+    xray_transition = descriptor.XrayTransition(L3, K)
+    assert database.xray_transition_notation(xray_transition, 'mock', encoding) == expected
 
-    def testxray_transition_probability(self):
-        K = descriptor.AtomicSubshell(1, 0, 1)
-        L3 = descriptor.AtomicSubshell(2, 1, 3)
-        transition = descriptor.XrayTransition(L3, K)
-        self.assertAlmostEqual(0.02, self.db.xray_transition_probability(118, transition), 4)
+@pytest.mark.parametrize('xray_transition', ['a', ((2, 1, 3), (1, 0, 1)), (L3, K), descriptor.XrayTransition(L3, K)])
+def test_xray_transition_energy_eV_KL3(database, xray_transition):
+    assert database.xray_transition_energy_eV(118, xray_transition) == pytest.approx(0.2, abs=1e-4)
 
-    def testxray_transition_relative_weight(self):
-        K = descriptor.AtomicSubshell(1, 0, 1)
-        L3 = descriptor.AtomicSubshell(2, 1, 3)
-        transition = descriptor.XrayTransition(L3, K)
-        self.assertAlmostEqual(0.002, self.db.xray_transition_relative_weight(118, transition), 4)
+@pytest.mark.parametrize('xray_transition', ['e', ((2, 1, 1), (1, 0, 1)), (L2, K), descriptor.XrayTransition(L2, K)])
+def test_xray_transition_energy_eV_KL2(database, xray_transition):
+    assert database.xray_transition_energy_eV(118, xray_transition) == pytest.approx(0.4, abs=1e-4)
 
-    def testxray_transitionset(self):
-        K = descriptor.AtomicSubshell(1, 0, 1)
-        L3 = descriptor.AtomicSubshell(2, 1, 3)
-        L2 = descriptor.AtomicSubshell(2, 1, 1)
-        L1 = descriptor.AtomicSubshell(2, 0, 1)
-        transition = descriptor.XrayTransition(L3, K)
-        transition2 = descriptor.XrayTransition(L2, K)
-        expected = descriptor.XrayTransitionSet([transition, transition2])
-        self.assertEqual(expected, self.db.xray_transitionset('a'))
-        self.assertEqual(expected, self.db.xray_transitionset('b'))
+@pytest.mark.parametrize('xray_transition', ['a', ((2, 1, 3), (1, 0, 1)), (L3, K), descriptor.XrayTransition(L3, K)])
+def test_xray_transition_probability(database, xray_transition):
+    assert database.xray_transition_probability(118, xray_transition) == pytest.approx(0.02, abs=1e-4)
 
-        transitionset = descriptor.XrayTransitionSet([transition, transition2])
-        self.assertEqual(expected, self.db.xray_transitionset(transitionset))
+@pytest.mark.parametrize('xray_transition', ['a', ((2, 1, 3), (1, 0, 1)), (L3, K), descriptor.XrayTransition(L3, K)])
+def test_xray_transition_relative_weight(database, xray_transition):
+    assert database.xray_transition_relative_weight(118, xray_transition) == pytest.approx(0.002, abs=1e-4)
 
-        transitionset = descriptor.XrayTransitionSet([transition])
-        self.assertRaises(NotFound, self.db.xray_transitionset, transitionset)
+def test_xray_line(database):
+   xrayline = database.xray_line(118, 'aa')
 
-        transition3 = descriptor.XrayTransition(L1, K)
-        transitionset = descriptor.XrayTransitionSet([transition, transition3])
-        self.assertRaises(NotFound, self.db.xray_transitionset, transitionset)
-
-    def testxray_transitionset_notation(self):
-        K = descriptor.AtomicSubshell(1, 0, 1)
-        L3 = descriptor.AtomicSubshell(2, 1, 3)
-        L2 = descriptor.AtomicSubshell(2, 1, 1)
-        transition = descriptor.XrayTransition(L3, K)
-        transition2 = descriptor.XrayTransition(L2, K)
-        transitionset = descriptor.XrayTransitionSet([transition, transition2])
-        self.assertEqual('a', self.db.xray_transitionset_notation(transitionset, 'mock', 'ascii'))
-        self.assertEqual('b', self.db.xray_transitionset_notation(transitionset, 'mock', 'utf16'))
-        self.assertEqual('c', self.db.xray_transitionset_notation(transitionset, 'mock', 'html'))
-        self.assertEqual('d', self.db.xray_transitionset_notation(transitionset, 'mock', 'latex'))
-
-    def testxray_transitionset_energy_eV(self):
-        K = descriptor.AtomicSubshell(1, 0, 1)
-        L3 = descriptor.AtomicSubshell(2, 1, 3)
-        L2 = descriptor.AtomicSubshell(2, 1, 1)
-        transition = descriptor.XrayTransition(L3, K)
-        transition2 = descriptor.XrayTransition(L2, K)
-        transitionset = descriptor.XrayTransitionSet([transition, transition2])
-        self.assertAlmostEqual(0.3, self.db.xray_transitionset_energy_eV(118, transitionset), 4)
-
-    def testxray_transitionset_relative_weight(self):
-        K = descriptor.AtomicSubshell(1, 0, 1)
-        L3 = descriptor.AtomicSubshell(2, 1, 3)
-        L2 = descriptor.AtomicSubshell(2, 1, 1)
-        transition = descriptor.XrayTransition(L3, K)
-        transition2 = descriptor.XrayTransition(L2, K)
-        transitionset = descriptor.XrayTransitionSet([transition, transition2])
-        self.assertAlmostEqual(0.003, self.db.xray_transitionset_relative_weight(118, transitionset), 4)
-
-    def testxray_line(self):
-        xrayline = self.db.xray_line(118, 'aa')
-
-        self.assertEqual(xrayline.element.atomic_number, 118)
-        self.assertEqual(1, len(xrayline.transitions))
-        self.assertEqual('Vi bb', xrayline.iupac)
-        self.assertEqual('Vi bb', xrayline.siegbahn)
-
-if __name__ == '__main__': #pragma: no cover
-    logging.getLogger().setLevel(logging.DEBUG)
-    unittest.main()
+   assert xrayline.element.atomic_number == 118
+   assert len(xrayline.transitions) == 1
+   assert xrayline.iupac == 'Vi bb'
+   assert xrayline.siegbahn == 'Vi bb'

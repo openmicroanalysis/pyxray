@@ -2,8 +2,6 @@
 """ """
 
 # Standard library modules.
-import unittest
-import logging
 
 # Third party modules.
 
@@ -15,57 +13,23 @@ from pyxray.parser.unattributed import \
 
 # Globals and constants variables.
 
-class Testunattributed(unittest.TestCase):
+def test_iter_subshells():
+    assert len(list(iter_subshells(1))) == 1
+    assert len(list(iter_subshells(2))) == 4
+    assert len(list(iter_subshells(7))) == 49
 
-    def testiter_subshells(self):
-        self.assertEqual(1, len(list(iter_subshells(1))))
-        self.assertEqual(4, len(list(iter_subshells(2))))
-        self.assertEqual(49, len(list(iter_subshells(7))))
+def test_unattributed_symbol():
+    parser = ElementSymbolPropertyParser()
+    assert len(list(parser)) == 118
 
-class TestElementSymbolPropertyParser(unittest.TestCase):
+def test_unattributed_atomicshell_notation():
+    parser = AtomicShellNotationParser()
+    assert len(list(parser)) == 21
 
-    def setUp(self):
-        super().setUp()
+def test_unattributed_atomicsubshell_notation():
+    parser = AtomicSubshellNotationParser()
+    assert len(list(parser)) == 147
 
-        self.parser = ElementSymbolPropertyParser()
-
-    def test__iter__(self):
-        props = list(self.parser)
-        self.assertEqual(118, len(props))
-
-class TestAtomicShellNotationParser(unittest.TestCase):
-
-    def setUp(self):
-        super().setUp()
-
-        self.parser = AtomicShellNotationParser()
-
-    def test__iter__(self):
-        props = list(self.parser)
-        self.assertEqual(21, len(props))
-
-class TestAtomicSubshellNotationParser(unittest.TestCase):
-
-    def setUp(self):
-        super().setUp()
-
-        self.parser = AtomicSubshellNotationParser()
-
-    def test__iter__(self):
-        props = list(self.parser)
-        self.assertEqual(147, len(props))
-
-class TestTransitionNotationParser(unittest.TestCase):
-
-    def setUp(self):
-        super().setUp()
-
-        self.parser = TransitionNotationParser()
-
-    def test__iter__(self):
-        props = list(self.parser)
-        self.assertEqual(1176, len(props))
-
-if __name__ == '__main__': #pragma: no cover
-    logging.getLogger().setLevel(logging.DEBUG)
-    unittest.main()
+def test_unattributed_transition_notation():
+    parser = TransitionNotationParser()
+    assert len(list(parser)) == 1176

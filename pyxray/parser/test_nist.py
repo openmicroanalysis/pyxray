@@ -2,30 +2,20 @@
 """ """
 
 # Standard library modules.
-import unittest
-import logging
 
 # Third party modules.
+import pytest
 
 # Local modules.
 from pyxray.parser.nist import NISTElementAtomicWeightParser
 
 # Globals and constants variables.
 
-class TestNISTElementAtomicWeightParser(unittest.TestCase):
+def test_coursey2015():
+    parser = NISTElementAtomicWeightParser()
+    props = list(parser)
 
-    def setUp(self):
-        super().setUp()
+    assert len(props) == 84
 
-        self.parser = NISTElementAtomicWeightParser()
-
-    def test__iter__(self):
-        props = list(self.parser)
-        self.assertEqual(84, len(props))
-
-        self.assertEqual(73, props[70].element.z)
-        self.assertAlmostEqual(180.94788, props[70].value, 5)
-
-if __name__ == '__main__': #pragma: no cover
-    logging.getLogger().setLevel(logging.DEBUG)
-    unittest.main()
+    assert props[70].element.z == 73
+    assert props[70].value == pytest.approx(180.94788, abs=1e-5)

@@ -2,59 +2,41 @@
 """ """
 
 # Standard library modules.
-import unittest
-import logging
 
 # Third party modules.
+import pytest
 
 # Local modules.
 from pyxray.parser.dtsa import DtsaSubshellParser, DtsaLineParser
 
 # Globals and constants variables.
 
+def test_dtsa1992_subshell():
+    parser = DtsaSubshellParser()
+    props = list(parser)
 
-class TestDtsaSubshellParser(unittest.TestCase):
+    assert len(props) == 1045
 
-    def setUp(self):
-        super().setUp()
+    assert props[0].element.z == 3
+    assert props[0].value_eV == pytest.approx(54.75, abs=1e-2)
 
-        self.parser = DtsaSubshellParser()
+    assert props[-1].element.z == 95
+    assert props[-1].value_eV == pytest.approx(366.49, abs=1e-2)
 
-    def test__iter__(self):
-        props = list(self.parser)
-        self.assertEqual(1045, len(props))
+def test_dtsa1992_line():
+    parser = DtsaLineParser()
+    props = list(parser)
 
-        self.assertEqual(3, props[0].element.z)
-        self.assertAlmostEqual(54.75, props[0].value_eV, 2)
+    assert len(props) == 6434
 
-        self.assertEqual(95, props[-1].element.z)
-        self.assertAlmostEqual(366.49, props[-1].value_eV, 2)
+    assert props[0].element.z == 3
+    assert props[0].value_eV == pytest.approx(54.3000, abs=1e-4)
 
+    assert props[1].element.z == 3
+    assert props[1].value == pytest.approx(1.00000, abs=1e-5)
 
-class TestDtsaLineParser(unittest.TestCase):
+    assert props[-2].element.z == 95
+    assert props[-2].value_eV == pytest.approx(378.5100, abs=1e-4)
 
-    def setUp(self):
-        super().setUp()
-
-        self.parser = DtsaLineParser()
-
-    def test__iter__(self):
-        props = list(self.parser)
-        self.assertEqual(6434, len(props))
-
-        self.assertEqual(3, props[0].element.z)
-        self.assertAlmostEqual(54.3000, props[0].value_eV, 4)
-        self.assertEqual(3, props[1].element.z)
-        self.assertAlmostEqual(1.00000, props[1].value, 5)
-
-        self.assertEqual(95, props[-2].element.z)
-        self.assertAlmostEqual(378.5100, props[-2].value_eV, 4)
-        self.assertEqual(95, props[-1].element.z)
-        self.assertAlmostEqual(0.01000, props[-1].value, 2)
-
-        # self.fail("Test if the testcase is working.")
-
-
-if __name__ == '__main__':  # pragma: no cover
-    logging.getLogger().setLevel(logging.DEBUG)
-    unittest.main()
+    assert props[-1].element.z == 95
+    assert props[-1].value == pytest.approx(0.01000, abs=1e-2)
