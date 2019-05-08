@@ -51,16 +51,16 @@ class AtomicShell:
 
 @dataclasses.dataclass(frozen=True, order=True)
 class AtomicSubshell:
-    atomic_shell: AtomicShell
+    principal_quantum_number: int
     azimuthal_quantum_number: int
     total_angular_momentum_nominator: int
 
     def __post_init__(self):
-        if not isinstance(self.atomic_shell, AtomicShell):
-            object.__setattr__(self, 'atomic_shell', AtomicShell(self.atomic_shell))
+        if isinstance(self.principal_quantum_number, AtomicShell):
+            object.__setattr__(self, 'principal_quantum_number', self.principal_quantum_number.n)
 
         lmin = 0
-        lmax = self.atomic_shell.principal_quantum_number - 1
+        lmax = self.principal_quantum_number - 1
         jmin_n = 2 * abs(self.azimuthal_quantum_number - 0.5)
         jmax_n = 2 * abs(self.azimuthal_quantum_number + 0.5)
 
@@ -77,8 +77,8 @@ class AtomicSubshell:
         return '{}(n={}, l={}, j={:.1f})'.format(self.__class__.__name__, self.n, self.l, self.j)
 
     @property
-    def principal_quantum_number(self):
-        return self.atomic_shell.principal_quantum_number
+    def atomic_shell(self):
+        return AtomicShell(self.principal_quantum_number)
 
     @property
     def n(self):
@@ -115,13 +115,13 @@ class XrayTransition:
             source = self.source_principal_quantum_number
             destination = self.source_azimuthal_quantum_number
 
-            object.__setattr__(self, 'source_principal_quantum_number', source[0])
-            object.__setattr__(self, 'source_azimuthal_quantum_number', source[1])
-            object.__setattr__(self, 'source_total_angular_momentum_nominator', source[2])
+            object.__setattr__(self, 'source_principal_quantum_number', source[0]) # pylint: disable=unsubscriptable-object
+            object.__setattr__(self, 'source_azimuthal_quantum_number', source[1]) # pylint: disable=unsubscriptable-object
+            object.__setattr__(self, 'source_total_angular_momentum_nominator', source[2]) # pylint: disable=unsubscriptable-object
 
-            object.__setattr__(self, 'destination_principal_quantum_number', destination[0])
-            object.__setattr__(self, 'destination_azimuthal_quantum_number', destination[1])
-            object.__setattr__(self, 'destination_total_angular_momentum_nominator', destination[2])
+            object.__setattr__(self, 'destination_principal_quantum_number', destination[0]) # pylint: disable=unsubscriptable-object
+            object.__setattr__(self, 'destination_azimuthal_quantum_number', destination[1]) # pylint: disable=unsubscriptable-object
+            object.__setattr__(self, 'destination_total_angular_momentum_nominator', destination[2]) # pylint: disable=unsubscriptable-object
 
         elif isinstance(self.source_principal_quantum_number, AtomicSubshell) and \
                 isinstance(self.source_azimuthal_quantum_number, AtomicSubshell):

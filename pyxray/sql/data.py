@@ -37,12 +37,13 @@ class SqlDatabase(_DatabaseMixin, SqlBase):
         return n, l, j_n
 
     def _expand_xray_transition(self, xray_transition):
-        if hasattr(xray_transition, 'source_subshell') and \
-                hasattr(xray_transition, 'destination_subshell'):
-            src_n, src_l, src_j_n = \
-                self._expand_atomic_subshell(xray_transition.source_subshell)
-            dst_n, dst_l, dst_j_n = \
-                self._expand_atomic_subshell(xray_transition.destination_subshell)
+        if isinstance(xray_transition, descriptor.XrayTransition):
+            src_n = xray_transition.source_principal_quantum_number
+            src_l = xray_transition.source_azimuthal_quantum_number
+            src_j_n = xray_transition.source_total_angular_momentum_nominator
+            dst_n = xray_transition.destination_principal_quantum_number
+            dst_l = xray_transition.destination_azimuthal_quantum_number
+            dst_j_n = xray_transition.destination_total_angular_momentum_nominator
 
         elif isinstance(xray_transition, Sequence) and \
                 len(xray_transition) >= 2:
@@ -94,22 +95,17 @@ class SqlDatabase(_DatabaseMixin, SqlBase):
         raise NotFound('Cannot parse atomic shell: {}'.format(atomic_shell))
 
     def _create_atomic_subshell_clauses(self, table, atomic_subshell, column='atomic_subshell_id'):
-        table_atomic_shell = self.require_table(descriptor.AtomicShell)
-        table_atomic_subshell = self.require_table(descriptor.AtomicSubshell)
-        clause_atomic_shell = table_atomic_shell.c['id'] == table_atomic_subshell.c['atomic_shell_id']
-
         if isinstance(atomic_subshell, str):
             table_notation = self.require_table(property.AtomicSubshellNotation)
-            return [clause_atomic_shell,
-                    table.c[column] == table_notation.c['atomic_subshell_id'],
+            return [table.c[column] == table_notation.c['atomic_subshell_id'],
                     sqlalchemy.sql.or_(table_notation.c['ascii'] == atomic_subshell,
                                        table_notation.c['utf16'] == atomic_subshell)]
 
         n, l, j_n = self._expand_atomic_subshell(atomic_subshell)
         if n is not None:
-            return [clause_atomic_shell,
-                    table.c[column] == table_atomic_subshell.c['id'],
-                    table_atomic_shell.c['principal_quantum_number'] == n,
+            table_atomic_subshell = self.require_table(descriptor.AtomicSubshell)
+            return [table.c[column] == table_atomic_subshell.c['id'],
+                    table_atomic_subshell.c['principal_quantum_number'] == n,
                     table_atomic_subshell.c['azimuthal_quantum_number'] == l,
                     table_atomic_subshell.c['total_angular_momentum_nominator'] == j_n]
 
@@ -279,15 +275,14 @@ class SqlDatabase(_DatabaseMixin, SqlBase):
         return self._execute_select(statement)
 
     def atomic_subshell(self, atomic_subshell):
-        table_atomic_shell = self.require_table(descriptor.AtomicShell)
-        table_atomic_subshell = self.require_table(descriptor.AtomicSubshell)
+        table = self.require_table(descriptor.AtomicSubshell)
 
         clauses = []
-        clauses += self._create_atomic_subshell_clauses(table_atomic_subshell, atomic_subshell, 'id')
+        clauses += self._create_atomic_subshell_clauses(table, atomic_subshell, 'id')
 
-        statement = sqlalchemy.sql.select([table_atomic_shell.c['principal_quantum_number'],
-                                           table_atomic_subshell.c['azimuthal_quantum_number'],
-                                           table_atomic_subshell.c['total_angular_momentum_nominator']])
+        statement = sqlalchemy.sql.select([table.c['principal_quantum_number'],
+                                           table.c['azimuthal_quantum_number'],
+                                           table.c['total_angular_momentum_nominator']])
         statement = statement.where(sqlalchemy.sql.and_(*clauses))
 
         n, l, j_n = self._execute_select(statement)
