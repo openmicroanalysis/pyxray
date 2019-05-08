@@ -115,41 +115,23 @@ class SqlDatabase(_DatabaseMixin, SqlBase):
 
         raise NotFound('Cannot parse atomic subshell: {}'.format(atomic_subshell))
 
-    def _create_xray_transition_clauses(self, table, xray_transition, column='xray_transition_id',
-                                        table_srcsubshell=None, table_srcshell=None,
-                                        table_dstsubshell=None, table_dstshell=None):
-        table_xray_transition = self.require_table(descriptor.XrayTransition)
-        if table_srcsubshell is None:
-            table_srcsubshell = self.require_table(descriptor.AtomicSubshell).alias('srcsubshell')
-        if table_srcshell is None:
-            table_srcshell = self.require_table(descriptor.AtomicShell).alias('srcshell')
-        if table_dstsubshell is None:
-            table_dstsubshell = self.require_table(descriptor.AtomicSubshell).alias('dstsubshell')
-        if table_dstshell is None:
-            table_dstshell = self.require_table(descriptor.AtomicShell).alias('dstshell')
-
-        common_clauses = [table.c[column] == table_xray_transition.c['id'],
-                          table_xray_transition.c['source_subshell_id'] == table_srcsubshell.c['id'],
-                          table_xray_transition.c['destination_subshell_id'] == table_dstsubshell.c['id'],
-                          table_srcsubshell.c['atomic_shell_id'] == table_srcshell.c['id'],
-                          table_dstsubshell.c['atomic_shell_id'] == table_dstshell.c['id']]
-
+    def _create_xray_transition_clauses(self, table, xray_transition, column='xray_transition_id'):
         if isinstance(xray_transition, str):
             table_notation = self.require_table(property.XrayTransitionNotation)
-            return common_clauses + \
-                [table.c[column] == table_notation.c['xray_transition_id'],
-                 sqlalchemy.sql.or_(table_notation.c['ascii'] == xray_transition,
-                                    table_notation.c['utf16'] == xray_transition)]
+            return [table.c[column] == table_notation.c['xray_transition_id'],
+                    sqlalchemy.sql.or_(table_notation.c['ascii'] == xray_transition,
+                                       table_notation.c['utf16'] == xray_transition)]
 
         src_n, src_l, src_j_n, dst_n, dst_l, dst_j_n = self._expand_xray_transition(xray_transition)
         if src_n is not None:
-            return common_clauses + \
-                [table_srcshell.c['principal_quantum_number'] == src_n,
-                 table_srcsubshell.c['azimuthal_quantum_number'] == src_l,
-                 table_srcsubshell.c['total_angular_momentum_nominator'] == src_j_n,
-                 table_dstshell.c['principal_quantum_number'] == dst_n,
-                 table_dstsubshell.c['azimuthal_quantum_number'] == dst_l,
-                 table_dstsubshell.c['total_angular_momentum_nominator'] == dst_j_n]
+            table_xray_transition = self.require_table(descriptor.XrayTransition)
+            return [table.c[column] == table_xray_transition.c['id'],
+                    table_xray_transition.c['source_principal_quantum_number'] == src_n,
+                    table_xray_transition.c['source_azimuthal_quantum_number'] == src_l,
+                    table_xray_transition.c['source_total_angular_momentum_nominator'] == src_j_n,
+                    table_xray_transition.c['destination_principal_quantum_number'] == dst_n,
+                    table_xray_transition.c['destination_azimuthal_quantum_number'] == dst_l,
+                    table_xray_transition.c['destination_total_angular_momentum_nominator'] == dst_j_n]
 
         raise NotFound('Cannot parse X-ray transition: {}'.format(xray_transition))
 
@@ -378,28 +360,20 @@ class SqlDatabase(_DatabaseMixin, SqlBase):
 
     def xray_transition(self, xray_transition):
         table = self.require_table(descriptor.XrayTransition)
-        table_srcsubshell = self.require_table(descriptor.AtomicSubshell).alias('srcsubshell')
-        table_srcshell = self.require_table(descriptor.AtomicShell).alias('srcshell')
-        table_dstsubshell = self.require_table(descriptor.AtomicSubshell).alias('dstsubshell')
-        table_dstshell = self.require_table(descriptor.AtomicShell).alias('dstshell')
 
         clauses = []
-        clauses += self._create_xray_transition_clauses(table, xray_transition, 'id',
-                                                        table_srcsubshell, table_srcshell,
-                                                        table_dstsubshell, table_dstshell)
+        clauses += self._create_xray_transition_clauses(table, xray_transition, 'id')
 
-        statement = sqlalchemy.sql.select([table_srcshell.c['principal_quantum_number'],
-                                           table_srcsubshell.c['azimuthal_quantum_number'],
-                                           table_srcsubshell.c['total_angular_momentum_nominator'],
-                                           table_dstshell.c['principal_quantum_number'],
-                                           table_dstsubshell.c['azimuthal_quantum_number'],
-                                           table_dstsubshell.c['total_angular_momentum_nominator']])
+        statement = sqlalchemy.sql.select([table.c['source_principal_quantum_number'],
+                                           table.c['source_azimuthal_quantum_number'],
+                                           table.c['source_total_angular_momentum_nominator'],
+                                           table.c['destination_principal_quantum_number'],
+                                           table.c['destination_azimuthal_quantum_number'],
+                                           table.c['destination_total_angular_momentum_nominator']])
         statement = statement.where(sqlalchemy.sql.and_(*clauses))
 
         src_n, src_l, src_j_n, dst_n, dst_l, dst_j_n = self._execute_select(statement)
-        src = descriptor.AtomicSubshell(src_n, src_l, src_j_n)
-        dst = descriptor.AtomicSubshell(dst_n, dst_l, dst_j_n)
-        return descriptor.XrayTransition(src, dst)
+        return descriptor.XrayTransition(src_n, src_l, src_j_n, dst_n, dst_l, dst_j_n)
 
     def xray_transition_notation(self, xray_transition, notation, encoding='utf16', reference=None):
         table = self.require_table(property.XrayTransitionNotation)

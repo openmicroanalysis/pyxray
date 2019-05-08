@@ -9,6 +9,7 @@ __all__ = ['Element', 'AtomicShell', 'AtomicSubshell', 'XrayTransition',
 import dataclasses
 import typing
 import functools
+from collections.abc import Sequence
 
 # Third party modules.
 
@@ -101,15 +102,39 @@ class AtomicSubshell:
 
 @dataclasses.dataclass(frozen=True)
 class XrayTransition:
-    source_subshell: AtomicSubshell
-    destination_subshell: AtomicSubshell
+    source_principal_quantum_number: int = None
+    source_azimuthal_quantum_number: int = None
+    source_total_angular_momentum_nominator: int = None
+    destination_principal_quantum_number: int = None
+    destination_azimuthal_quantum_number: int = None
+    destination_total_angular_momentum_nominator: int = None
 
     def __post_init__(self):
-        if not isinstance(self.source_subshell, AtomicSubshell):
-            object.__setattr__(self, 'source_subshell', AtomicSubshell(*self.source_subshell))
+        if isinstance(self.source_principal_quantum_number, Sequence) and \
+                isinstance(self.source_azimuthal_quantum_number, Sequence):
+            source = self.source_principal_quantum_number
+            destination = self.source_azimuthal_quantum_number
 
-        if not isinstance(self.destination_subshell, AtomicSubshell):
-            object.__setattr__(self, 'destination_subshell', AtomicSubshell(*self.destination_subshell))
+            object.__setattr__(self, 'source_principal_quantum_number', source[0])
+            object.__setattr__(self, 'source_azimuthal_quantum_number', source[1])
+            object.__setattr__(self, 'source_total_angular_momentum_nominator', source[2])
+
+            object.__setattr__(self, 'destination_principal_quantum_number', destination[0])
+            object.__setattr__(self, 'destination_azimuthal_quantum_number', destination[1])
+            object.__setattr__(self, 'destination_total_angular_momentum_nominator', destination[2])
+
+        elif isinstance(self.source_principal_quantum_number, AtomicSubshell) and \
+                isinstance(self.source_azimuthal_quantum_number, AtomicSubshell):
+            source = self.source_principal_quantum_number
+            destination = self.source_azimuthal_quantum_number
+
+            object.__setattr__(self, 'source_principal_quantum_number', source.n)
+            object.__setattr__(self, 'source_azimuthal_quantum_number', source.l)
+            object.__setattr__(self, 'source_total_angular_momentum_nominator', source.j_n)
+
+            object.__setattr__(self, 'destination_principal_quantum_number', destination.n)
+            object.__setattr__(self, 'destination_azimuthal_quantum_number', destination.l)
+            object.__setattr__(self, 'destination_total_angular_momentum_nominator', destination.j_n)
 
     @classmethod
     def is_radiative(cls, source_subshell, destination_subshell):
@@ -155,6 +180,18 @@ class XrayTransition:
             .format(self.__class__.__name__,
                     src=self.source_subshell,
                     dest=self.destination_subshell)
+
+    @property
+    def source_subshell(self):
+        return AtomicSubshell(self.source_principal_quantum_number,
+                              self.source_azimuthal_quantum_number,
+                              self.source_total_angular_momentum_nominator)
+
+    @property
+    def destination_subshell(self):
+        return AtomicSubshell(self.destination_principal_quantum_number,
+                              self.destination_azimuthal_quantum_number,
+                              self.destination_total_angular_momentum_nominator)
 
 @dataclasses.dataclass(frozen=True)
 class XrayTransitionSet:
