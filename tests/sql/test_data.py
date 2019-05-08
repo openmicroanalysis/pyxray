@@ -19,7 +19,7 @@ K = descriptor.AtomicSubshell(1, 0, 1)
 L3 = descriptor.AtomicSubshell(2, 1, 3)
 L2 = descriptor.AtomicSubshell(2, 1, 1)
 
-@pytest.fixture
+@pytest.fixture(scope='session')
 def database(builder):
     return SqlDatabase(builder.engine)
 

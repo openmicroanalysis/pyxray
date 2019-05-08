@@ -82,9 +82,9 @@ class MockSqliteDatabaseBuilder(SqlDatabaseBuilder):
         else:
             return [('mock', MockParser())]
 
-@pytest.fixture
-def builder(tmp_path):
-    engine = sqlalchemy.create_engine('sqlite:///' + str(tmp_path.joinpath('pyxray.sql')))
+@pytest.fixture(scope='session')
+def builder(tmp_path_factory):
+    engine = sqlalchemy.create_engine('sqlite:///' + str(tmp_path_factory.mktemp('test').joinpath('pyxray.sql')))
 
     builder = MockSqliteDatabaseBuilder(engine)
     builder.build()
