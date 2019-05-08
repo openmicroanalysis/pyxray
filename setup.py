@@ -26,8 +26,10 @@ class build_py(_build_py.build_py):
         logger.add(sys.stderr, level="INFO")
 
         filepath = os.path.abspath(os.path.join(BASEDIR, 'pyxray', 'data', 'pyxray.db'))
-        engine = sqlalchemy.create_engine('sqlite:///' + filepath)
+        if os.path.exists(filepath):
+            os.remove(filepath)
 
+        engine = sqlalchemy.create_engine('sqlite:///' + filepath)
         builder = pyxray.sql.build.SqlDatabaseBuilder(engine)
         builder.build()
 
