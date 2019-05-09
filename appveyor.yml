@@ -7,7 +7,6 @@ environment:
 install:
   - "%PYTHON%\\python.exe -m pip install --upgrade pip wheel codecov"
   - "%PYTHON%\\python.exe -m pip install --upgrade -e .[build,develop]"
-  - "%PYTHON%\\python.exe setup.py build"
 
 build: off
 
