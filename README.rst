@@ -80,13 +80,6 @@ Variables of the methods are defined as follows
     * a ``tuple`` of source and destination subshells
     * any notation (case insensitive)
 
-* ``xray_transition_set``:
-    either
-
-    * `XrayTransitionSet <http://github.com/openmicroanalysis/pyxray/blob/master/pyxray/descriptor.py>`_ object
-    * a ``tuple`` of transitions
-    * any notation (case insensitive)
-
 * ``language``:
     language code (e.g. ``en``, ``fr``, ``de``)
 
@@ -212,6 +205,7 @@ electron between quantum states leading to X-rays emission.
     .. code:: python
 
         pyxray.transition_notation('Ka1', 'iupac') #=> 'K-L3'
+        pyxray.transition_notation('Ka', 'iupac') #=> 'K-L2,3'
         pyxray.transition_notation('L3-M1', 'siegbahn', 'ascii') #=> 'Ll'
 
 * ``pyxray.xray_transition_energy_eV(element, xray_transition, reference=None)``
@@ -230,64 +224,41 @@ electron between quantum states leading to X-rays emission.
 * ``pyxray.xray_transition_relative_weight(element, xray_transition, reference=None)``
     Returns relative weight of an element and X-ray transition.
 
-X-ray transition set properties
--------------------------------
-
-Properties associated with an X-ray transition set, an indistinguishable X-ray transition
-(e.g. Ka from Ka1/Ka2).
-
-* ``pyxray.xray_transition_set(xray_transition_set)``
-    Returns X-ray transition set descriptor.
-
-* ``pyxray.xray_transition_set_notation(xray_transition_set, notation, encoding='utf16', reference=None)``
-    Returns notation of an X-ray transition set.
-
-* ``pyxray.xray_transition_set_energy_eV(element, xray_transition_set, reference=None)``
-    Returns energy of an element and X-ray transition set (in eV).
-
-* ``pyxray.xray_transition_set_relative_weight(element, xray_transition_set, reference=None)``
-    Returns relative weight of an element and X-ray transition set.
-
 X-ray line
 ----------
 
-Object to represent an x-ray line, an x-ray line of an element.
-The x-ray line can either be a
-`XrayTransition <http://github.com/openmicroanalysis/pyxray/blob/master/pyxray/descriptor.py>`_
-(a transition between two atomic subshells) or a
-`XrayTransitionSet <http://github.com/openmicroanalysis/pyxray/blob/master/pyxray/descriptor.py>`_
-(a set of transitions, normally indistinguishable X-ray transitions).
+Object to represent an x-ray transition and its properties.
 
-* ``pyxray.xray_line(element, line, reference=None)``
+* ``pyxray.xray_line(element, xray_transition, reference=None)``
     Returns X-ray line descriptor.
 
 .. code:: python
 
    xrayline = pyxray.xray_line(14, 'Ka1')
    xrayline.atomic_number #=> 14
+   xrayline.transition #=> XrayTransition(2, 1, 3, 1, 0, 1)
    xrayline.iupac #=> Si K–L3
    xrayline.siegbahn #=> Si Kα1
-   xrayline.transitions #=> (XrayTransition([n=2, l=1, j=1.5] -> [n=1, l=0, j=0.5]),)
-   xrayline.energy_eV #=> 1740.0263764535946
+   xrayline.energy_eV #=> 1740.0
+   xrayline.probability #=> 0.031705199999999996
+   xrayline.relative_weight #=> 1.0
 
-   xrayline = pyxray.xray_line(14, 'Ka')
-   xrayline.atomic_number #=> 14
-   xrayline.iupac #=> Si K–L(2,3)
-   xrayline.siegbahn #=> Si Kα
-   xrayline.transitions #=> (XrayTransition([n=2, l=1, j=0.5] -> [n=1, l=0, j=0.5]), XrayTransition([n=2, l=1, j=1.5] -> [n=1, l=0, j=0.5]))
-   xrayline.energy_eV #=> 1739.826155631858
-
-As any other descriptors, X-ray line objects are immutable and hashable so
-they can be used as keys of a dictionary.
-X-ray line are ordered by their atomic number and energy.
+As any other descriptors, X-ray line objects are immutable and hashable so they can be used as keys of a dictionary.
 
 .. code:: python
 
    xrayline1 = pyxray.xray_line(13, 'Ka1')
    xrayline2 = pyxray.xray_line('Al', 'Ka1')
    xrayline1 == xrayline2 #=> True
-   xrayline1 is xrayline2 #=> True
-   pyxray.xray_line(13, 'Ka1') < pyxray.xray_line(14, 'Ka1')
+   pyxray.xray_line(13, 'Ka1') == pyxray.xray_line(13, 'Ka') #=> False
+
+To sort X-ray lines, use one of their properties:
+
+.. code:: python
+
+   from operator import attrgetter
+   lines = [pyxray.xray_line(14, 'Ka1'), pyxray.xray_line(13, 'Ka1'), pyxray.xray_line(14, 'Ll')]
+   sorted(lines, key=attrgetter('energy_eV')) #=> [XrayLine(Si L3–M1), XrayLine(Al K–L3), XrayLine(Si K–L3)]
 
 Composition
 -----------
@@ -318,7 +289,9 @@ Release notes
 Development
 -----------
 
-- Add ordering of Element, AtomicShell, AtomicSubshell and XrayLine.
+- Add ordering of Element, AtomicShell, AtomicSubshell
+- Use `sqlalchemy <https://sqlalchemy.org>`_ to create and interact with database
+- Add more probability and relative weight properties to XrayLine
 
 1.5
 ---
