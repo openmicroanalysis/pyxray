@@ -175,10 +175,10 @@ def test_xray_transition_probability(database, xray_transition):
 def test_xray_transition_relative_weight(database, xray_transition):
     assert database.xray_transition_relative_weight(118, xray_transition) == pytest.approx(0.002, abs=1e-4)
 
-# def test_xray_line(database):
-#    xrayline = database.xray_line(118, 'aa')
+def test_xray_line(database):
+   xrayline = database.xray_line(118, 'aa')
 
-#    assert xrayline.element.atomic_number == 118
-#    assert len(xrayline.transitions) == 1
-#    assert xrayline.iupac == 'Vi bb'
-#    assert xrayline.siegbahn == 'Vi bb'
+   assert xrayline.element.atomic_number == 118
+   assert xrayline.iupac == 'Vi bb'
+   assert xrayline.siegbahn == 'Vi bb'
+   assert xrayline.energy_eV == pytest.approx(0.2, abs=1e-3)

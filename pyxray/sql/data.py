@@ -471,6 +471,3 @@ class SqlDatabase(_DatabaseMixin, SqlBase):
         statement = statement.where(sqlalchemy.sql.and_(*clauses))
 
         return self._execute_select_one(statement)
-
-    def xray_line(self, element, line, reference=None):
-        raise NotFound

@@ -445,7 +445,6 @@ class _DatabaseMixin(metaclass=abc.ABCMeta):
         """
         raise NotImplementedError
 
-    @abc.abstractmethod
     @formatdoc(**_docextras)
     def xray_line(self, element, line, reference=None):
         """
