@@ -32,7 +32,7 @@ def test_generic_xray_transition_notation():
 
 def test_known_xray_transition_notation():
     parser = KnownXrayTransitionNotationParser()
-    assert len(list(parser)) == 75
+    assert len(list(parser)) == 76
 
 def test_series_xray_transition_notation():
     parser = SeriesXrayTransitionNotationParser()

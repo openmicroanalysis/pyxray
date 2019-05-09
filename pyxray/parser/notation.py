@@ -320,10 +320,10 @@ class KnownXrayTransitionNotationParser(base._Parser):
                                      'K&beta;<sup>1,3</sup>',
                                      '\\ensuremath{\\mathrm{K}\\beta_{1,3}}')
         yield XrayTransitionNotation(base.UNATTRIBUTED, base.Kb1_3, base.IUPAC,
-                                     'K-M(4,5)',
-                                     'K\u2013M(4,5)',
-                                     'K&ndash;M<sub>4,5</sub>',
-                                     '\\ensuremath{\\mathrm{K}}--\\ensuremath{\\mathrm{M}_{4,5}}')
+                                     'K-M(2,3)',
+                                     'K\u2013M(2,3)',
+                                     'K&ndash;M<sub>2,3</sub>',
+                                     '\\ensuremath{\\mathrm{K}}--\\ensuremath{\\mathrm{M}_{2,3}}')
 
         assert base.Kb4_1.source_subshell == base.N5
         assert base.Kb4_1.destination_subshell == base.K
@@ -370,6 +370,11 @@ class KnownXrayTransitionNotationParser(base._Parser):
                                      'K\u03b25',
                                      'K&beta;<sub>5</sub>',
                                      '\\ensuremath{\\mathrm{K}\\beta_5}')
+        yield XrayTransitionNotation(base.UNATTRIBUTED, base.Kb5, base.IUPAC,
+                                     'K-M(4,5)',
+                                     'K\u2013M(4,5)',
+                                     'K&ndash;M<sub>4,5</sub>',
+                                     '\\ensuremath{\\mathrm{K}}--\\ensuremath{\\mathrm{M}_{4,5}}')
 
         assert base.KO2_3.destination_subshell == base.K
         yield XrayTransitionNotation(base.UNATTRIBUTED, base.KO2_3, base.IUPAC,

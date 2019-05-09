@@ -60,13 +60,13 @@ Kb2_1 = XrayTransition(N3, K)
 Kb2_2 = XrayTransition(N2, K)
 Kb2 = XrayTransition(4, 1, None, K)
 Kb3 = XrayTransition(M2, K)
-Kb1_3 = XrayTransition(3, 1, None, K) # K-M4,5
+Kb1_3 = XrayTransition(3, 1, None, K) # K-M2,3
 Kb4_1 = XrayTransition(N5, K)
 Kb4_2 = XrayTransition(N4, K)
 Kb4 = XrayTransition(4, 2, None, K)
 Kb5_1 = XrayTransition(M5, K)
 Kb5_2 = XrayTransition(M4, K)
-Kb5 = XrayTransition(3, 2, None, K)
+Kb5 = XrayTransition(3, 2, None, K) # K-M4,5
 KO2_3 = XrayTransition(5, 1, None, K) # K-O2,3
 
 La1 = XrayTransition(M5, L3)
