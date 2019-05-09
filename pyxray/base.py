@@ -184,12 +184,13 @@ class _DatabaseMixin(metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     @formatdoc(**_docextras)
-    def element_xray_transitions(self, element, reference=None): #pragma: no cover
+    def element_xray_transitions(self, element, xray_transition=None, reference=None): #pragma: no cover
         """
-        Returns all x-ray transitions which have a probability greater
-        than 0 for that element.
+        Returns all x-ray transitions which have a probability greater than 0 for that element.
+        If *xray_transition* is not ``None``, only the x-ray transitions matching this x-ray transition are returned.
 
         {element}
+        {xray_transition}
         {reference}
 
         :return: X-ray transitions

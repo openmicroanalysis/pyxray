@@ -51,7 +51,7 @@ class SqlDatabase(_DatabaseMixin, SqlBase):
             dst_n, dst_l, dst_j_n = self._expand_atomic_subshell(xray_transition[1])
 
         else:
-            src_n = src_l = src_j_n = dst_n = dst_l = dst_j_n = None
+            raise NotFound('Cannot parse X-ray transition: {}'.format(xray_transition))
 
         return src_n, src_l, src_j_n, dst_n, dst_l, dst_j_n
 
@@ -111,7 +111,7 @@ class SqlDatabase(_DatabaseMixin, SqlBase):
 
         raise NotFound('Cannot parse atomic subshell: {}'.format(atomic_subshell))
 
-    def _create_xray_transition_clauses(self, table, xray_transition, column='xray_transition_id'):
+    def _create_xray_transition_clauses(self, table, xray_transition, column='xray_transition_id', search=False):
         if isinstance(xray_transition, str):
             table_notation = self.require_table(property.XrayTransitionNotation)
             return [table.c[column] == table_notation.c['xray_transition_id'],
@@ -119,8 +119,25 @@ class SqlDatabase(_DatabaseMixin, SqlBase):
                                        table_notation.c['utf16'] == xray_transition)]
 
         src_n, src_l, src_j_n, dst_n, dst_l, dst_j_n = self._expand_xray_transition(xray_transition)
-        if src_n is not None:
-            table_xray_transition = self.require_table(descriptor.XrayTransition)
+
+        table_xray_transition = self.require_table(descriptor.XrayTransition)
+
+        if search:
+            def create_clause(column, value):
+                if value is not None:
+                    return table_xray_transition.c[column] == value
+                else:
+                    return table_xray_transition.c[column] != None
+
+            return [table.c[column] == table_xray_transition.c['id'],
+                    create_clause('source_principal_quantum_number', src_n),
+                    create_clause('source_azimuthal_quantum_number', src_l),
+                    create_clause('source_total_angular_momentum_nominator', src_j_n),
+                    create_clause('destination_principal_quantum_number', dst_n),
+                    create_clause('destination_azimuthal_quantum_number', dst_l),
+                    create_clause('destination_total_angular_momentum_nominator', dst_j_n)]
+
+        else:
             return [table.c[column] == table_xray_transition.c['id'],
                     table_xray_transition.c['source_principal_quantum_number'] == src_n,
                     table_xray_transition.c['source_azimuthal_quantum_number'] == src_l,
@@ -128,8 +145,6 @@ class SqlDatabase(_DatabaseMixin, SqlBase):
                     table_xray_transition.c['destination_principal_quantum_number'] == dst_n,
                     table_xray_transition.c['destination_azimuthal_quantum_number'] == dst_l,
                     table_xray_transition.c['destination_total_angular_momentum_nominator'] == dst_j_n]
-
-        raise NotFound('Cannot parse X-ray transition: {}'.format(xray_transition))
 
     def _create_reference_clauses(self, table, reference):
         if isinstance(reference, descriptor.Reference):
@@ -252,13 +267,15 @@ class SqlDatabase(_DatabaseMixin, SqlBase):
 
         return self._execute_select_one(statement)
 
-    def element_xray_transitions(self, element, reference=None):
+    def element_xray_transitions(self, element, xray_transition=None, reference=None):
         table_xray = self.require_table(descriptor.XrayTransition)
         table_probability = self.require_table(property.XrayTransitionProbability)
 
         clauses = []
         clauses += self._create_element_clauses(table_probability, element)
         clauses += self._create_reference_clauses(table_probability, reference)
+        if xray_transition is not None:
+            clauses += self._create_xray_transition_clauses(table_probability, xray_transition, search=True)
         clauses += [table_probability.c['xray_transition_id'] == table_xray.c['id'],
                     table_probability.c['value'] > 0.0]
 

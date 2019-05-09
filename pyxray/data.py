@@ -66,10 +66,10 @@ class _EmptyDatabase(_DatabaseMixin):
     def element_mass_density_g_per_cm3(self, element, reference=None): #pragma: no cover
         raise NotFound
 
-    def element_xray_transitions(self, element, reference=None): #pragma: no cover
+    def element_xray_transitions(self, element, xray_transition=None, reference=None): #pragma: no cover
         raise NotFound
 
-    def element_xray_transition(self, element, xraytransition, reference=None):
+    def element_xray_transition(self, element, xray_transition, reference=None):
         raise NotFound
 
     def atomic_shell(self, atomic_shell): #pragma: no cover
@@ -99,16 +99,16 @@ class _EmptyDatabase(_DatabaseMixin):
     def xray_transition(self, xraytransition): #pragma: no cover
         raise NotFound
 
-    def xray_transition_notation(self, xraytransition, notation, encoding='utf16', reference=None): #pragma: no cover
+    def xray_transition_notation(self, xray_transition, notation, encoding='utf16', reference=None): #pragma: no cover
         raise NotFound
 
-    def xray_transition_energy_eV(self, element, xraytransition, reference=None): #pragma: no cover
+    def xray_transition_energy_eV(self, element, xray_transition, reference=None): #pragma: no cover
         raise NotFound
 
-    def xray_transition_probability(self, element, xraytransition, reference=None): #pragma: no cover
+    def xray_transition_probability(self, element, xray_transition, reference=None): #pragma: no cover
         raise NotFound
 
-    def xray_transition_relative_weight(self, element, xraytransition, reference=None): #pragma: no cover
+    def xray_transition_relative_weight(self, element, xray_transition, reference=None): #pragma: no cover
         raise NotFound
 
     def xray_line(self, element, xray_transition): #pragma: no cover
