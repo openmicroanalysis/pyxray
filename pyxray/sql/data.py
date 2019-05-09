@@ -2,11 +2,10 @@
 
 # Standard library modules.
 from collections.abc import Sequence
+import logging
 
 # Third party modules.
 import sqlalchemy.sql
-
-from loguru import logger
 
 # Local modules.
 from pyxray.base import _DatabaseMixin, NotFound
@@ -15,6 +14,7 @@ import pyxray.descriptor as descriptor
 import pyxray.property as property
 
 # Globals and constants variables.
+logger = logging.getLogger(__name__)
 
 class SqlDatabase(_DatabaseMixin, SqlBase):
 

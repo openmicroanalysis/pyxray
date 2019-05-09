@@ -3,6 +3,7 @@
 # Standard library modules.
 import os
 import sys
+import logging
 
 # Third party modules.
 from setuptools import setup, find_packages
@@ -12,6 +13,7 @@ import setuptools.command.build_py as _build_py
 import versioneer
 
 # Globals and constants variables.
+logger = logging.getLogger(__name__)
 BASEDIR = os.path.abspath(os.path.dirname(__file__))
 
 class build_py(_build_py.build_py):
@@ -20,10 +22,9 @@ class build_py(_build_py.build_py):
         # Build SQL database
         import sqlalchemy
         import pyxray.sql.build
-        from loguru import logger
 
-        logger.remove()
-        logger.add(sys.stderr, level="INFO")
+        logging.basicConfig()
+        logger.setLevel(logging.INFO)
 
         filepath = os.path.abspath(os.path.join(BASEDIR, 'pyxray', 'data', 'pyxray.db'))
         if os.path.exists(filepath):
@@ -43,9 +44,8 @@ class build_py(_build_py.build_py):
 with open(os.path.join(BASEDIR, 'README.rst'), 'r') as fp:
     LONG_DESCRIPTION = fp.read()
 
-INSTALL_REQUIRES = ['tabulate', 'sqlalchemy', 'loguru', 'tqdm', 'dataclasses;python_version~="3.6"']
-EXTRAS_REQUIRE = {'develop': ['requests', 'requests-cache', 'progressbar2',
-                              'pytest', 'pytest-cov']
+INSTALL_REQUIRES = ['tabulate', 'sqlalchemy', 'tqdm', 'dataclasses;python_version~="3.6"']
+EXTRAS_REQUIRE = {'develop': ['requests', 'requests-cache', 'pytest', 'pytest-cov']
                   }
 
 CMDCLASS = versioneer.get_cmdclass()

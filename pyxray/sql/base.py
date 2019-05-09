@@ -6,15 +6,15 @@ Base SQL.
 import re
 import dataclasses
 import inspect
+import logging
 
 # Third party modules.
 import sqlalchemy.sql
 
-from loguru import logger
-
 # Local modules.
 
 # Globals and constants variables.
+logger = logging.getLogger(__name__)
 
 def camelcase_to_words(text):
     return re.sub('([a-z0-9])([A-Z])', r'\1 \2', text)
@@ -32,10 +32,10 @@ class SqlBase:
     def _get_table_name(self, dataclass):
         """
         Creates a table name from a dataclass class or instance.
-        
+
         Args:
             dataclass (dataclasses.dataclass): class or instance
-        
+
         Returns:
             str: name of table
         """
@@ -46,11 +46,11 @@ class SqlBase:
     def _create_table(self, table_name, dataclass):
         """
         Creates a table in the database.
-        
+
         Args:
             table_name (str): name of table
             dataclass (dataclasses.dataclass): class or instance
-        
+
         Returns:
             :class:`sqlalchemy.Table`: table instance
         """
@@ -73,18 +73,18 @@ class SqlBase:
         table = sqlalchemy.Table(table_name, self.metadata, *columns)
 
         self.metadata.create_all(self.engine, tables=[table])
-        logger.debug('Create table "{}"', table_name)
+        logger.debug('Create table "{}"'.format(table_name))
 
         return table
 
     def require_table(self, dataclass):
         """
-        Returns the table for the specified dataclass. 
+        Returns the table for the specified dataclass.
         If no table exists, it is created first.
-        
+
         Args:
             dataclass (dataclasses.dataclass): class or instance
-            
+
         Returns:
             :class:`sqlalchemy.Table`: table instance
         """
@@ -100,10 +100,10 @@ class SqlBase:
         """
         Returns the row of the dataclass if it exists.
         If not, ``None`` is returned
-        
+
         Args:
             dataclass (dataclasses.dataclass): instance
-            
+
         Returns:
             int: row of the dataclass instance in its table, ``None`` if not found
         """

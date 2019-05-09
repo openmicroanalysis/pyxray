@@ -4,17 +4,17 @@ Build the SQL database from the registered parsers.
 
 # Standard library modules.
 import dataclasses
+import logging
 
 # Third party modules.
 import tqdm
-
-from loguru import logger
 
 # Local modules.
 from pyxray.parser.base import find_parsers
 from pyxray.sql.base import SqlBase
 
 # Globals and constants variables.
+logger = logging.getLogger(__name__)
 
 class SqlDatabaseBuilder(SqlBase):
 
@@ -55,7 +55,7 @@ class SqlDatabaseBuilder(SqlBase):
         params = self._convert_dataclass_to_params(dataclass)
         ins = table.insert().values(**params)
 
-        logger.debug('Insert in "{}": {!r}', table.name, params)
+        logger.debug('Insert in "{}": {!r}'.format(table.name, params))
 
         # Insert
         with self.engine.begin() as conn:

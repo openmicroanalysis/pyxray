@@ -31,17 +31,17 @@ __all__ = [
 
 # Standard library modules.
 import os
+import logging
 
 # Third party modules.
 import sqlalchemy
-
-from loguru import logger
 
 # Local modules.
 from pyxray.base import _DatabaseMixin, NotFound
 from pyxray.sql.data import SqlDatabase
 
 # Globals and constants variables.
+logger = logging.getLogger(__name__)
 
 class _EmptyDatabase(_DatabaseMixin):
 
