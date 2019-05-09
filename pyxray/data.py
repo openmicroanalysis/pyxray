@@ -111,7 +111,7 @@ class _EmptyDatabase(_DatabaseMixin):
     def xray_transition_relative_weight(self, element, xraytransition, reference=None): #pragma: no cover
         raise NotFound
 
-    def xray_line(self, element, line, reference=None): #pragma: no cover
+    def xray_line(self, element, xray_transition): #pragma: no cover
         raise NotFound
 
 def _init_sql_database():

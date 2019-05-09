@@ -183,30 +183,37 @@ def test_xraytransitionset_repr(xraytransitionset):
 
 @pytest.fixture
 def xrayline():
-    element = Element(118)
-    return XrayLine(element, 'a', 'b', 0.1)
+    return XrayLine(Element(118), XrayTransition(2, 0, 1, 1, 0, 1), 'a', 'b', 0.1, 0.2, 0.3)
 
 def test_xrayline(xrayline):
     assert xrayline.element.z == 118
+    assert xrayline.transition == XrayTransition(2, 0, 1, 1, 0, 1)
     assert xrayline.iupac == 'a'
     assert xrayline.siegbahn == 'b'
     assert xrayline.energy_eV == pytest.approx(0.1, abs=1e-4)
+    assert xrayline.probability == pytest.approx(0.2, abs=1e-4)
+    assert xrayline.relative_weight == pytest.approx(0.3, abs=1e-4)
 
 def test_xrayline_eq(xrayline):
-    assert xrayline == XrayLine(118, 'a', 'b', 0.1)
+    assert xrayline == XrayLine(118, XrayTransition(2, 0, 1, 1, 0, 1), 'a', 'b', 0.1)
+    assert xrayline == XrayLine(118, XrayTransition(2, 0, 1, 1, 0, 1), 'z', 'b', 0.1)
+    assert xrayline == XrayLine(118, XrayTransition(2, 0, 1, 1, 0, 1), 'a', 'z', 0.1)
+    assert xrayline == XrayLine(118, XrayTransition(2, 0, 1, 1, 0, 1), 'a', 'b', 99.0)
+    assert xrayline == XrayLine(118, XrayTransition(2, 0, 1, 1, 0, 1), 'a', 'b', 0.1, 99.0)
+    assert xrayline == XrayLine(118, XrayTransition(2, 0, 1, 1, 0, 1), 'a', 'b', 0.1, 0.2, 99.0)
+    assert xrayline == XrayLine(118, XrayTransition(2, 0, 1, 1, 0, 1), 'a', 'b', 0.1, 0.2, 0.3)
 
-    assert xrayline != XrayLine(117, 'a', 'b', 0.1)
-    assert xrayline != XrayLine(118, 'z', 'b', 0.1)
-    assert xrayline != XrayLine(118, 'a', 'z', 0.1)
-    assert xrayline != XrayLine(118, 'a', 'b', 999)
+    assert xrayline != XrayLine(117, XrayTransition(2, 0, 1, 1, 0, 1), 'a', 'b', 0.1)
+    assert xrayline != XrayLine(118, XrayTransition(3, 0, 1, 1, 0, 1), 'a', 'b', 0.1)
 
-def test_xrayline_compare(xrayline):
-    assert xrayline > XrayLine(117, 'a', 'b', 0.1)
-    assert xrayline > XrayLine(118, 'a', 'b', 0.01)
-    assert xrayline > XrayLine(118, 'a', 'b', 0.2)
-
-def test_xrayline_hash(xrayline):
-    assert hash(xrayline) == hash(XrayLine(118, 'a', 'b', 0.1))
+@pytest.mark.parametrize('other', [
+    XrayLine(118, XrayTransition(2, 0, 1, 1, 0, 1), 'a', 'b', 0.1),
+    XrayLine(118, XrayTransition(2, 0, 1, 1, 0, 1), 'z', 'b', 0.1),
+    XrayLine(118, XrayTransition(2, 0, 1, 1, 0, 1), 'a', 'z', 0.1),
+    XrayLine(118, XrayTransition(2, 0, 1, 1, 0, 1), 'a', 'b', 0.2)
+])
+def test_xrayline_hash(xrayline, other):
+    assert hash(xrayline) == hash(other)
 
 def test_xrayline_repr(xrayline):
     assert repr(xrayline) == 'XrayLine(a)'

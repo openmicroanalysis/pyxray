@@ -240,25 +240,24 @@ class XrayTransition:
             return None
         return self.destination_total_angular_momentum_nominator / 2.0
 
-@functools.total_ordering
 @dataclasses.dataclass(frozen=True)
 class XrayLine:
     element: Element
-    iupac: str
-    siegbahn: str
-    energy_eV: float
+    transition: XrayTransition
+    iupac: str = dataclasses.field(compare=False)
+    siegbahn: str = dataclasses.field(compare=False)
+    energy_eV: float = dataclasses.field(compare=False)
+    probability: float = dataclasses.field(default=None, compare=False)
+    relative_weight: float = dataclasses.field(default=None, compare=False)
 
     def __post_init__(self):
         if not isinstance(self.element, Element):
             object.__setattr__(self, 'element', Element(self.element))
+        if not isinstance(self.transition, XrayTransition):
+            object.__setattr__(self, 'transition', XrayTransition(self.transition))
 
     def __repr__(self):
         return '{}({})'.format(self.__class__.__name__, self.iupac)
-
-    def __lt__(self, other):
-        if not isinstance(other, self.__class__):
-            return NotImplemented
-        return self.element < other.element and self.energy_eV < other.energy_eV
 
     @property
     def atomic_number(self):

@@ -446,13 +446,12 @@ class _DatabaseMixin(metaclass=abc.ABCMeta):
         raise NotImplementedError
 
     @formatdoc(**_docextras)
-    def xray_line(self, element, line, reference=None):
+    def xray_line(self, element, xray_transition):
         """
         Returns x-ray line descriptor.
 
         {element}
-        :arg line: either an x-ray transition or transition set
-        {reference}
+        {xray_transition}
 
         :return: x-ray line
         :rtype: :class:`XrayLine`
@@ -461,16 +460,28 @@ class _DatabaseMixin(metaclass=abc.ABCMeta):
         element = self.element(element)
         symbol = self.element_symbol(element)
 
-        iupac = '{} {}'.format(symbol, self.xray_transition_notation(line, 'iupac', 'utf16'))
+        transition = self.xray_transition(xray_transition)
+
+        iupac = '{} {}'.format(symbol, self.xray_transition_notation(transition, 'iupac', 'utf16'))
 
         try:
-            siegbahn = '{} {}'.format(symbol, self.xray_transition_notation(line, 'siegbahn', 'utf16'))
+            siegbahn = '{} {}'.format(symbol, self.xray_transition_notation(transition, 'siegbahn', 'utf16'))
         except:
             siegbahn = iupac
 
         try:
-            energy_eV = self.xray_transition_energy_eV(element, line, reference)
+            energy_eV = self.xray_transition_energy_eV(element, transition)
         except NotFound:
-            energy_eV = 0.0
+            energy_eV = None
 
-        return descriptor.XrayLine(element, iupac, siegbahn, energy_eV)
+        try:
+            probability = self.xray_transition_probability(element, transition)
+        except NotFound:
+            probability = None
+
+        try:
+            relative_weight = self.xray_transition_relative_weight(element, transition)
+        except NotFound:
+            relative_weight = None
+
+        return descriptor.XrayLine(element, transition, iupac, siegbahn, energy_eV, probability, relative_weight)
