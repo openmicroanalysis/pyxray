@@ -27,6 +27,10 @@ def database(builder):
 def test_element(database, element):
     assert database.element(element) == descriptor.Element(118)
 
+@pytest.mark.parametrize('reference', ['lee1966', 'LEE1966'])
+def test_reference(database, reference):
+    assert database.element_name(118, 'en', reference) == 'Vibranium'
+
 @pytest.mark.parametrize('element', ['Al', 13, 'Aluminum'])
 def test_element_notfound(database, element):
     with pytest.raises(NotFound):

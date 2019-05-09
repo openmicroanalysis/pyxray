@@ -63,7 +63,13 @@ class SqlBase:
 
             elif field.type in self.FIELDS_TO_SQLTYPE:
                 nullable = field.default is None
-                column = sqlalchemy.Column(field.name, self.FIELDS_TO_SQLTYPE[field.type], nullable=nullable)
+
+                if field.type == str and (field.name.startswith('key') or field.name.endswith('key')):
+                    columntype = sqlalchemy.String(collation='NOCASE')
+                else:
+                    columntype = self.FIELDS_TO_SQLTYPE[field.type]
+
+                column = sqlalchemy.Column(field.name, columntype, nullable=nullable)
 
             else:
                 raise ValueError('Unknown field: {}'.format(field.type))
