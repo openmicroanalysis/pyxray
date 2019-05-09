@@ -8,7 +8,7 @@ import sqlalchemy
 
 # Local modules.
 from pyxray.sql.build import SqlDatabaseBuilder
-from pyxray.parser.parser import _Parser
+from pyxray.parser.base import _Parser
 import pyxray.descriptor as descriptor
 import pyxray.property as property
 
@@ -26,7 +26,7 @@ class MockParser(_Parser):
         atomic_shell = descriptor.AtomicShell(1)
         transition = descriptor.XrayTransition(L3, K)
         transition2 = descriptor.XrayTransition(L2, K)
-        transitionset = descriptor.XrayTransitionSet([transition, transition2])
+        transitionset = descriptor.XrayTransition(2, 1, None, K)
         notation = descriptor.Notation('mock')
         notation_iupac = descriptor.Notation('iupac')
         language = descriptor.Language('en')
@@ -48,20 +48,18 @@ class MockParser(_Parser):
         yield property.XrayTransitionNotation(reference, transition, notation, 'a', 'b', 'c', 'd')
         yield property.XrayTransitionNotation(reference, transition, notation_iupac, 'aa', 'bb', 'cc', 'dd')
         yield property.XrayTransitionEnergy(reference, element, transition, 0.2)
-        yield property.XrayTransitionEnergy(reference, element, transition2, 0.4)
         yield property.XrayTransitionProbability(reference, element, transition, 0.02)
-        yield property.XrayTransitionProbability(reference, element, transition2, 0.04)
         yield property.XrayTransitionRelativeWeight(reference, element, transition, 0.002)
-        yield property.XrayTransitionRelativeWeight(reference, element, transition2, 0.004)
 
         yield property.XrayTransitionNotation(reference, transition2, notation, 'e', 'f', 'g', 'h')
         yield property.XrayTransitionEnergy(reference, element, transition2, 0.4)
         yield property.XrayTransitionProbability(reference, element, transition2, 0.04)
         yield property.XrayTransitionRelativeWeight(reference, element, transition2, 0.004)
 
-        # yield property.XrayTransitionSetNotation(reference, transitionset, notation, 'a', 'b', 'c', 'd')
-        # yield property.XrayTransitionSetEnergy(reference, element, transitionset, 0.3)
-        # yield property.XrayTransitionSetRelativeWeight(reference, element, transitionset, 0.003)
+        yield property.XrayTransitionNotation(reference, transitionset, notation, 'i', 'j', 'k', 'l')
+        yield property.XrayTransitionEnergy(reference, element, transitionset, 0.6)
+        yield property.XrayTransitionProbability(reference, element, transitionset, 0.06)
+        yield property.XrayTransitionRelativeWeight(reference, element, transitionset, 0.006)
 
 class MockBadParser(_Parser):
 

@@ -10,8 +10,7 @@ import pytest
 import sqlalchemy
 
 # Local modules.
-from pyxray.parser.unattributed import AtomicSubshellNotationParser
-from pyxray.parser.jenkins1991 import Jenkins1991TransitionNotationParser
+from pyxray.parser.notation import AtomicSubshellNotationParser, KnownXrayTransitionNotationParser
 from pyxray.sql.build import SqlDatabaseBuilder
 from pyxray.sql.data import SqlDatabase
 import pyxray.descriptor as descriptor
@@ -23,7 +22,7 @@ class EpqDatabaseBuilder(SqlDatabaseBuilder):
 
     def _find_parsers(self):
         return [('atomic subshell notation', AtomicSubshellNotationParser()),
-                ('xray transition notation', Jenkins1991TransitionNotationParser())]
+                ('xray transition notation', KnownXrayTransitionNotationParser())]
 
 @pytest.fixture
 def database(tmp_path):
@@ -57,6 +56,10 @@ def test_epq_xraytransition_notation(database, testdatadir):
             expected = expected.replace('p', "\u2032")
 
             try:
-                assert database.xray_transition_notation(transition, 'siegbahn') == expected
+                actual = database.xray_transition_notation(transition, 'siegbahn')
             except NotFound:
                 continue
+
+            actual = actual.strip('I')
+
+            assert actual == expected

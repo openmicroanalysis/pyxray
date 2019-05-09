@@ -42,11 +42,6 @@ _docextras = {'element': """:arg element: either
             * a :class:`tuple` of source and destination subshells
             * any notation (case insensitive)""",
 
-            'xray_transition_set': """:arg xray_transition_set: either
-            * :class:`XrayTransitionSet <pyxray.descriptor.XrayTransitionSet>` object
-            * a :class:`tuple` of x-ray transitions
-            * any notation (case insensitive)""",
-
             'language': """:arg language: language code (e.g. ``en``, ``fr``, ``de``)""",
 
             'notation': """:arg notation: name of a notation (case insensitive),
@@ -189,15 +184,12 @@ class _DatabaseMixin(metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     @formatdoc(**_docextras)
-    def element_xray_transitions(self, element, xray_transition_set=None, reference=None): #pragma: no cover
+    def element_xray_transitions(self, element, reference=None): #pragma: no cover
         """
         Returns all x-ray transitions which have a probability greater
         than 0 for that element.
-        If *xray_transition_set* is not ``None``, returns all x-ray transitions
-        for this x-ray transition set.
 
         {element}
-        {xray_transition_set}
         {reference}
 
         :return: X-ray transitions
@@ -455,69 +447,6 @@ class _DatabaseMixin(metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     @formatdoc(**_docextras)
-    def xray_transitionset(self, xray_transition_set): #pragma: no cover
-        """
-        Returns X-ray transition set descriptor.
-
-        {xray_transition_set}
-
-        :return: X-ray transition set descriptor
-        :rtype: :class:`XrayTransitionSet`
-        {exception}
-        """
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    @formatdoc(**_docextras)
-    def xray_transitionset_notation(self, xray_transition_set, notation, encoding='utf16', reference=None): #pragma: no cover
-        """
-        Returns notation of an X-ray transition set.
-
-        {xray_transition_set}
-        {notation}
-        {encoding}
-        {reference}
-
-        :return: notation
-        :rtype: :class:`str`
-        {exception}
-        """
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    @formatdoc(**_docextras)
-    def xray_transitionset_energy_eV(self, element, xray_transition_set, reference=None): #pragma: no cover
-        """
-        Returns energy of an element and X-ray transition set (in eV).
-
-        {element}
-        {xray_transition_set}
-        {reference}
-
-        :return: energy (in eV)
-        :rtype: :class:`float`
-        {exception}
-        """
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    @formatdoc(**_docextras)
-    def xray_transitionset_relative_weight(self, element, xray_transition_set, reference=None): #pragma: no cover
-        """
-        Returns relative weight of an element and X-ray transition set.
-
-        {element}
-        {xray_transition_set}
-        {reference}
-
-        :return: relative weight
-        :rtype: :class:`float`
-        {exception}
-        """
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    @formatdoc(**_docextras)
     def xray_line(self, element, line, reference=None):
         """
         Returns x-ray line descriptor.
@@ -533,26 +462,16 @@ class _DatabaseMixin(metaclass=abc.ABCMeta):
         element = self.element(element)
         symbol = self.element_symbol(element)
 
-        try:
-            transitions = [self.element_xray_transition(element, line, reference)]
-            method_notation = self.xray_transition_notation
-            method_energy = self.xray_transition_energy_eV
-
-        except NotFound:
-            transitions = self.element_xray_transitions(element, line, reference)
-            method_notation = self.xray_transitionset_notation
-            method_energy = self.xray_transitionset_energy_eV
-
-        iupac = '{} {}'.format(symbol, method_notation(line, 'iupac', 'utf16'))
+        iupac = '{} {}'.format(symbol, self.xray_transition_notation(line, 'iupac', 'utf16'))
 
         try:
-            siegbahn = '{} {}'.format(symbol, method_notation(line, 'siegbahn', 'utf16'))
+            siegbahn = '{} {}'.format(symbol, self.xray_transition_notation(line, 'siegbahn', 'utf16'))
         except:
             siegbahn = iupac
 
         try:
-            energy_eV = method_energy(element, line)
+            energy_eV = self.xray_transition_energy_eV(element, line, reference)
         except NotFound:
             energy_eV = 0.0
 
-        return descriptor.XrayLine(element, transitions, iupac, siegbahn, energy_eV)
+        return descriptor.XrayLine(element, iupac, siegbahn, energy_eV)

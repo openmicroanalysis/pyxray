@@ -2,8 +2,7 @@
 Definition of descriptors.
 """
 
-__all__ = ['Element', 'AtomicShell', 'AtomicSubshell', 'XrayTransition',
-           'XrayTransitionSet', 'XrayLine', 'Language', 'Notation', 'Reference']
+__all__ = ['Element', 'AtomicShell', 'AtomicSubshell', 'XrayTransition', 'XrayLine', 'Language', 'Notation', 'Reference']
 
 # Standard library modules.
 import dataclasses
@@ -59,19 +58,22 @@ class AtomicSubshell:
         if isinstance(self.principal_quantum_number, AtomicShell):
             object.__setattr__(self, 'principal_quantum_number', self.principal_quantum_number.n)
 
-        lmin = 0
-        lmax = self.principal_quantum_number - 1
-        jmin_n = 2 * abs(self.azimuthal_quantum_number - 0.5)
-        jmax_n = 2 * abs(self.azimuthal_quantum_number + 0.5)
+        if self.principal_quantum_number is not None and self.azimuthal_quantum_number is not None:
+            lmin = 0
+            lmax = self.principal_quantum_number - 1
+            if self.azimuthal_quantum_number < lmin or \
+                    self.azimuthal_quantum_number > lmax:
+                raise ValueError('Azimuthal quantum number ({0}) must be between [{1}, {2}]'
+                                .format(self.azimuthal_quantum_number, lmin, lmax))
 
-        if self.azimuthal_quantum_number < lmin or \
-                self.azimuthal_quantum_number > lmax:
-            raise ValueError('Azimuthal quantum number ({0}) must be between [{1}, {2}]'
-                             .format(self.azimuthal_quantum_number, lmin, lmax))
-        if self.total_angular_momentum_nominator < jmin_n or \
-                self.total_angular_momentum_nominator > jmax_n:
-            raise ValueError('Total angular momentum ({0}) must be between [{1}, {2}]'
-                             .format(self.total_angular_momentum_nominator, jmin_n, jmax_n))
+        if self.azimuthal_quantum_number is not None and self.total_angular_momentum_nominator is not None:
+            jmin_n = 2 * abs(self.azimuthal_quantum_number - 0.5)
+            jmax_n = 2 * abs(self.azimuthal_quantum_number + 0.5)
+
+            if self.total_angular_momentum_nominator < jmin_n or \
+                    self.total_angular_momentum_nominator > jmax_n:
+                raise ValueError('Total angular momentum ({0}) must be between [{1}, {2}]'
+                                .format(self.total_angular_momentum_nominator, jmin_n, jmax_n))
 
     def __repr__(self):
         return '{}(n={}, l={}, j={:.1f})'.format(self.__class__.__name__, self.n, self.l, self.j)
@@ -94,6 +96,8 @@ class AtomicSubshell:
 
     @property
     def total_angular_momentum(self):
+        if self.total_angular_momentum_nominator is None:
+            return None
         return self.total_angular_momentum_nominator / 2.0
 
     @property
@@ -109,32 +113,56 @@ class XrayTransition:
     destination_azimuthal_quantum_number: int = None
     destination_total_angular_momentum_nominator: int = None
 
-    def __post_init__(self):
-        if isinstance(self.source_principal_quantum_number, Sequence) and \
-                isinstance(self.source_azimuthal_quantum_number, Sequence):
-            source = self.source_principal_quantum_number
-            destination = self.source_azimuthal_quantum_number
+    def __init__(self, *args):
+        if len(args) == 6:
+            src_n, src_l, src_j_n, dst_n, dst_l, dst_j_n = args
 
-            object.__setattr__(self, 'source_principal_quantum_number', source[0]) # pylint: disable=unsubscriptable-object
-            object.__setattr__(self, 'source_azimuthal_quantum_number', source[1]) # pylint: disable=unsubscriptable-object
-            object.__setattr__(self, 'source_total_angular_momentum_nominator', source[2]) # pylint: disable=unsubscriptable-object
+        elif len(args) == 2:
+            if isinstance(args[0], Sequence):
+                src_n, src_l, src_j_n = args[0]
+            elif isinstance(args[0], AtomicSubshell):
+                src_n = args[0].n
+                src_l = args[0].l
+                src_j_n = args[0].j_n
+            else:
+                raise ValueError('Unknown argument: {}'.format(args[0]))
 
-            object.__setattr__(self, 'destination_principal_quantum_number', destination[0]) # pylint: disable=unsubscriptable-object
-            object.__setattr__(self, 'destination_azimuthal_quantum_number', destination[1]) # pylint: disable=unsubscriptable-object
-            object.__setattr__(self, 'destination_total_angular_momentum_nominator', destination[2]) # pylint: disable=unsubscriptable-object
+            if isinstance(args[1], Sequence):
+                dst_n, dst_l, dst_j_n = args[1]
+            elif isinstance(args[1], AtomicSubshell):
+                dst_n = args[1].n
+                dst_l = args[1].l
+                dst_j_n = args[1].j_n
+            else:
+                raise ValueError('Unknown argument: {}'.format(args[1]))
 
-        elif isinstance(self.source_principal_quantum_number, AtomicSubshell) and \
-                isinstance(self.source_azimuthal_quantum_number, AtomicSubshell):
-            source = self.source_principal_quantum_number
-            destination = self.source_azimuthal_quantum_number
+        elif len(args) == 4:
+            if isinstance(args[0], Sequence):
+                src_n, src_l, src_j_n = args[0]
+                dst_n, dst_l, dst_j_n = args[1:]
+            elif isinstance(args[0], AtomicSubshell):
+                src_n = args[0].n
+                src_l = args[0].l
+                src_j_n = args[0].j_n
+                dst_n, dst_l, dst_j_n = args[1:]
+            elif isinstance(args[-1], Sequence):
+                src_n, src_l, src_j_n = args[:-1]
+                dst_n, dst_l, dst_j_n = args[-1]
+            elif isinstance(args[-1], AtomicSubshell):
+                src_n, src_l, src_j_n = args[:-1]
+                dst_n = args[-1].n
+                dst_l = args[-1].l
+                dst_j_n = args[-1].j_n
 
-            object.__setattr__(self, 'source_principal_quantum_number', source.n)
-            object.__setattr__(self, 'source_azimuthal_quantum_number', source.l)
-            object.__setattr__(self, 'source_total_angular_momentum_nominator', source.j_n)
+        else:
+            raise ValueError('Unsupported number of arguments: {}'.format(len(args)))
 
-            object.__setattr__(self, 'destination_principal_quantum_number', destination.n)
-            object.__setattr__(self, 'destination_azimuthal_quantum_number', destination.l)
-            object.__setattr__(self, 'destination_total_angular_momentum_nominator', destination.j_n)
+        object.__setattr__(self, 'source_principal_quantum_number', src_n)
+        object.__setattr__(self, 'source_azimuthal_quantum_number', src_l)
+        object.__setattr__(self, 'source_total_angular_momentum_nominator', src_j_n)
+        object.__setattr__(self, 'destination_principal_quantum_number', dst_n)
+        object.__setattr__(self, 'destination_azimuthal_quantum_number', dst_l)
+        object.__setattr__(self, 'destination_total_angular_momentum_nominator', dst_j_n)
 
     @classmethod
     def is_radiative(cls, source_subshell, destination_subshell):
@@ -176,10 +204,17 @@ class XrayTransition:
         return True
 
     def __repr__(self):
-        return '{}([n={src.n}, l={src.l}, j={src.j:.1f}] -> [n={dest.n}, l={dest.l}, j={dest.j:.1f}])'\
+        def _format(value):
+            return '*' if value is None else value
+
+        return '{}([n={}, l={}, j={}] -> [n={}, l={}, j={}])'\
             .format(self.__class__.__name__,
-                    src=self.source_subshell,
-                    dest=self.destination_subshell)
+                    _format(self.source_principal_quantum_number),
+                    _format(self.source_azimuthal_quantum_number),
+                    _format(self.source_total_angular_momentum),
+                    _format(self.destination_principal_quantum_number),
+                    _format(self.destination_azimuthal_quantum_number),
+                    _format(self.destination_total_angular_momentum))
 
     @property
     def source_subshell(self):
@@ -193,30 +228,22 @@ class XrayTransition:
                               self.destination_azimuthal_quantum_number,
                               self.destination_total_angular_momentum_nominator)
 
-@dataclasses.dataclass(frozen=True)
-class XrayTransitionSet:
-    possible_transitions: typing.Tuple[XrayTransition]
+    @property
+    def source_total_angular_momentum(self):
+        if self.source_total_angular_momentum_nominator is None:
+            return None
+        return self.source_total_angular_momentum_nominator / 2.0
 
-    def __post_init__(self):
-        possible_transitions = set()
-        for transition in self.possible_transitions:
-            if not isinstance(transition, XrayTransition):
-                transition = XrayTransition(*transition)
-            possible_transitions.add(transition)
-
-        if not possible_transitions:
-            raise ValueError('At least one transition must be defined')
-
-        object.__setattr__(self, 'possible_transitions', tuple(possible_transitions))
-
-    def __repr__(self):
-        return '{}({:d} possible transitions)'.format(self.__class__.__name__, len(self.possible_transitions))
+    @property
+    def destination_total_angular_momentum(self):
+        if self.destination_total_angular_momentum_nominator is None:
+            return None
+        return self.destination_total_angular_momentum_nominator / 2.0
 
 @functools.total_ordering
 @dataclasses.dataclass(frozen=True)
 class XrayLine:
     element: Element
-    transitions: typing.Tuple[XrayTransition]
     iupac: str
     siegbahn: str
     energy_eV: float
@@ -224,8 +251,6 @@ class XrayLine:
     def __post_init__(self):
         if not isinstance(self.element, Element):
             object.__setattr__(self, 'element', Element(self.element))
-
-        object.__setattr__(self, 'transitions', tuple(self.transitions))
 
     def __repr__(self):
         return '{}({})'.format(self.__class__.__name__, self.iupac)

@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 # Third party modules.
 
 # Local modules.
-from pyxray.parser.parser import _Parser
+import pyxray.parser.base as base
 from pyxray.descriptor import Reference, Element
 from pyxray.property import ElementAtomicWeight, ElementMassDensity
 
@@ -21,7 +21,7 @@ SARGENT_WELCH = Reference('sargentwelch2010',
                           publisher='Sargent-Welch scientifique Canada Limitee',
                           note='Extracted by Hendrix Demers')
 
-class SargentWelchElementMassDensityParser(_Parser):
+class SargentWelchElementMassDensityParser(base._Parser):
 
     DENSITIES = [
         0.0899, 0.1787, 0.5300, 1.8500, 2.3400, 2.6200, 1.2510, 1.4290,
@@ -49,7 +49,7 @@ class SargentWelchElementMassDensityParser(_Parser):
             self.update(int((z - 1) / length * 100.0))
             yield prop
 
-class SargentWelchElementAtomicWeightParser(_Parser):
+class SargentWelchElementAtomicWeightParser(base._Parser):
 
     ATOMIC_WEIGHTS = [
         1.0079000, 4.0026000, 6.9410000, 9.0121800, 10.810000, 12.011000,

@@ -11,7 +11,7 @@ import tqdm
 from loguru import logger
 
 # Local modules.
-from pyxray.parser.parser import find_parsers
+from pyxray.parser.base import find_parsers
 from pyxray.sql.base import SqlBase
 
 # Globals and constants variables.

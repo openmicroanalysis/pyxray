@@ -8,9 +8,7 @@ import dataclasses
 import pytest
 
 # Local modules.
-from pyxray.descriptor import \
-    (Element, AtomicShell, AtomicSubshell, Reference, XrayLine, XrayTransition,
-     XrayTransitionSet, Language, Notation)
+from pyxray.descriptor import Element, AtomicShell, AtomicSubshell, Reference, XrayLine, XrayTransition, Language, Notation
 
 # Globals and constants variables.
 
@@ -125,13 +123,22 @@ def test_atomicsubshell_frozen(atomicsubshell):
     with pytest.raises(dataclasses.FrozenInstanceError):
         atomicsubshell.abc = 7
 
-@pytest.fixture
-def xraytransition():
-    source_subshell = AtomicSubshell(2, 0, 1)
-    destination_subshell = AtomicSubshell(1, 0, 1)
-    return XrayTransition(source_subshell, destination_subshell)
+@pytest.fixture(params=[(AtomicSubshell(2, 0, 1), AtomicSubshell(1, 0, 1)),
+                        (2, 0, 1, 1, 0, 1),
+                        ((2, 0, 1), (1, 0, 1)),
+                        (AtomicSubshell(2, 0, 1), 1, 0, 1),
+                        (2, 0, 1, AtomicSubshell(1, 0, 1))])
+def xraytransition(request):
+    return XrayTransition(*request.param)
 
 def test_xraytransition(xraytransition):
+    assert xraytransition.source_principal_quantum_number == 2
+    assert xraytransition.source_azimuthal_quantum_number == 0
+    assert xraytransition.source_total_angular_momentum_nominator == 1
+    assert xraytransition.destination_principal_quantum_number == 1
+    assert xraytransition.destination_azimuthal_quantum_number == 0
+    assert xraytransition.destination_total_angular_momentum_nominator == 1
+
     assert xraytransition.source_subshell.n == 2
     assert xraytransition.source_subshell.l == 0
     assert xraytransition.source_subshell.j_n == 1
@@ -161,79 +168,45 @@ def test_xraytransition_frozen(xraytransition):
 
 @pytest.fixture
 def xraytransitionset():
-    source_subshell = AtomicSubshell(2, 0, 1)
-    destination_subshell = AtomicSubshell(1, 0, 1)
-    transition1 = XrayTransition(source_subshell, destination_subshell)
-
-    source_subshell = AtomicSubshell(3, 0, 1)
-    destination_subshell = AtomicSubshell(1, 0, 1)
-    transition2 = XrayTransition(source_subshell, destination_subshell)
-
-    return XrayTransitionSet([transition1, transition2])
+    return XrayTransition(2, 1, None, 1, 0, 1) # L2 (2, 1, 0.5) and L3 (2, 1, 1.5) to K (1, 0, 0.5)
 
 def test_xraytransitionset(xraytransitionset):
-    assert len(xraytransitionset.possible_transitions) == 2
-
-def test_xraytransitionset_eq(xraytransitionset):
-    transition1 = XrayTransition((2, 0, 1), (1, 0, 1))
-    transition2 = XrayTransition((3, 0, 1), (1, 0, 1))
-    assert xraytransitionset == XrayTransitionSet((transition1, transition2))
-
-def test_xraytransitionset_hash(xraytransitionset):
-    transition1 = XrayTransition((2, 0, 1), (1, 0, 1))
-    transition2 = XrayTransition((3, 0, 1), (1, 0, 1))
-    assert hash(xraytransitionset) == hash(XrayTransitionSet((transition1, transition2)))
-    assert hash(xraytransitionset) == hash(XrayTransitionSet([transition1, transition2]))
+    assert xraytransitionset.source_subshell.n == 2
+    assert xraytransitionset.source_subshell.l == 1
+    assert xraytransitionset.source_subshell.j_n == None
+    assert xraytransitionset.destination_subshell.n == 1
+    assert xraytransitionset.destination_subshell.l == 0
+    assert xraytransitionset.destination_subshell.j_n == 1
 
 def test_xraytransitionset_repr(xraytransitionset):
-    assert repr(xraytransitionset) == 'XrayTransitionSet(2 possible transitions)'
-
-def test_xraytransitionset_validate(xraytransitionset):
-    with pytest.raises(ValueError):
-        XrayTransitionSet(())
-
-def test_xraytransitionset_frozen(xraytransitionset):
-    with pytest.raises(dataclasses.FrozenInstanceError):
-        xraytransitionset.possible_transitions = (XrayTransition((2, 0, 1), (1, 0, 1)),)
-
-    with pytest.raises(dataclasses.FrozenInstanceError):
-        del xraytransitionset.possible_transitions
-
-    with pytest.raises(dataclasses.FrozenInstanceError):
-        xraytransitionset.abc = 7
+    assert repr(xraytransitionset) == 'XrayTransition([n=2, l=1, j=*] -> [n=1, l=0, j=0.5])'
 
 @pytest.fixture
 def xrayline():
     element = Element(118)
-    K = AtomicSubshell(1, 0, 1)
-    L3 = AtomicSubshell(2, 1, 3)
-    transition = XrayTransition(L3, K)
-    return XrayLine(element, [transition], 'a', 'b', 0.1)
+    return XrayLine(element, 'a', 'b', 0.1)
 
 def test_xrayline(xrayline):
     assert xrayline.element.z == 118
-    assert len(xrayline.transitions) == 1
-    assert XrayTransition((2, 1, 3), (1, 0, 1)) in xrayline.transitions
     assert xrayline.iupac == 'a'
     assert xrayline.siegbahn == 'b'
     assert xrayline.energy_eV == pytest.approx(0.1, abs=1e-4)
 
 def test_xrayline_eq(xrayline):
-    assert xrayline == XrayLine(118, (XrayTransition((2, 1, 3), (1, 0, 1)),), 'a', 'b', 0.1)
+    assert xrayline == XrayLine(118, 'a', 'b', 0.1)
 
-    assert xrayline != XrayLine(117, (XrayTransition((2, 1, 3), (1, 0, 1)),), 'a', 'b', 0.1)
-    assert xrayline != XrayLine(118, (XrayTransition((3, 1, 3), (1, 0, 1)),), 'a', 'b', 0.1)
-    assert xrayline != XrayLine(118, (XrayTransition((2, 1, 3), (1, 0, 1)),), 'z', 'b', 0.1)
-    assert xrayline != XrayLine(118, (XrayTransition((2, 1, 3), (1, 0, 1)),), 'a', 'z', 0.1)
-    assert xrayline != XrayLine(118, (XrayTransition((2, 1, 3), (1, 0, 1)),), 'a', 'b', 999)
+    assert xrayline != XrayLine(117, 'a', 'b', 0.1)
+    assert xrayline != XrayLine(118, 'z', 'b', 0.1)
+    assert xrayline != XrayLine(118, 'a', 'z', 0.1)
+    assert xrayline != XrayLine(118, 'a', 'b', 999)
 
 def test_xrayline_compare(xrayline):
-    assert xrayline > XrayLine(117, (XrayTransition((2, 1, 3), (1, 0, 1)),), 'a', 'b', 0.1)
-    assert xrayline > XrayLine(118, (XrayTransition((2, 1, 3), (1, 0, 1)),), 'a', 'b', 0.01)
-    assert xrayline > XrayLine(118, (XrayTransition((2, 1, 3), (1, 0, 1)),), 'a', 'b', 0.2)
+    assert xrayline > XrayLine(117, 'a', 'b', 0.1)
+    assert xrayline > XrayLine(118, 'a', 'b', 0.01)
+    assert xrayline > XrayLine(118, 'a', 'b', 0.2)
 
 def test_xrayline_hash(xrayline):
-    assert hash(xrayline) == hash(XrayLine(118, (XrayTransition((2, 1, 3), (1, 0, 1)),), 'a', 'b', 0.1))
+    assert hash(xrayline) == hash(XrayLine(118, 'a', 'b', 0.1))
 
 def test_xrayline_repr(xrayline):
     assert repr(xrayline) == 'XrayLine(a)'

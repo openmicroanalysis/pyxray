@@ -8,9 +8,7 @@ import dataclasses
 # Third party modules.
 
 # Local modules.
-from pyxray.descriptor import \
-    (Element, Reference, AtomicShell, AtomicSubshell, XrayTransition, 
-     XrayTransitionSet, Notation, Language)
+from pyxray.descriptor import Element, Reference, AtomicShell, AtomicSubshell, XrayTransition, Notation, Language
 
 # Globals and constants variables.
 
@@ -23,7 +21,7 @@ class ElementSymbol:
     def __post_init__(self):
         if len(self.value) == 0 or len(self.value) > 3:
             raise ValueError('Symbol should be between 1 and 3 characters')
-        
+
         if not self.value[0].isupper():
             raise ValueError("Symbol should start with a capital letter")
 
@@ -33,7 +31,7 @@ class ElementName:
     element: Element
     language: Language
     value: str
-    
+
     def __post_init__(self):
         if not self.value:
             raise ValueError('A name must be specified')
@@ -135,28 +133,4 @@ class XrayTransitionRelativeWeight:
     reference: Reference
     element: Element
     xray_transition: XrayTransition
-    value: float
-
-@dataclasses.dataclass(frozen=True)
-class XrayTransitionSetNotation:
-    reference: Reference
-    xray_transition_set: XrayTransitionSet
-    notation: Notation
-    ascii: str
-    utf16: str
-    html: str
-    latex: str
-
-@dataclasses.dataclass(frozen=True)
-class XrayTransitionSetEnergy:
-    reference: Reference
-    element: Element
-    xray_transition_set: XrayTransitionSet
-    value_eV: float
-
-@dataclasses.dataclass(frozen=True)
-class XrayTransitionSetRelativeWeight:
-    reference: Reference
-    element: Element
-    xray_transition_set: XrayTransitionSet
     value: float

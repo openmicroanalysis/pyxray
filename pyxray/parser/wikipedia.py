@@ -20,7 +20,7 @@ except ImportError:
     pass
 
 # Local modules.
-from pyxray.parser.parser import _Parser
+import pyxray.parser.base as base
 from pyxray.descriptor import Reference, Element, Language
 from pyxray.property import ElementName
 
@@ -29,7 +29,7 @@ from pyxray.property import ElementName
 WIKIPEDIA = Reference('wikipedia',
                       author='Wikipedia contributors')
 
-class WikipediaElementNameParser(_Parser):
+class WikipediaElementNameParser(base._Parser):
 
     NAMES_EN = [
         "Hydrogen"    , "Helium"      , "Lithium"     , "Beryllium"   ,

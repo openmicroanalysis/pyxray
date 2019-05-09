@@ -7,7 +7,6 @@ Parser for the Evaluated Atomic Data Library (EADL)
 import os
 import re
 import logging
-logger = logging.getLogger(__name__)
 
 # Third party modules.
 import requests
@@ -22,7 +21,6 @@ except ImportError:
     pass
 
 # Local modules.
-from pyxray.parser.parser import _Parser
 from pyxray.descriptor import Reference, Element, AtomicSubshell, XrayTransition
 from pyxray.property import \
     (ElementAtomicWeight,
@@ -30,8 +28,10 @@ from pyxray.property import \
      AtomicSubshellRadiativeWidth, AtomicSubshellNonRadiativeWidth,
      AtomicSubshellOccupancy,
      XrayTransitionEnergy, XrayTransitionProbability)
+import pyxray.parser.base as base
 
 # Globals and constants variables.
+logger = logging.getLogger(__name__)
 
 PERKINS1991 = Reference('perkins1991',
                         author='Perkins, S.T. and Cullen, D.E.',
@@ -54,57 +54,57 @@ def float_(text):
 # Conversion from EADL to AtomicSubshell descriptor
 ATOMIC_SUBSHELLS = {
     # K
-    1: AtomicSubshell(1, 0, 1),
+    1: base.K,
 
     # L
-    3: AtomicSubshell(2, 0, 1),
-    5: AtomicSubshell(2, 1, 1),
-    6: AtomicSubshell(2, 1, 3),
+    3: base.L1,
+    5: base.L2,
+    6: base.L3,
 
     # M
-    8: AtomicSubshell(3, 0, 1),
-    10: AtomicSubshell(3, 1, 1),
-    11: AtomicSubshell(3, 1, 3),
-    13: AtomicSubshell(3, 2, 3),
-    14: AtomicSubshell(3, 2, 5),
+    8: base.M1,
+    10: base.M2,
+    11: base.M3,
+    13: base.M4,
+    14: base.M5,
 
     # N
-    16: AtomicSubshell(4, 0, 1),
-    18: AtomicSubshell(4, 1, 1),
-    19: AtomicSubshell(4, 1, 3),
-    21: AtomicSubshell(4, 2, 3),
-    22: AtomicSubshell(4, 2, 5),
-    24: AtomicSubshell(4, 3, 5),
-    25: AtomicSubshell(4, 3, 7),
+    16: base.N1,
+    18: base.N2,
+    19: base.N3,
+    21: base.N4,
+    22: base.N5,
+    24: base.N6,
+    25: base.N7,
 
     # O
-    27: AtomicSubshell(5, 0, 1),
-    29: AtomicSubshell(5, 1, 1),
-    30: AtomicSubshell(5, 1, 3),
-    32: AtomicSubshell(5, 2, 3),
-    33: AtomicSubshell(5, 2, 5),
-    35: AtomicSubshell(5, 3, 5),
-    36: AtomicSubshell(5, 3, 7),
-    38: AtomicSubshell(5, 4, 7),
-    39: AtomicSubshell(5, 4, 9),
+    27: base.O1,
+    29: base.O2,
+    30: base.O3,
+    32: base.O4,
+    33: base.O5,
+    35: base.O6,
+    36: base.O7,
+    38: base.O8,
+    39: base.O9,
 
     # P
-    41: AtomicSubshell(6, 0, 1),
-    43: AtomicSubshell(6, 1, 1),
-    44: AtomicSubshell(6, 1, 3),
-    46: AtomicSubshell(6, 2, 3),
-    47: AtomicSubshell(6, 2, 5),
-    49: AtomicSubshell(6, 3, 5),
-    50: AtomicSubshell(6, 3, 7),
-    52: AtomicSubshell(6, 4, 7),
-    53: AtomicSubshell(6, 4, 9),
-    55: AtomicSubshell(6, 5, 9),
-    56: AtomicSubshell(6, 5, 11),
+    41: base.P1,
+    43: base.P2,
+    44: base.P3,
+    46: base.P4,
+    47: base.P5,
+    49: base.P6,
+    50: base.P7,
+    52: base.P8,
+    53: base.P9,
+    55: base.P10,
+    56: base.P11,
 
     # Q
-    58: AtomicSubshell(7, 0, 1),
-    60: AtomicSubshell(7, 1, 1),
-    61: AtomicSubshell(7, 1, 3),
+    58: base.Q1,
+    60: base.Q2,
+    61: base.Q3,
     }
 
 # C
@@ -132,7 +132,7 @@ SEPERATOR = '                                                                   
 
 MAX_Z = 100
 
-class Perkins1991Parser(_Parser):
+class Perkins1991Parser(base._Parser):
 
     def __iter__(self):
         r = requests.get(EADL_URL, stream=True, verify=False)
