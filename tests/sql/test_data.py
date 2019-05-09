@@ -93,15 +93,14 @@ def test_element_mass_density_g_per_cm3(database, element):
 #    assert descriptor.XrayTransition(L3, K) in transitions
 #    assert descriptor.XrayTransition(L2, K) in transitions
 
-# def test_element_xray_transition(database):
-#    transition = database.element_xray_transition(118, 'a')
+def test_element_xray_transition(database):
+   transition = database.element_xray_transition(118, 'a')
+   assert transition == descriptor.XrayTransition(L3, K)
 
-#    assert transition == descriptor.XrayTransition(L3, K)
-
-# @pytest.mark.parametrize('element,reference', [(1, 'a'), (118, 'g')])
-# def test_element_xray_transition_notfound(database, element, reference):
-#     with pytest.raises(NotFound):
-#         database.element_xray_transition(element, reference)
+@pytest.mark.parametrize('element,reference', [(1, 'a'), (118, 'g')])
+def test_element_xray_transition_notfound(database, element, reference):
+    with pytest.raises(NotFound):
+        database.element_xray_transition(element, reference)
 
 @pytest.mark.parametrize('atomic_shell', [1, 'a', 'b'])
 def test_atomic_shell(database, atomic_shell):

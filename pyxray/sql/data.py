@@ -247,7 +247,26 @@ class SqlDatabase(_DatabaseMixin, SqlBase):
         raise NotFound
 
     def element_xray_transition(self, element, xray_transition, reference=None):
-        raise NotFound
+        table_xray = self.require_table(descriptor.XrayTransition)
+        table_probability = self.require_table(property.XrayTransitionProbability)
+
+        clauses = []
+        clauses += self._create_xray_transition_clauses(table_xray, xray_transition, 'id')
+        clauses += self._create_element_clauses(table_probability, element)
+        clauses += self._create_reference_clauses(table_probability, reference)
+        clauses += [table_probability.c['xray_transition_id'] == table_xray.c['id'],
+                    table_probability.c['value'] > 0.0]
+
+        statement = sqlalchemy.sql.select([table_xray.c['source_principal_quantum_number'],
+                                           table_xray.c['source_azimuthal_quantum_number'],
+                                           table_xray.c['source_total_angular_momentum_nominator'],
+                                           table_xray.c['destination_principal_quantum_number'],
+                                           table_xray.c['destination_azimuthal_quantum_number'],
+                                           table_xray.c['destination_total_angular_momentum_nominator']])
+        statement = statement.where(sqlalchemy.sql.and_(*clauses))
+
+        src_n, src_l, src_j_n, dst_n, dst_l, dst_j_n = self._execute_select(statement)
+        return descriptor.XrayTransition(src_n, src_l, src_j_n, dst_n, dst_l, dst_j_n)
 
     def atomic_shell(self, atomic_shell):
         table = self.require_table(descriptor.AtomicShell)
@@ -421,18 +440,6 @@ class SqlDatabase(_DatabaseMixin, SqlBase):
         statement = statement.where(sqlalchemy.sql.and_(*clauses))
 
         return self._execute_select(statement)
-
-    def xray_transitionset(self, xray_transition_set):
-        raise NotFound
-
-    def xray_transitionset_notation(self, xray_transition_set, notation, encoding='utf16', reference=None):
-        raise NotFound
-
-    def xray_transitionset_energy_eV(self, element, xray_transition_set, reference=None):
-        raise NotFound
-
-    def xray_transitionset_relative_weight(self, element, xray_transition_set, reference=None):
-        raise NotFound
 
     def xray_line(self, element, line, reference=None):
         raise NotFound
