@@ -8,6 +8,7 @@ python:
 install:
 - pip install --upgrade pip codecov
 - pip install --upgrade -e .[build,develop]
+- python3 setup.py build
 script:
 - pytest
 after_success:
