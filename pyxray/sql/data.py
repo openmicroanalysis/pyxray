@@ -158,7 +158,7 @@ class SqlDatabase(_DatabaseMixin, SqlBase):
         return [table.c['language_id'] == table_language.c['id'],
                 table_language.c['code'] == language]
 
-    def _execute_select(self, statement):
+    def _execute_select_one(self, statement):
         logger.debug(statement.compile())
 
         with self.engine.connect() as conn:
@@ -171,6 +171,15 @@ class SqlDatabase(_DatabaseMixin, SqlBase):
             else:
                 return row
 
+    def _execute_select_many(self, statement):
+        logger.debug(statement.compile())
+
+        with self.engine.connect() as conn:
+            rows = conn.execute(statement).fetchall()
+            if not rows:
+                raise NotFound
+            return rows
+
     def element(self, element):
         table = self.require_table(descriptor.Element)
 
@@ -180,7 +189,7 @@ class SqlDatabase(_DatabaseMixin, SqlBase):
         statement = sqlalchemy.sql.select([table.c['atomic_number']])
         statement = statement.where(sqlalchemy.sql.and_(*clauses))
 
-        atomic_number = self._execute_select(statement)
+        atomic_number = self._execute_select_one(statement)
         return descriptor.Element(atomic_number)
 
     def element_atomic_number(self, element):
@@ -192,7 +201,7 @@ class SqlDatabase(_DatabaseMixin, SqlBase):
         statement = sqlalchemy.sql.select([table.c['atomic_number']])
         statement = statement.where(sqlalchemy.sql.and_(*clauses))
 
-        return self._execute_select(statement)
+        return self._execute_select_one(statement)
 
     def element_symbol(self, element, reference=None):
         table = self.require_table(property.ElementSymbol)
@@ -204,7 +213,7 @@ class SqlDatabase(_DatabaseMixin, SqlBase):
         statement = sqlalchemy.sql.select([table.c['value']])
         statement = statement.where(sqlalchemy.sql.and_(*clauses))
 
-        return self._execute_select(statement)
+        return self._execute_select_one(statement)
 
     def element_name(self, element, language='en', reference=None):
         table = self.require_table(property.ElementName)
@@ -217,7 +226,7 @@ class SqlDatabase(_DatabaseMixin, SqlBase):
         statement = sqlalchemy.sql.select([table.c['value']])
         statement = statement.where(sqlalchemy.sql.and_(*clauses))
 
-        return self._execute_select(statement)
+        return self._execute_select_one(statement)
 
     def element_atomic_weight(self, element, reference=None):
         table = self.require_table(property.ElementAtomicWeight)
@@ -229,7 +238,7 @@ class SqlDatabase(_DatabaseMixin, SqlBase):
         statement = sqlalchemy.sql.select([table.c['value']])
         statement = statement.where(sqlalchemy.sql.and_(*clauses))
 
-        return self._execute_select(statement)
+        return self._execute_select_one(statement)
 
     def element_mass_density_kg_per_m3(self, element, reference=None):
         table = self.require_table(property.ElementMassDensity)
@@ -241,10 +250,32 @@ class SqlDatabase(_DatabaseMixin, SqlBase):
         statement = sqlalchemy.sql.select([table.c['value_kg_per_m3']])
         statement = statement.where(sqlalchemy.sql.and_(*clauses))
 
-        return self._execute_select(statement)
+        return self._execute_select_one(statement)
 
     def element_xray_transitions(self, element, reference=None):
-        raise NotFound
+        table_xray = self.require_table(descriptor.XrayTransition)
+        table_probability = self.require_table(property.XrayTransitionProbability)
+
+        clauses = []
+        clauses += self._create_element_clauses(table_probability, element)
+        clauses += self._create_reference_clauses(table_probability, reference)
+        clauses += [table_probability.c['xray_transition_id'] == table_xray.c['id'],
+                    table_probability.c['value'] > 0.0]
+
+        statement = sqlalchemy.sql.select([table_xray.c['source_principal_quantum_number'],
+                                           table_xray.c['source_azimuthal_quantum_number'],
+                                           table_xray.c['source_total_angular_momentum_nominator'],
+                                           table_xray.c['destination_principal_quantum_number'],
+                                           table_xray.c['destination_azimuthal_quantum_number'],
+                                           table_xray.c['destination_total_angular_momentum_nominator']])
+        statement = statement.where(sqlalchemy.sql.and_(*clauses))
+
+        transitions = []
+        for src_n, src_l, src_j_n, dst_n, dst_l, dst_j_n in self._execute_select_many(statement):
+            transition = descriptor.XrayTransition(src_n, src_l, src_j_n, dst_n, dst_l, dst_j_n)
+            transitions.append(transition)
+
+        return tuple(transitions)
 
     def element_xray_transition(self, element, xray_transition, reference=None):
         table_xray = self.require_table(descriptor.XrayTransition)
@@ -265,7 +296,7 @@ class SqlDatabase(_DatabaseMixin, SqlBase):
                                            table_xray.c['destination_total_angular_momentum_nominator']])
         statement = statement.where(sqlalchemy.sql.and_(*clauses))
 
-        src_n, src_l, src_j_n, dst_n, dst_l, dst_j_n = self._execute_select(statement)
+        src_n, src_l, src_j_n, dst_n, dst_l, dst_j_n = self._execute_select_one(statement)
         return descriptor.XrayTransition(src_n, src_l, src_j_n, dst_n, dst_l, dst_j_n)
 
     def atomic_shell(self, atomic_shell):
@@ -277,7 +308,7 @@ class SqlDatabase(_DatabaseMixin, SqlBase):
         statement = sqlalchemy.sql.select([table.c['principal_quantum_number']])
         statement = statement.where(sqlalchemy.sql.and_(*clauses))
 
-        principal_quantum_number = self._execute_select(statement)
+        principal_quantum_number = self._execute_select_one(statement)
         return descriptor.AtomicShell(principal_quantum_number)
 
     def atomic_shell_notation(self, atomic_shell, notation, encoding='utf16', reference=None):
@@ -291,7 +322,7 @@ class SqlDatabase(_DatabaseMixin, SqlBase):
         statement = sqlalchemy.sql.select([table.c[encoding]])
         statement = statement.where(sqlalchemy.sql.and_(*clauses))
 
-        return self._execute_select(statement)
+        return self._execute_select_one(statement)
 
     def atomic_subshell(self, atomic_subshell):
         table = self.require_table(descriptor.AtomicSubshell)
@@ -304,7 +335,7 @@ class SqlDatabase(_DatabaseMixin, SqlBase):
                                            table.c['total_angular_momentum_nominator']])
         statement = statement.where(sqlalchemy.sql.and_(*clauses))
 
-        n, l, j_n = self._execute_select(statement)
+        n, l, j_n = self._execute_select_one(statement)
         return descriptor.AtomicSubshell(n, l, j_n)
 
     def atomic_subshell_notation(self, atomic_subshell, notation, encoding='utf16', reference=None):
@@ -318,7 +349,7 @@ class SqlDatabase(_DatabaseMixin, SqlBase):
         statement = sqlalchemy.sql.select([table.c[encoding]])
         statement = statement.where(sqlalchemy.sql.and_(*clauses))
 
-        return self._execute_select(statement)
+        return self._execute_select_one(statement)
 
     def atomic_subshell_binding_energy_eV(self, element, atomic_subshell, reference=None):
         table = self.require_table(property.AtomicSubshellBindingEnergy)
@@ -331,7 +362,7 @@ class SqlDatabase(_DatabaseMixin, SqlBase):
         statement = sqlalchemy.sql.select([table.c['value_eV']])
         statement = statement.where(sqlalchemy.sql.and_(*clauses))
 
-        return self._execute_select(statement)
+        return self._execute_select_one(statement)
 
     def atomic_subshell_radiative_width_eV(self, element, atomic_subshell, reference=None):
         table = self.require_table(property.AtomicSubshellRadiativeWidth)
@@ -344,7 +375,7 @@ class SqlDatabase(_DatabaseMixin, SqlBase):
         statement = sqlalchemy.sql.select([table.c['value_eV']])
         statement = statement.where(sqlalchemy.sql.and_(*clauses))
 
-        return self._execute_select(statement)
+        return self._execute_select_one(statement)
 
     def atomic_subshell_nonradiative_width_eV(self, element, atomic_subshell, reference=None):
         table = self.require_table(property.AtomicSubshellNonRadiativeWidth)
@@ -357,7 +388,7 @@ class SqlDatabase(_DatabaseMixin, SqlBase):
         statement = sqlalchemy.sql.select([table.c['value_eV']])
         statement = statement.where(sqlalchemy.sql.and_(*clauses))
 
-        return self._execute_select(statement)
+        return self._execute_select_one(statement)
 
     def atomic_subshell_occupancy(self, element, atomic_subshell, reference=None):
         table = self.require_table(property.AtomicSubshellOccupancy)
@@ -370,7 +401,7 @@ class SqlDatabase(_DatabaseMixin, SqlBase):
         statement = sqlalchemy.sql.select([table.c['value']])
         statement = statement.where(sqlalchemy.sql.and_(*clauses))
 
-        return self._execute_select(statement)
+        return self._execute_select_one(statement)
 
     def xray_transition(self, xray_transition):
         table = self.require_table(descriptor.XrayTransition)
@@ -386,7 +417,7 @@ class SqlDatabase(_DatabaseMixin, SqlBase):
                                            table.c['destination_total_angular_momentum_nominator']])
         statement = statement.where(sqlalchemy.sql.and_(*clauses))
 
-        src_n, src_l, src_j_n, dst_n, dst_l, dst_j_n = self._execute_select(statement)
+        src_n, src_l, src_j_n, dst_n, dst_l, dst_j_n = self._execute_select_one(statement)
         return descriptor.XrayTransition(src_n, src_l, src_j_n, dst_n, dst_l, dst_j_n)
 
     def xray_transition_notation(self, xray_transition, notation, encoding='utf16', reference=None):
@@ -400,7 +431,7 @@ class SqlDatabase(_DatabaseMixin, SqlBase):
         statement = sqlalchemy.sql.select([table.c[encoding]])
         statement = statement.where(sqlalchemy.sql.and_(*clauses))
 
-        return self._execute_select(statement)
+        return self._execute_select_one(statement)
 
     def xray_transition_energy_eV(self, element, xray_transition, reference=None):
         table = self.require_table(property.XrayTransitionEnergy)
@@ -413,7 +444,7 @@ class SqlDatabase(_DatabaseMixin, SqlBase):
         statement = sqlalchemy.sql.select([table.c['value_eV']])
         statement = statement.where(sqlalchemy.sql.and_(*clauses))
 
-        return self._execute_select(statement)
+        return self._execute_select_one(statement)
 
     def xray_transition_probability(self, element, xray_transition, reference=None):
         table = self.require_table(property.XrayTransitionProbability)
@@ -426,7 +457,7 @@ class SqlDatabase(_DatabaseMixin, SqlBase):
         statement = sqlalchemy.sql.select([table.c['value']])
         statement = statement.where(sqlalchemy.sql.and_(*clauses))
 
-        return self._execute_select(statement)
+        return self._execute_select_one(statement)
 
     def xray_transition_relative_weight(self, element, xray_transition, reference=None):
         table = self.require_table(property.XrayTransitionRelativeWeight)
@@ -439,7 +470,7 @@ class SqlDatabase(_DatabaseMixin, SqlBase):
         statement = sqlalchemy.sql.select([table.c['value']])
         statement = statement.where(sqlalchemy.sql.and_(*clauses))
 
-        return self._execute_select(statement)
+        return self._execute_select_one(statement)
 
     def xray_line(self, element, line, reference=None):
         raise NotFound

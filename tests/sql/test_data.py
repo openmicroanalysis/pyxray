@@ -85,13 +85,19 @@ def test_element_mass_density_kg_per_m3(database, element):
 def test_element_mass_density_g_per_cm3(database, element):
     assert database.element_mass_density_g_per_cm3(element) == pytest.approx(0.9992, abs=1e-4)
 
-# @pytest.mark.parametrize('element,reference', [(118, None), (118, 'a')])
-# def test_element_xray_transitions(database, element, reference):
-#    transitions = database.element_xray_transitions(element, reference)
-#    assert len(transitions) == 2
+@pytest.mark.parametrize('element,reference', [(118, None), (118, 'lee1966')])
+def test_element_xray_transitions(database, element, reference):
+    transitions = database.element_xray_transitions(element, reference)
+    assert len(transitions) == 3
 
-#    assert descriptor.XrayTransition(L3, K) in transitions
-#    assert descriptor.XrayTransition(L2, K) in transitions
+    assert descriptor.XrayTransition(L3, K) in transitions
+    assert descriptor.XrayTransition(L2, K) in transitions
+    assert descriptor.XrayTransition(2, 1, None, K) in transitions
+
+@pytest.mark.parametrize('element,reference', [(118, 'unknown'), (1, None)])
+def test_element_xray_transitions_notfound(database, element, reference):
+    with pytest.raises(NotFound):
+        database.element_xray_transitions(element, reference)
 
 def test_element_xray_transition(database):
    transition = database.element_xray_transition(118, 'a')
