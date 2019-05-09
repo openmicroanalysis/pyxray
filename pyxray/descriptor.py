@@ -269,30 +269,30 @@ class XrayLine:
 
 @dataclasses.dataclass(frozen=True)
 class Language:
-    code: str
+    key: str
 
     def __post_init__(self):
-        lencode = len(self.code)
+        lencode = len(self.key)
         if lencode < 2 or lencode > 3:
             raise ValueError('Code must be between 2 and 3 characters')
 
-        object.__setattr__(self, 'code', self.code.lower())
+        object.__setattr__(self, 'key', self.key.lower())
 
     def __repr__(self):
-        return '{}({})'.format(self.__class__.__name__, self.code)
+        return '{}({})'.format(self.__class__.__name__, self.key)
 
 @dataclasses.dataclass(frozen=True)
 class Notation:
-    name: str
+    key: str
 
     def __post_init__(self):
-        if not self.name:
+        if not self.key:
             raise ValueError('Name cannot be empty')
 
-        object.__setattr__(self, 'name', self.name.lower())
+        object.__setattr__(self, 'key', self.key.lower())
 
     def __repr__(self):
-        return '{}({})'.format(self.__class__.__name__, self.name)
+        return '{}({})'.format(self.__class__.__name__, self.key)
 
 @dataclasses.dataclass(frozen=True)
 class Reference:

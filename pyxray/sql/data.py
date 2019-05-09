@@ -144,19 +144,19 @@ class SqlDatabase(_DatabaseMixin, SqlBase):
 
     def _create_notation_clauses(self, table, notation):
         if isinstance(notation, descriptor.Notation):
-            notation = notation.name
+            notation = notation.key
 
         table_notation = self.require_table(descriptor.Notation)
         return [table.c['notation_id'] == table_notation.c['id'],
-                table_notation.c['name'] == notation]
+                table_notation.c['key'] == notation]
 
     def _create_language_clauses(self, table, language):
         if isinstance(language, descriptor.Language):
-            language = language.code
+            language = language.key
 
         table_language = self.require_table(descriptor.Language)
         return [table.c['language_id'] == table_language.c['id'],
-                table_language.c['code'] == language]
+                table_language.c['key'] == language]
 
     def _execute_select_one(self, statement):
         logger.debug(statement.compile())

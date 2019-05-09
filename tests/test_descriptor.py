@@ -233,7 +233,7 @@ def language():
     return Language('en')
 
 def test_language(language):
-    assert language.code == 'en'
+    assert language.key == 'en'
 
 def test_language_eq(language):
     assert language == Language('en')
@@ -255,10 +255,10 @@ def test_language_validate():
 
 def test_language_frozen(language):
     with pytest.raises(dataclasses.FrozenInstanceError):
-        language.code = 'fr'
+        language.key = 'fr'
 
     with pytest.raises(dataclasses.FrozenInstanceError):
-        del language.code
+        del language.key
 
     with pytest.raises(dataclasses.FrozenInstanceError):
         language.abc = 7
@@ -268,7 +268,7 @@ def notation():
     return Notation('foo')
 
 def test_notation(notation):
-    assert notation.name == 'foo'
+    assert notation.key == 'foo'
 
 def test_notation_eq(notation):
     assert notation == Notation('foo')
@@ -287,10 +287,10 @@ def test_notation_validate():
 
 def test_notation_frozen(notation):
     with pytest.raises(dataclasses.FrozenInstanceError):
-        notation.name = 'bar'
+        notation.key = 'bar'
 
     with pytest.raises(dataclasses.FrozenInstanceError):
-        del notation.name
+        del notation.key
 
     with pytest.raises(dataclasses.FrozenInstanceError):
         notation.abc = 7
