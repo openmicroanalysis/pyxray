@@ -91,7 +91,7 @@ setup(name="pyxray",
                    'Topic :: Scientific/Engineering :: Physics'],
 
       packages=find_packages(),
-      package_data={'pyxray': ['data/pyxray.sql']},
+      package_data={'pyxray': ['data/pyxray.db']},
 
       install_requires=INSTALL_REQUIRES,
       extras_require=EXTRAS_REQUIRE,
