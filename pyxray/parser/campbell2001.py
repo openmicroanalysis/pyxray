@@ -4,11 +4,10 @@ Parsers from Campbell.
 
 # Standard library modules.
 import logging
-logger = logging.getLogger(__name__)
 import os
+import pkgutil
 
 # Third party modules.
-import pkg_resources
 
 # Local modules.
 import pyxray.parser.base as base
@@ -16,6 +15,7 @@ from pyxray.descriptor import Reference, Element
 from pyxray.property import AtomicSubshellRadiativeWidth
 
 # Globals and constants variables.
+logger = logging.getLogger(__name__)
 
 CAMPBELL2001 = Reference('campbell2001',
                          author='Campbell, J.L. and Papp, T.',
@@ -38,20 +38,19 @@ class CampbellAtomicSubshellRadiativeWidthParser(base._Parser):
 
     def __iter__(self):
         relpath = os.path.join('..', 'data', 'campbell.asc')
-        filepath = pkg_resources.resource_filename(__name__, relpath)
+        content = pkgutil.get_data(__name__, relpath).decode('utf8')
 
-        with open(filepath, 'r') as infile:
-            shell_width = []
-            for line in infile:
-                line = line.strip()
-                if not line: continue
+        shell_width = []
+        for line in content.splitlines():
+            line = line.strip()
+            if not line: continue
 
-                z = int(line[0:2])
+            z = int(line[0:2])
 
-                for s in range(1, 17):
-                    s_w = line[6 * s:6 * s + 6].strip()
-                    if s_w == '': continue
-                    shell_width.append([z, subshell_order[s - 1], float(s_w)])
+            for s in range(1, 17):
+                s_w = line[6 * s:6 * s + 6].strip()
+                if s_w == '': continue
+                shell_width.append([z, subshell_order[s - 1], float(s_w)])
 
         length = len(shell_width)
         for z, subshell, width in shell_width:

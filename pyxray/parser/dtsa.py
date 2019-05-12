@@ -6,9 +6,9 @@ Parsers for DTSA data.
 import os
 import csv
 import logging
+import pkgutil
 
 # Third party modules.
-import pkg_resources
 
 # Local modules.
 from pyxray.descriptor import Reference, Element, XrayTransition
@@ -40,22 +40,20 @@ class DtsaSubshellParser(base._Parser):
 
     def __iter__(self):
         relative_path = os.path.join('..', 'data', 'dtsa_subshell.csv')
-        filepath = pkg_resources.resource_filename(__name__, relative_path)
+        content = pkgutil.get_data(__name__, relative_path).decode('utf8')
+        reader = csv.reader(content.splitlines())
 
-        with open(filepath, 'r') as csv_file:
-            reader = csv.reader(csv_file)
+        # skip first line
+        next(reader)
 
-            # skip first line
-            next(reader)
+        subshell_data = []
+        for row in reader:
+            atomic_number = int(row[0])
+            # noinspection PyPep8Naming
+            energy_eV = float(row[1])
+            subshell = str(row[2])
 
-            subshell_data = []
-            for row in reader:
-                atomic_number = int(row[0])
-                # noinspection PyPep8Naming
-                energy_eV = float(row[1])
-                subshell = str(row[2])
-
-                subshell_data.append([atomic_number, energy_eV, subshell])
+            subshell_data.append([atomic_number, energy_eV, subshell])
 
         length = len(subshell_data)
         for atomic_number, energy_eV, subshell_dtsa in subshell_data:
@@ -138,26 +136,24 @@ class DtsaLineParser(base._Parser):
 
     def __iter__(self):
         relative_path = os.path.join('..', 'data', 'dtsa_line.csv')
-        filepath = pkg_resources.resource_filename(__name__, relative_path)
+        content = pkgutil.get_data(__name__, relative_path).decode('utf8')
+        reader = csv.reader(content.splitlines())
 
-        with open(filepath, 'r') as csv_file:
-            reader = csv.reader(csv_file)
+        # skip first line
+        next(reader)
 
-            # skip first line
-            next(reader)
+        line_data = []
+        for row in reader:
+            try:
+                atomic_number = int(row[0])
+                # noinspection PyPep8Naming
+                energy_eV = float(row[1])
+                fraction = float(row[2])
+                line_label = str(row[3])
 
-            line_data = []
-            for row in reader:
-                try:
-                    atomic_number = int(row[0])
-                    # noinspection PyPep8Naming
-                    energy_eV = float(row[1])
-                    fraction = float(row[2])
-                    line_label = str(row[3])
-
-                    line_data.append([atomic_number, energy_eV, fraction, line_label])
-                except ValueError:
-                    pass
+                line_data.append([atomic_number, energy_eV, fraction, line_label])
+            except ValueError:
+                pass
 
         unparse_lines = set()
         length = 2 * len(line_data)

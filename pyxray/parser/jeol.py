@@ -5,9 +5,9 @@ Parsers from JEOL.
 # Standard library modules.
 import logging
 import os
+import pkgutil
 
 # Third party modules.
-import pkg_resources
 
 # Local modules.
 from pyxray.descriptor import Reference, Element, XrayTransition
@@ -88,38 +88,37 @@ class JEOLTransitionParser(base._Parser):
 
     def __iter__(self):
         relpath = os.path.join('..', 'data', 'lambda.asc')
-        filepath = pkg_resources.resource_filename(__name__, relpath)
+        content = pkgutil.get_data(__name__, relpath).decode('utf8')
 
         notread = set()
-        with open(filepath, 'r') as infile:
-            transition_energy = []
-            for line in infile:
-                line = line.strip()
-                if not line: continue
+        transition_energy = []
+        for line in content.splitlines():
+            line = line.strip()
+            if not line: continue
 
-                z = int(line[0:2])
+            z = int(line[0:2])
 
-                siegbahn = line[10:18].strip()
-                if siegbahn.startswith('A'):  # skip absorption edges
-                    continue
-                if siegbahn.startswith('S'):  # skip satellite lines
-                    continue
-                if siegbahn not in _TRANSITION_LOOKUP:  # check for equivalence
-                    notread.add(siegbahn)
-                    continue
+            siegbahn = line[10:18].strip()
+            if siegbahn.startswith('A'):  # skip absorption edges
+                continue
+            if siegbahn.startswith('S'):  # skip satellite lines
+                continue
+            if siegbahn not in _TRANSITION_LOOKUP:  # check for equivalence
+                notread.add(siegbahn)
+                continue
 
-                probability = line[20:23].strip()
-                if not probability:  # skip transition with no probability
-                    continue
-                probability = float(probability) / 100.0
+            probability = line[20:23].strip()
+            if not probability:  # skip transition with no probability
+                continue
+            probability = float(probability) / 100.0
 
-                wavelength = float(line[26:35])
-                energy = wavelength_to_energy_eV(wavelength * 1e-10)
+            wavelength = float(line[26:35])
+            energy = wavelength_to_energy_eV(wavelength * 1e-10)
 
-                if siegbahn in _TRANSITION_LOOKUP:
-                    transition = _TRANSITION_LOOKUP[siegbahn]
-                    transition_energy.append((z, transition, probability, energy))
-                    continue
+            if siegbahn in _TRANSITION_LOOKUP:
+                transition = _TRANSITION_LOOKUP[siegbahn]
+                transition_energy.append((z, transition, probability, energy))
+                continue
 
         length = len(transition_energy)
         for z, transition, probability, eV in transition_energy:
