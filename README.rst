@@ -286,8 +286,8 @@ It can be pickled or copied.
 Release notes
 =============
 
-Development
------------
+1.6
+---
 
 - Add ordering of Element, AtomicShell, AtomicSubshell
 - Use `sqlalchemy <https://sqlalchemy.org>`_ to create and interact with database
