@@ -76,7 +76,12 @@ class AtomicSubshell:
                                 .format(self.total_angular_momentum_nominator, jmin_n, jmax_n))
 
     def __repr__(self):
-        return '{}(n={}, l={}, j={:.1f})'.format(self.__class__.__name__, self.n, self.l, self.j)
+        def _format(value):
+            return '*' if value is None else value
+        return '{}(n={}, l={}, j={:.1f})'.format(self.__class__.__name__,
+                                                 _format(self.n),
+                                                 _format(self.l),
+                                                 _format(self.j))
 
     @property
     def atomic_shell(self):
