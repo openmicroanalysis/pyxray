@@ -1,7 +1,7 @@
-pyxray.sql.command module
+pyxray.parser.base module
 =========================
 
-.. automodule:: pyxray.sql.command
+.. automodule:: pyxray.parser.base
     :members:
     :undoc-members:
     :show-inheritance:

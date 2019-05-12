@@ -1,18 +1,21 @@
-#!/usr/bin/env python
-""" """
+""""""
 
 # Standard library modules.
 
 # Third party modules.
 import pytest
+import sqlalchemy
 
 # Local modules.
-from pyxray.parser.parser import _Parser
-import pyxray.property as property
+from pyxray.sql.build import SqlDatabaseBuilder
+from pyxray.parser.base import _Parser
 import pyxray.descriptor as descriptor
-from pyxray.sql.build import SqliteDatabaseBuilder
+import pyxray.property as property
 
 # Globals and constants variables.
+K = descriptor.AtomicSubshell(1, 0, 1)
+L3 = descriptor.AtomicSubshell(2, 1, 3)
+L2 = descriptor.AtomicSubshell(2, 1, 1)
 
 class MockParser(_Parser):
 
@@ -21,12 +24,9 @@ class MockParser(_Parser):
         reference2 = descriptor.Reference('doe2016')
         element = descriptor.Element(118)
         atomic_shell = descriptor.AtomicShell(1)
-        K = descriptor.AtomicSubshell(1, 0, 1)
-        L3 = descriptor.AtomicSubshell(2, 1, 3)
-        L2 = descriptor.AtomicSubshell(2, 1, 1)
         transition = descriptor.XrayTransition(L3, K)
         transition2 = descriptor.XrayTransition(L2, K)
-        transitionset = descriptor.XrayTransitionSet([transition, transition2])
+        transitionset = descriptor.XrayTransition(2, 1, None, K)
         notation = descriptor.Notation('mock')
         notation_iupac = descriptor.Notation('iupac')
         language = descriptor.Language('en')
@@ -56,16 +56,17 @@ class MockParser(_Parser):
         yield property.XrayTransitionProbability(reference, element, transition2, 0.04)
         yield property.XrayTransitionRelativeWeight(reference, element, transition2, 0.004)
 
-        yield property.XrayTransitionSetNotation(reference, transitionset, notation, 'a', 'b', 'c', 'd')
-        yield property.XrayTransitionSetEnergy(reference, element, transitionset, 0.3)
-        yield property.XrayTransitionSetRelativeWeight(reference, element, transitionset, 0.003)
+        yield property.XrayTransitionNotation(reference, transitionset, notation, 'i', 'j', 'k', 'l')
+        yield property.XrayTransitionEnergy(reference, element, transitionset, 0.6)
+        yield property.XrayTransitionProbability(reference, element, transitionset, 0.06)
+        yield property.XrayTransitionRelativeWeight(reference, element, transitionset, 0.006)
 
 class MockBadParser(_Parser):
 
     def __iter__(self):
         raise Exception
 
-class MockSqliteDatabaseBuilder(SqliteDatabaseBuilder):
+class MockSqliteDatabaseBuilder(SqlDatabaseBuilder):
 
     def __init__(self, filepath=None, badparser=False):
         super().__init__(filepath)
@@ -79,11 +80,11 @@ class MockSqliteDatabaseBuilder(SqliteDatabaseBuilder):
         else:
             return [('mock', MockParser())]
 
-@pytest.fixture
-def builder(tmp_path):
-    filepath = str(tmp_path.joinpath('pyxray.sql'))
+@pytest.fixture(scope='session')
+def builder(tmp_path_factory):
+    engine = sqlalchemy.create_engine('sqlite:///' + str(tmp_path_factory.mktemp('test').joinpath('pyxray.sql')))
 
-    builder = MockSqliteDatabaseBuilder(filepath)
+    builder = MockSqliteDatabaseBuilder(engine)
     builder.build()
 
     return builder

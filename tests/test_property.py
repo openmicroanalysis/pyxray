@@ -23,7 +23,7 @@ def element_symbol(reference):
 def test_element_symbol(element_symbol, reference):
     assert element_symbol.reference == reference
     assert element_symbol.element == Element(6)
-    assert element_symbol.symbol == 'C'
+    assert element_symbol.value == 'C'
 
 def test_element_symbol_validate(reference):
     with pytest.raises(ValueError):

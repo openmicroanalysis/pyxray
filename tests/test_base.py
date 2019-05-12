@@ -7,11 +7,11 @@
 import pytest
 
 # Local modules.
-from pyxray.base import _Database
+from pyxray.base import _DatabaseMixin
 
 # Globals and constants variables.
 
-class MockDatabase(_Database):
+class MockDatabase(_DatabaseMixin):
 
     def element(self, element):
         pass
@@ -98,17 +98,17 @@ class MockDatabase(_Database):
 def database():
     return MockDatabase()
 
-def test_base_get_default_reference(database):
-    assert database.get_default_reference('element_symbol') is None
+# def test_base_get_default_reference(database):
+#     assert database.get_default_reference('element_symbol') is None
 
-    with pytest.raises(ValueError):
-        database.get_default_reference('foo')
+#     with pytest.raises(ValueError):
+#         database.get_default_reference('foo')
 
-def test_base_set_default_reference(database):
-    database.set_default_reference('element_symbol', 'doe2016')
+# def test_base_set_default_reference(database):
+#     database.set_default_reference('element_symbol', 'doe2016')
 
-    assert database.get_default_reference('element_symbol') == 'doe2016'
+#     assert database.get_default_reference('element_symbol') == 'doe2016'
 
-    with pytest.raises(ValueError):
-        database.set_default_reference('foo', 'doe2016')
+#     with pytest.raises(ValueError):
+#         database.set_default_reference('foo', 'doe2016')
 

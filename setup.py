@@ -2,6 +2,8 @@
 
 # Standard library modules.
 import os
+import sys
+import logging
 
 # Third party modules.
 from setuptools import setup, find_packages
@@ -11,14 +13,25 @@ import setuptools.command.build_py as _build_py
 import versioneer
 
 # Globals and constants variables.
+logger = logging.getLogger(__name__)
 BASEDIR = os.path.abspath(os.path.dirname(__file__))
 
 class build_py(_build_py.build_py):
 
     def run(self):
         # Build SQL database
+        import sqlalchemy
         import pyxray.sql.build
-        builder = pyxray.sql.build.SqliteDatabaseBuilder()
+
+        logging.basicConfig()
+        logger.setLevel(logging.INFO)
+
+        filepath = os.path.abspath(os.path.join(BASEDIR, 'pyxray', 'data', 'pyxray.db'))
+        if os.path.exists(filepath):
+            os.remove(filepath)
+
+        engine = sqlalchemy.create_engine('sqlite:///' + filepath)
+        builder = pyxray.sql.build.SqlDatabaseBuilder(engine)
         builder.build()
 
         try:
@@ -31,9 +44,8 @@ class build_py(_build_py.build_py):
 with open(os.path.join(BASEDIR, 'README.rst'), 'r') as fp:
     LONG_DESCRIPTION = fp.read()
 
-INSTALL_REQUIRES = ['tabulate', 'dataclasses;python_version=="3.6.*"']
-EXTRAS_REQUIRE = {'develop': ['requests', 'requests-cache', 'progressbar2',
-                              'pytest', 'pytest-cov']
+INSTALL_REQUIRES = ['tabulate', 'sqlalchemy', 'tqdm', 'dataclasses;python_version~="3.6"']
+EXTRAS_REQUIRE = {'develop': ['requests', 'requests-cache', 'pytest', 'pytest-cov']
                   }
 
 CMDCLASS = versioneer.get_cmdclass()
@@ -42,23 +54,22 @@ CMDCLASS['build_py'] = build_py
 ENTRY_POINTS = {
     'pyxray.parser':
       [
-        'unattributed element symbol = pyxray.parser.unattributed:ElementSymbolPropertyParser',
-        'unattributed atomic shell notation = pyxray.parser.unattributed:AtomicShellNotationParser',
-        'unattributed atomic subshell notation = pyxray.parser.unattributed:AtomicSubshellNotationParser',
-        'unattributed transition notation = pyxray.parser.unattributed:TransitionNotationParser',
-        'unattributed family series transitionset notation = pyxray.parser.unattributed:FamilySeriesTransitionSetNotationParser',
-        'unattributed common transitionset notation = pyxray.parser.unattributed:CommonTransitionSetNotationParser',
+        'element symbol = pyxray.parser.notation:ElementSymbolParser',
+        'atomic shell notation = pyxray.parser.notation:AtomicShellNotationParser',
+        'atomic subshell notation = pyxray.parser.notation:AtomicSubshellNotationParser',
+        'generic x-ray transition notation = pyxray.parser.notation:GenericXrayTransitionNotationParser',
+        'known x-ray transition notation = pyxray.parser.notation:KnownXrayTransitionNotationParser',
+        'series x-ray transition notation = pyxray.parser.notation:SeriesXrayTransitionNotationParser',
+        'family x-ray transition notation = pyxray.parser.notation:FamilyXrayTransitionNotationParser',
         'wikipedia element name = pyxray.parser.wikipedia:WikipediaElementNameParser',
         'sargent-welch element atomic weight = pyxray.parser.sargent_welch:SargentWelchElementAtomicWeightParser',
         'sargent-welch element mass density = pyxray.parser.sargent_welch:SargentWelchElementMassDensityParser',
-        'jenkins1991 transition notation = pyxray.parser.jenkins1991:Jenkins1991TransitionNotationParser',
         'perkins1991 = pyxray.parser.perkins1991:Perkins1991Parser',
         'nist atomic weight = pyxray.parser.nist:NISTElementAtomicWeightParser',
         'jeol transition = pyxray.parser.jeol:JEOLTransitionParser',
         'campbell2001 = pyxray.parser.campbell2001:CampbellAtomicSubshellRadiativeWidthParser',
         'dtsa1992 subshell = pyxray.parser.dtsa:DtsaSubshellParser',
         'dtsa1992 transition = pyxray.parser.dtsa:DtsaLineParser',
-        'bearden1967 transition notation = pyxray.parser.bearden1967:Bearden1967XrayTransitionNotationParser',
        ],
       }
 

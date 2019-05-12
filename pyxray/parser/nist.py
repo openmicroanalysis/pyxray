@@ -4,7 +4,6 @@ Parsers from NIST.
 
 # Standard library modules.
 import logging
-logger = logging.getLogger(__name__)
 import re
 import os
 
@@ -12,11 +11,12 @@ import os
 import pkg_resources
 
 # Local modules.
-from pyxray.parser.parser import _Parser
+import pyxray.parser.base as base
 from pyxray.descriptor import Reference, Element
 from pyxray.property import ElementAtomicWeight
 
 # Globals and constants variables.
+logger = logging.getLogger(__name__)
 
 NIST = Reference('coursey2015',
                  author='J. S. Coursey, D. J. Schwab, J. J. Tsai, R. A. Dragoset',
@@ -26,8 +26,7 @@ NIST = Reference('coursey2015',
 
 NIST_ATOMICWEIGHT_URL = 'https://physics.nist.gov/cgi-bin/Compositions/stand_alone.pl'
 
-class NISTElementAtomicWeightParser(_Parser):
-
+class NISTElementAtomicWeightParser(base._Parser):
 
     def __iter__(self):
         relpath = os.path.join('..', 'data', 'nist_element_atomic_weight.html')

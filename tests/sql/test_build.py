@@ -13,18 +13,12 @@ import pytest
 # Globals and constants variables.
 
 def test_database_build(builder):
-    assert os.path.exists(builder.filepath)
+    assert os.path.exists(builder.engine.url.database)
 
-    conn = sqlite3.connect(builder.filepath)
+    conn = sqlite3.connect(builder.engine.url.database)
     command = "SELECT count(*) FROM sqlite_master WHERE type = 'table'"
     ntable, = conn.execute(command).fetchone()
-    assert ntable == 26
-
-def test_database_backup(builder):
-    builder.build()
-
-    assert os.path.exists(builder.filepath)
-    assert os.path.exists(builder.filepath + '.old')
+    assert ntable == 21
 
 def test_database_fail(builder):
     builder.badparser = True

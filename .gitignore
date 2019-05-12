@@ -1,6 +1,6 @@
 pyxray/data/cache/*.sqlite
-pyxray/data/*.sql
-pyxray/data/*.sql*
+pyxray/data/*.db
+pyxray/data/*.db*
 cover
 
 #### joe made this: https://goel.io/joe

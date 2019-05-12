@@ -12,4 +12,4 @@ from pyxray.parser.jeol import JEOLTransitionParser
 
 def test_jeol():
     parser = JEOLTransitionParser()
-    assert len(list(parser)) == 2384
+    assert len(list(parser)) == 2372

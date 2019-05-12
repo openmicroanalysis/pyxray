@@ -19,14 +19,31 @@ K = descriptor.AtomicSubshell(1, 0, 1)
 L3 = descriptor.AtomicSubshell(2, 1, 3)
 L2 = descriptor.AtomicSubshell(2, 1, 1)
 
-@pytest.fixture
+@pytest.fixture(scope='session')
 def database(builder):
-    with sqlite3.connect(builder.filepath) as connection:
-        yield SqlDatabase(connection)
+    return SqlDatabase(builder.engine)
+
+def test_add_preferred_reference(database):
+    database.clear_preferred_references()
+    database.add_preferred_reference('lee1966')
+
+    assert len(database.get_preferred_references()) == 1
+    assert 'lee1966' in database.get_preferred_references()
+
+    database.clear_preferred_references()
+    assert len(database.get_preferred_references()) == 0
+
+def test_add_preferred_reference_not_found(database):
+    with pytest.raises(NotFound):
+        database.add_preferred_reference('foo')
 
 @pytest.mark.parametrize('element', [118, 'Vi', 'Vibranium'])
 def test_element(database, element):
     assert database.element(element) == descriptor.Element(118)
+
+@pytest.mark.parametrize('reference', ['lee1966', 'LEE1966'])
+def test_reference(database, reference):
+    assert database.element_name(118, 'en', reference) == 'Vibranium'
 
 @pytest.mark.parametrize('element', ['Al', 13, 'Aluminum'])
 def test_element_notfound(database, element):
@@ -78,6 +95,17 @@ def test_element_atomic_weight_lee1966(database):
 def test_element_atomic_weight_doe2016(database):
     assert database.element_atomic_weight(118, 'doe2016') == pytest.approx(111.1, abs=1e-2)
 
+def test_element_atomic_weight_preferred_reference(database):
+    database.clear_preferred_references()
+    database.add_preferred_reference('doe2016')
+    assert database.element_atomic_weight(118) == pytest.approx(111.1, abs=1e-2)
+
+    database.clear_preferred_references()
+    database.add_preferred_reference('lee1966')
+    assert database.element_atomic_weight(118) == pytest.approx(999.1, abs=1e-2)
+
+    database.clear_preferred_references()
+
 @pytest.mark.parametrize('element', [118, 'Vi', 'Vibranium'])
 def test_element_mass_density_kg_per_m3(database, element):
     assert database.element_mass_density_kg_per_m3(element) == pytest.approx(999.2, abs=1e-2)
@@ -86,17 +114,30 @@ def test_element_mass_density_kg_per_m3(database, element):
 def test_element_mass_density_g_per_cm3(database, element):
     assert database.element_mass_density_g_per_cm3(element) == pytest.approx(0.9992, abs=1e-4)
 
-@pytest.mark.parametrize('element,reference', [(118, None), (118, 'a')])
+@pytest.mark.parametrize('element,reference', [(118, None), (118, 'lee1966')])
 def test_element_xray_transitions(database, element, reference):
-   transitions = database.element_xray_transitions(element, reference)
-   assert len(transitions) == 2
+    transitions = database.element_xray_transitions(element, reference=reference)
+    assert len(transitions) == 3
 
-   assert descriptor.XrayTransition(L3, K) in transitions
-   assert descriptor.XrayTransition(L2, K) in transitions
+    assert descriptor.XrayTransition(L3, K) in transitions
+    assert descriptor.XrayTransition(L2, K) in transitions
+    assert descriptor.XrayTransition(2, 1, None, K) in transitions
+
+@pytest.mark.parametrize('xray_transition,expected', [
+        (descriptor.XrayTransition(L3, K), 1),
+        (descriptor.XrayTransition(2, 1, None, K), 2)
+])
+def test_element_xray_transitions_with_xray_transition(database, xray_transition, expected):
+    transitions = database.element_xray_transitions(118, xray_transition)
+    assert len(transitions) == expected
+
+@pytest.mark.parametrize('element,reference', [(118, 'unknown'), (1, None)])
+def test_element_xray_transitions_notfound(database, element, reference):
+    with pytest.raises(NotFound):
+        database.element_xray_transitions(element, reference)
 
 def test_element_xray_transition(database):
    transition = database.element_xray_transition(118, 'a')
-
    assert transition == descriptor.XrayTransition(L3, K)
 
 @pytest.mark.parametrize('element,reference', [(1, 'a'), (118, 'g')])
@@ -175,6 +216,6 @@ def test_xray_line(database):
    xrayline = database.xray_line(118, 'aa')
 
    assert xrayline.element.atomic_number == 118
-   assert len(xrayline.transitions) == 1
    assert xrayline.iupac == 'Vi bb'
    assert xrayline.siegbahn == 'Vi bb'
+   assert xrayline.energy_eV == pytest.approx(0.2, abs=1e-3)
