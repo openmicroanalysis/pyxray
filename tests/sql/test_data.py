@@ -23,6 +23,20 @@ L2 = descriptor.AtomicSubshell(2, 1, 1)
 def database(builder):
     return SqlDatabase(builder.engine)
 
+def test_add_preferred_reference(database):
+    database.clear_preferred_references()
+    database.add_preferred_reference('lee1966')
+
+    assert len(database.get_preferred_references()) == 1
+    assert 'lee1966' in database.get_preferred_references()
+
+    database.clear_preferred_references()
+    assert len(database.get_preferred_references()) == 0
+
+def test_add_preferred_reference_not_found(database):
+    with pytest.raises(NotFound):
+        database.add_preferred_reference('foo')
+
 @pytest.mark.parametrize('element', [118, 'Vi', 'Vibranium'])
 def test_element(database, element):
     assert database.element(element) == descriptor.Element(118)
@@ -80,6 +94,17 @@ def test_element_atomic_weight_lee1966(database):
 
 def test_element_atomic_weight_doe2016(database):
     assert database.element_atomic_weight(118, 'doe2016') == pytest.approx(111.1, abs=1e-2)
+
+def test_element_atomic_weight_preferred_reference(database):
+    database.clear_preferred_references()
+    database.add_preferred_reference('doe2016')
+    assert database.element_atomic_weight(118) == pytest.approx(111.1, abs=1e-2)
+
+    database.clear_preferred_references()
+    database.add_preferred_reference('lee1966')
+    assert database.element_atomic_weight(118) == pytest.approx(999.1, abs=1e-2)
+
+    database.clear_preferred_references()
 
 @pytest.mark.parametrize('element', [118, 'Vi', 'Vibranium'])
 def test_element_mass_density_kg_per_m3(database, element):

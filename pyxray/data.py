@@ -3,6 +3,9 @@ Current implementation of the database
 """
 
 __all__ = [
+    'get_preferred_references',
+    'add_preferred_reference',
+    'clear_preferred_references',
     'element',
     'element_atomic_number',
     'element_symbol',
@@ -44,6 +47,15 @@ from pyxray.sql.data import SqlDatabase
 logger = logging.getLogger(__name__)
 
 class _EmptyDatabase(_DatabaseMixin):
+
+    def get_preferred_references(self):
+        return ()
+
+    def add_preferred_reference(self, reference):
+        pass
+
+    def clear_preferred_references(self):
+        pass
 
     def element(self, element): #pragma: no cover
         raise NotFound
@@ -130,6 +142,9 @@ except:
     logger.error("No SQL database found")
     database = _EmptyDatabase()
 
+get_preferred_references = database.get_preferred_references
+add_preferred_reference = database.add_preferred_reference
+clear_preferred_references = database.clear_preferred_references
 element = database.element
 element_atomic_number = database.element_atomic_number
 element_symbol = database.element_symbol

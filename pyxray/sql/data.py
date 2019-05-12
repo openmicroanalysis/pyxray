@@ -58,6 +58,10 @@ class StatementBuilder:
 
 class SqlDatabase(_DatabaseMixin, SqlBase):
 
+    def __init__(self, engine):
+        super().__init__(engine)
+        self._preferred_references = []
+
     def _expand_atomic_subshell(self, atomic_subshell):
         if hasattr(atomic_subshell, 'principal_quantum_number') and \
                 hasattr(atomic_subshell, 'azimuthal_quantum_number') and \
@@ -186,13 +190,13 @@ class SqlDatabase(_DatabaseMixin, SqlBase):
                 builder.add_clause(table_xray_transition.c['destination_azimuthal_quantum_number'] == dst_l)
                 builder.add_clause(table_xray_transition.c['destination_total_angular_momentum_nominator'] == dst_j_n)
 
-    def _update_reference(self, builder, table, reference):
+    def _update_reference(self, builder, table, reference, column='reference_id'):
         if isinstance(reference, descriptor.Reference):
             reference = reference.bibtexkey
 
         table_reference = self.require_table(descriptor.Reference)
         builder.add_column(table_reference.c['bibtexkey'])
-        builder.add_join(table, table_reference, table.c['reference_id'] == table_reference.c['id'])
+        builder.add_join(table, table_reference, table.c[column] == table_reference.c['id'])
 
         if reference:
             builder.add_clause(table_reference.c['bibtexkey'] == reference)
@@ -213,7 +217,7 @@ class SqlDatabase(_DatabaseMixin, SqlBase):
         builder.add_join(table, table_notation, table.c['notation_id'] == table_notation.c['id'])
         builder.add_clause(table_notation.c['key'] == notation)
 
-    def _execute(self, builder):
+    def _execute(self, builder, remove_bibtexkey_column=True):
         statement = builder.build()
         logger.debug(statement.compile())
 
@@ -223,21 +227,28 @@ class SqlDatabase(_DatabaseMixin, SqlBase):
             if not rows:
                 raise NotFound
 
+            # Only one row, no need to check for the preferred references
             elif len(rows) == 1:
                 row = rows[0]
+
             else:
-                # FIXME
-                row = rows[0]
+                dictrows = dict((dict(row).get('bibtexkey', None), row) for row in rows)
+                row = rows[0] # fall back
+                for bibtexkey in self._preferred_references:
+                    if bibtexkey in dictrows:
+                        row = dictrows[bibtexkey]
+                        break
 
             row = dict(row)
-            row.pop('bibtexkey', None)
+            if remove_bibtexkey_column:
+                row.pop('bibtexkey', None)
 
             if len(row) == 1:
                 return row.popitem()[1]
             else:
                 return row.values()
 
-    def _execute_many(self, builder):
+    def _execute_many(self, builder, remove_bibtexkey_column=True):
         statement = builder.build()
         logger.debug(statement.compile())
 
@@ -250,10 +261,32 @@ class SqlDatabase(_DatabaseMixin, SqlBase):
             outrows = []
             for row in rows:
                 row = dict(row)
-                row.pop('bibtexkey', None)
+                if remove_bibtexkey_column:
+                    row.pop('bibtexkey', None)
                 outrows.append(list(row.values()))
 
             return outrows
+
+    def get_preferred_references(self):
+        return tuple(self._preferred_references)
+
+    def add_preferred_reference(self, reference):
+        if isinstance(reference, descriptor.Reference):
+            reference = reference.bibtexkey
+        if reference in self._preferred_references:
+            return
+
+        table = self.require_table(descriptor.Reference)
+
+        builder = StatementBuilder()
+        self._update_reference(builder, table, reference, 'id')
+
+        bibtexkey = self._execute(builder, remove_bibtexkey_column=False)
+
+        self._preferred_references.append(bibtexkey)
+
+    def clear_preferred_references(self):
+        self._preferred_references.clear()
 
     def element(self, element):
         table = self.require_table(descriptor.Element)

@@ -61,6 +61,38 @@ _docextras = {'element': """:arg element: either
 class _DatabaseMixin(metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
+    def get_preferred_references(self):
+        """
+        Return the BibTeX keys of the preferred references.
+
+        If no reference is specified when calling a method, the value for the first preferred reference is returned.
+        If no preferred reference, the first value is returned.
+
+        :return: preferred references
+        :rtype: :class:`tuple`
+        """
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    @formatdoc(**_docextras)
+    def add_preferred_reference(self, reference):
+        """
+        Adds a preferred reference.
+
+        :arg reference: :class:`Reference` or its BibTeX key
+
+        {exception}
+        """
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def clear_preferred_references(self):
+        """
+        Clear all added preferred references.
+        """
+        raise NotImplementedError
+
+    @abc.abstractmethod
     @formatdoc(**_docextras)
     def element(self, element): #pragma: no cover
         """

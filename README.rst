@@ -291,7 +291,8 @@ Development
 
 - Add ordering of Element, AtomicShell, AtomicSubshell
 - Use `sqlalchemy <https://sqlalchemy.org>`_ to create and interact with database
-- Add more probability and relative weight properties to XrayLine
+- Add probability and relative weight properties to XrayLine
+- Add possibility to define preferred references
 
 1.5
 ---
