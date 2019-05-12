@@ -1,7 +1,7 @@
-pyxray.sql.test\_build module
+pyxray.parser.notation module
 =============================
 
-.. automodule:: pyxray.sql.test_build
+.. automodule:: pyxray.parser.notation
     :members:
     :undoc-members:
     :show-inheritance:
