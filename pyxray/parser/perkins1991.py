@@ -11,15 +11,6 @@ import logging
 # Third party modules.
 import requests
 
-try:
-    import requests_cache
-    dirpath = os.path.join(os.path.dirname(__file__), '..', 'data', 'cache')
-    os.makedirs(dirpath, exist_ok=True)
-    filepath = os.path.join(dirpath, 'eadl')
-    requests_cache.install_cache(filepath)
-except ImportError:
-    pass
-
 # Local modules.
 from pyxray.descriptor import Reference, Element, AtomicSubshell, XrayTransition
 from pyxray.property import \

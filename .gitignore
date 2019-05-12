@@ -1,4 +1,4 @@
-pyxray/data/cache/*.sqlite
+pyxray/data/cache.*
 pyxray/data/*.db
 pyxray/data/*.db*
 cover

@@ -24,8 +24,6 @@ NIST = Reference('coursey2015',
                  organization='NIST Physical Measurement Laboratory',
                  year=2015)
 
-NIST_ATOMICWEIGHT_URL = 'https://physics.nist.gov/cgi-bin/Compositions/stand_alone.pl'
-
 class NISTElementAtomicWeightParser(base._Parser):
 
     def __iter__(self):

@@ -1,4 +1,5 @@
 # Standard library modules.
+import os
 import collections.abc
 import inspect
 
@@ -128,6 +129,15 @@ IUPAC = Notation('iupac')
 ORBITAL = Notation('orbital')
 
 UNATTRIBUTED = Reference('unattributed')
+
+# Install cache
+try:
+    import requests_cache
+    dirpath = os.path.join(os.path.dirname(__file__), '..', 'data')
+    filepath = os.path.join(dirpath, 'cache')
+    requests_cache.install_cache(filepath)
+except ImportError:
+    pass
 
 class _Parser(collections.abc.Iterable, ProgressReportMixin):
     """

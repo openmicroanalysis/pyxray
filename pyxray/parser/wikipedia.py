@@ -10,15 +10,6 @@ logger = logging.getLogger(__name__)
 # Third party modules.
 import requests
 
-try:
-    import requests_cache
-    dirpath = os.path.join(os.path.dirname(__file__), '..', 'data', 'cache')
-    os.makedirs(dirpath, exist_ok=True)
-    filepath = os.path.join(dirpath, 'wikipedia')
-    requests_cache.install_cache(filepath)
-except ImportError:
-    pass
-
 # Local modules.
 import pyxray.parser.base as base
 from pyxray.descriptor import Reference, Element, Language
