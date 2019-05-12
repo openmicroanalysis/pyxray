@@ -286,6 +286,12 @@ It can be pickled or copied.
 Release notes
 =============
 
+1.6.1
+-----
+
+- Fix deprecation warning with new setuptools
+- Fix problem with requests caching
+
 1.6
 ---
 
