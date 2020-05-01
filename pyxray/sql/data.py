@@ -6,7 +6,6 @@ import logging
 
 # Third party modules.
 import sqlalchemy.sql
-from sqlalchemy import or_
 
 # Local modules.
 from pyxray.base import _DatabaseMixin, NotFound
