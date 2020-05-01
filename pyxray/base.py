@@ -241,7 +241,7 @@ class _DatabaseMixin(metaclass=abc.ABCMeta):
 
         :arg file: file for output, default to standard out
         """
-        header = ['IUPAC', 'Siegbahn', 'Energy (eV)', 'Probability']
+        header = ['IUPAC', 'Siegbahn', 'Energy (eV)', 'Probability', 'Relative weight']
 
         rows = []
         for xray_transition in self.element_xray_transitions(element):
@@ -265,7 +265,12 @@ class _DatabaseMixin(metaclass=abc.ABCMeta):
             except:
                 probability = ''
 
-            rows.append([iupac, siegbahn, energy_eV, probability])
+            try:
+                relative_weight = self.xray_transition_relative_weight(element, xray_transition)
+            except:
+                relative_weight = ''
+
+            rows.append([iupac, siegbahn, energy_eV, probability, relative_weight])
 
         rows.sort(key=operator.itemgetter(2))
 
