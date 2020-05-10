@@ -10,8 +10,8 @@ Cookbook examples and patterns.
 
 # Globals and constants variables.
 
-class ProgressMixin:
 
+class ProgressMixin:
     def update(self, progress):
         """
         Update the progress, a value between 0 and 100.
@@ -24,13 +24,13 @@ class ProgressMixin:
         """
         Current progress, a value between 0 and 100.
         """
-        return getattr(self, '_progress', 0)
+        return getattr(self, "_progress", 0)
+
 
 class ProgressReportMixin(ProgressMixin):
-
     def add_reporthook(self, hook):
         assert callable(hook)
-        if not hasattr(self, '_reporthooks'):
+        if not hasattr(self, "_reporthooks"):
             self._reporthooks = set()
         self._reporthooks.add(hook)
 
@@ -39,11 +39,13 @@ class ProgressReportMixin(ProgressMixin):
 
     def update(self, progress):
         super().update(progress)
-        for hook in getattr(self, '_reporthooks', []):
+        for hook in getattr(self, "_reporthooks", []):
             hook(progress)
+
 
 def formatdoc(*formatargs, **formatkwargs):
     def decorate(func):
         func.__doc__ = func.__doc__.format(*formatargs, **formatkwargs)
         return func
+
     return decorate

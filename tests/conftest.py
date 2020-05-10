@@ -11,6 +11,7 @@ import pytest
 
 # Globals and constants variables.
 
+
 @pytest.fixture
 def testdatadir():
-    return os.path.join(os.path.dirname(__file__), 'testdata')
+    return os.path.join(os.path.dirname(__file__), "testdata")

@@ -11,7 +11,7 @@ from pyxray.cbook import ProgressReportMixin
 from pyxray.descriptor import AtomicSubshell, XrayTransition, Notation, Reference
 
 # Globals and constants variables.
-ENTRY_POINT = 'pyxray.parser'
+ENTRY_POINT = "pyxray.parser"
 
 K = AtomicSubshell(1, 0, 1)
 L1 = AtomicSubshell(2, 0, 1)
@@ -53,7 +53,7 @@ Q1 = AtomicSubshell(7, 0, 1)
 Q2 = AtomicSubshell(7, 1, 1)
 Q3 = AtomicSubshell(7, 1, 3)
 
-Ka1 =  XrayTransition(L3, K)
+Ka1 = XrayTransition(L3, K)
 Ka2 = XrayTransition(L2, K)
 Ka = XrayTransition(2, 1, None, K)
 Kb1 = XrayTransition(M3, K)
@@ -61,14 +61,14 @@ Kb2_1 = XrayTransition(N3, K)
 Kb2_2 = XrayTransition(N2, K)
 Kb2 = XrayTransition(4, 1, None, K)
 Kb3 = XrayTransition(M2, K)
-Kb1_3 = XrayTransition(3, 1, None, K) # K-M2,3
+Kb1_3 = XrayTransition(3, 1, None, K)  # K-M2,3
 Kb4_1 = XrayTransition(N5, K)
 Kb4_2 = XrayTransition(N4, K)
 Kb4 = XrayTransition(4, 2, None, K)
 Kb5_1 = XrayTransition(M5, K)
 Kb5_2 = XrayTransition(M4, K)
-Kb5 = XrayTransition(3, 2, None, K) # K-M4,5
-KO2_3 = XrayTransition(5, 1, None, K) # K-O2,3
+Kb5 = XrayTransition(3, 2, None, K)  # K-M4,5
+KO2_3 = XrayTransition(5, 1, None, K)  # K-O2,3
 
 La1 = XrayTransition(M5, L3)
 La2 = XrayTransition(M4, L3)
@@ -77,32 +77,32 @@ Lb1 = XrayTransition(M4, L2)
 Lb2 = XrayTransition(N5, L3)
 Lb3 = XrayTransition(M3, L1)
 Lb4 = XrayTransition(M2, L1)
-Lb3_4 = XrayTransition(3, 1, None, L1) # L1-M2,3
+Lb3_4 = XrayTransition(3, 1, None, L1)  # L1-M2,3
 Lb5_1 = XrayTransition(O5, L3)
 Lb5_2 = XrayTransition(O4, L3)
-Lb5 = XrayTransition(5, 2, None, L3) # L3-O4,5
+Lb5 = XrayTransition(5, 2, None, L3)  # L3-O4,5
 Lb6 = XrayTransition(N1, L3)
 Lb7 = XrayTransition(O1, L3)
 Lb9 = XrayTransition(M5, L1)
 Lb10 = XrayTransition(M4, L1)
 Lb15 = XrayTransition(N4, L3)
-Lb2_15 = XrayTransition(4, 2, None, L3) # L3-N4,5
+Lb2_15 = XrayTransition(4, 2, None, L3)  # L3-N4,5
 Lb17 = XrayTransition(M3, L2)
 Leta = XrayTransition(M1, L2)
 Lg1 = XrayTransition(N4, L2)
 Lg2 = XrayTransition(N2, L1)
 Lg3 = XrayTransition(N3, L1)
-Lg2_3 = XrayTransition(4, 1, None, L1) # L1-N2,3
+Lg2_3 = XrayTransition(4, 1, None, L1)  # L1-N2,3
 Lg4 = XrayTransition(O3, L1)
 Lg4p = XrayTransition(O2, L1)
 Lg5 = XrayTransition(N1, L2)
 Lg6 = XrayTransition(O4, L2)
 Lg8 = XrayTransition(O1, L2)
 
-Lg11 = XrayTransition (N5, L1)
+Lg11 = XrayTransition(N5, L1)
 Ln = XrayTransition(M1, L2)
 Ll = XrayTransition(M1, L3)
-Ll_n = XrayTransition(M1, 2, 1, None) # L2,3-M1
+Ll_n = XrayTransition(M1, 2, 1, None)  # L2,3-M1
 Ls = XrayTransition(M3, L3)
 Lt = XrayTransition(M2, L3)
 Lv = XrayTransition(N6, L2)
@@ -118,26 +118,28 @@ Mg = XrayTransition(N5, M3)
 Mz1 = XrayTransition(N3, M5)
 Mz2 = XrayTransition(N2, M4)
 Mz = XrayTransition(4, 1, None, 3, 2, None)
-M1N2_3 = XrayTransition(4, 1, None, M1) # M1-N2,3
-M2_3M4_5 = XrayTransition(3, 2, None, 3, 1, None) # M2,3-M4,5
-M4_5O2_3 = XrayTransition(5, 1, None, 3, 2, None) # M4,5-O2,3
-M3O4_5 = XrayTransition(5, 2, None, M3) # M3-O4,5
-M4O2_3 = XrayTransition(5, 1, None, M4) # M4-O2,3
+M1N2_3 = XrayTransition(4, 1, None, M1)  # M1-N2,3
+M2_3M4_5 = XrayTransition(3, 2, None, 3, 1, None)  # M2,3-M4,5
+M4_5O2_3 = XrayTransition(5, 1, None, 3, 2, None)  # M4,5-O2,3
+M3O4_5 = XrayTransition(5, 2, None, M3)  # M3-O4,5
+M4O2_3 = XrayTransition(5, 1, None, M4)  # M4-O2,3
 
-SIEGBAHN = Notation('siegbahn')
-IUPAC = Notation('iupac')
-ORBITAL = Notation('orbital')
+SIEGBAHN = Notation("siegbahn")
+IUPAC = Notation("iupac")
+ORBITAL = Notation("orbital")
 
-UNATTRIBUTED = Reference('unattributed')
+UNATTRIBUTED = Reference("unattributed")
 
 # Install cache
 try:
     import requests_cache
-    dirpath = os.path.join(os.path.dirname(__file__), '..', 'data')
-    filepath = os.path.join(dirpath, 'cache')
+
+    dirpath = os.path.join(os.path.dirname(__file__), "..", "data")
+    filepath = os.path.join(dirpath, "cache")
     requests_cache.install_cache(filepath)
 except ImportError:
     pass
+
 
 class _Parser(collections.abc.Iterable, ProgressReportMixin):
     """
@@ -154,7 +156,9 @@ class _Parser(collections.abc.Iterable, ProgressReportMixin):
     Each parser should be registered in the setup.py under the entry point:
     `pyxray.parser`
     """
+
     pass
+
 
 def find_parsers():
     parsers = []

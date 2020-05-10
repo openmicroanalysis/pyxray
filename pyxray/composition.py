@@ -1,6 +1,6 @@
 """"""
 
-__all__ = ['Composition']
+__all__ = ["Composition"]
 
 # Standard library modules.
 import math
@@ -15,7 +15,8 @@ import pyxray
 # Local modules.
 
 # Globals and constants variables.
-CHEMICAL_FORMULA_PATTERN = re.compile(r'([A-Z][a-z]?)([0-9\.]*)')
+CHEMICAL_FORMULA_PATTERN = re.compile(r"([A-Z][a-z]?)([0-9\.]*)")
+
 
 def process_wildcard(fractions):
     """
@@ -25,7 +26,7 @@ def process_wildcard(fractions):
     wildcard_zs = set()
     total_fraction = 0.0
     for z, fraction in fractions.items():
-        if fraction == '?':
+        if fraction == "?":
             wildcard_zs.add(z)
         else:
             total_fraction += fraction
@@ -38,6 +39,7 @@ def process_wildcard(fractions):
         fractions[z] = balance_fraction
 
     return fractions
+
 
 def convert_mass_to_atomic_fractions(mass_fractions):
     """
@@ -64,6 +66,7 @@ def convert_mass_to_atomic_fractions(mass_fractions):
 
     return atomic_fractions
 
+
 def convert_atomic_to_mass_fractions(atomic_fractions):
     """
     Converts an atomic fraction :class:`dict` to a mass fraction :class:`dict`.
@@ -89,6 +92,7 @@ def convert_atomic_to_mass_fractions(atomic_fractions):
 
     return mass_fractions
 
+
 def convert_formula_to_atomic_fractions(formula):
     """
     Converts a chemical formula to an atomic fraction :class:`dict`.
@@ -104,7 +108,7 @@ def convert_formula_to_atomic_fractions(formula):
 
         z = pyxray.element_atomic_number(symbol.strip())
 
-        if mole_fraction == '':
+        if mole_fraction == "":
             mole_fraction = 1.0
         mole_fraction = float(mole_fraction)
 
@@ -119,13 +123,14 @@ def convert_formula_to_atomic_fractions(formula):
 
     return atomic_fractions
 
+
 def generate_name(atomic_fractions):
     """
     Generates a name from the composition.
     The name is generated on the basis of a classical chemical formula.
     """
     if not atomic_fractions:
-        return ''
+        return ""
 
     if len(atomic_fractions) == 1:
         z = list(atomic_fractions.keys())[0]
@@ -144,7 +149,7 @@ def generate_name(atomic_fractions):
     smallest_gcd = min(gcds)
 
     # Write formula
-    name = ''
+    name = ""
     for symbol, fraction in zip(symbols, fractions):
         mole_fraction = int(fraction * smallest_gcd)
         if mole_fraction == 0:
@@ -152,9 +157,10 @@ def generate_name(atomic_fractions):
         elif mole_fraction == 1:
             name += "%s" % symbol
         else:
-            name += '%s%i' % (symbol, mole_fraction)
+            name += "%s%i" % (symbol, mole_fraction)
 
     return name
+
 
 class Composition:
     """
@@ -180,16 +186,16 @@ class Composition:
     """
 
     _key = object()
-    PRECISION = 0.000000001 # 1ppb
+    PRECISION = 0.000000001  # 1ppb
 
     def __init__(self, key, mass_fractions, atomic_fractions, formula):
         """
         Private constructor. It should never be used.
         """
         if key != Composition._key:
-            raise TypeError('Composition cannot be created using constructor')
+            raise TypeError("Composition cannot be created using constructor")
         if set(mass_fractions.keys()) != set(atomic_fractions.keys()):
-            raise ValueError('Mass and atomic fractions must have the same elements')
+            raise ValueError("Mass and atomic fractions must have the same elements")
 
         self.mass_fractions = MappingProxyType(mass_fractions)
         self.atomic_fractions = MappingProxyType(atomic_fractions)
@@ -264,7 +270,7 @@ class Composition:
         return iter(self.mass_fractions.keys())
 
     def __repr__(self):
-        return '<{}({})>'.format(self.__class__.__name__, self.inner_repr())
+        return "<{}({})>".format(self.__class__.__name__, self.inner_repr())
 
     def __eq__(self, other):
         if not isinstance(other, self.__class__):
@@ -297,20 +303,27 @@ class Composition:
         return hash(tuple(out))
 
     def __getstate__(self):
-        return {'mass_fractions': dict(self.mass_fractions),
-                'atomic_fractions': dict(self.atomic_fractions),
-                'formula': self.formula}
+        return {
+            "mass_fractions": dict(self.mass_fractions),
+            "atomic_fractions": dict(self.atomic_fractions),
+            "formula": self.formula,
+        }
 
     def __setstate__(self, state):
-        self.mass_fractions = MappingProxyType(state.get('mass_fractions', {}))
-        self.atomic_fractions = MappingProxyType(state.get('atomic_fractions', {}))
-        self._formula = state.get('formula', '')
+        self.mass_fractions = MappingProxyType(state.get("mass_fractions", {}))
+        self.atomic_fractions = MappingProxyType(state.get("atomic_fractions", {}))
+        self._formula = state.get("formula", "")
 
     def is_normalized(self):
-        return math.isclose(sum(self.mass_fractions.values()), 1.0, abs_tol=self.PRECISION)
+        return math.isclose(
+            sum(self.mass_fractions.values()), 1.0, abs_tol=self.PRECISION
+        )
 
     def inner_repr(self):
-        return ', '.join('{}: {:.4f}'.format(pyxray.element_symbol(z), mass_fraction) for z, mass_fraction in self.mass_fractions.items())
+        return ", ".join(
+            "{}: {:.4f}".format(pyxray.element_symbol(z), mass_fraction)
+            for z, mass_fraction in self.mass_fractions.items()
+        )
 
     @property
     def formula(self):

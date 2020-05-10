@@ -1,4 +1,4 @@
-tabulate
-sqlalchemy
-tqdm
 dataclasses;python_version=="3.6.*"
+sqlalchemy
+tabulate
+tqdm

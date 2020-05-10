@@ -13,52 +13,56 @@ import requests
 
 # Local modules.
 from pyxray.descriptor import Reference, Element, AtomicSubshell, XrayTransition
-from pyxray.property import \
-    (ElementAtomicWeight,
-     AtomicSubshellBindingEnergy,
-     AtomicSubshellRadiativeWidth, AtomicSubshellNonRadiativeWidth,
-     AtomicSubshellOccupancy,
-     XrayTransitionEnergy, XrayTransitionProbability)
+from pyxray.property import (
+    ElementAtomicWeight,
+    AtomicSubshellBindingEnergy,
+    AtomicSubshellRadiativeWidth,
+    AtomicSubshellNonRadiativeWidth,
+    AtomicSubshellOccupancy,
+    XrayTransitionEnergy,
+    XrayTransitionProbability,
+)
 import pyxray.parser.base as base
 
 # Globals and constants variables.
 logger = logging.getLogger(__name__)
 
-PERKINS1991 = Reference('perkins1991',
-                        author='Perkins, S.T. and Cullen, D.E.',
-                        title='Tables and Graphs of Atomic Subshell and Relaxation Data Derived from the LLNL Evaluated Atomic Data Library (EADL), Z = 1 - 100',
-                        organization='Lawrence Livermore National Laboratory',
-                        year=1991,
-                        volume=30)
+PERKINS1991 = Reference(
+    "perkins1991",
+    author="Perkins, S.T. and Cullen, D.E.",
+    title="Tables and Graphs of Atomic Subshell and Relaxation Data Derived from the LLNL Evaluated Atomic Data Library (EADL), Z = 1 - 100",
+    organization="Lawrence Livermore National Laboratory",
+    year=1991,
+    volume=30,
+)
 
-EADL_URL = 'https://www-nds.iaea.org/epdl97/data/endl/eadl/eadl.all'
+EADL_URL = "https://www-nds.iaea.org/epdl97/data/endl/eadl/eadl.all"
 
-FLOAT_PATTERN = re.compile(r'([\d.]+)([\+\-])([\d ]+)')
+FLOAT_PATTERN = re.compile(r"([\d.]+)([\+\-])([\d ]+)")
+
 
 def float_(text):
     text = text.strip()
     base, sign, exp = FLOAT_PATTERN.match(text).groups()
     base = float(base)
-    exp = float(exp) if sign == '+' else -float(exp)
+    exp = float(exp) if sign == "+" else -float(exp)
     return base * 10 ** exp
+
 
 # Conversion from EADL to AtomicSubshell descriptor
 ATOMIC_SUBSHELLS = {
     # K
     1: base.K,
-
     # L
     3: base.L1,
     5: base.L2,
     6: base.L3,
-
     # M
     8: base.M1,
     10: base.M2,
     11: base.M3,
     13: base.M4,
     14: base.M5,
-
     # N
     16: base.N1,
     18: base.N2,
@@ -67,7 +71,6 @@ ATOMIC_SUBSHELLS = {
     22: base.N5,
     24: base.N6,
     25: base.N7,
-
     # O
     27: base.O1,
     29: base.O2,
@@ -78,7 +81,6 @@ ATOMIC_SUBSHELLS = {
     36: base.O7,
     38: base.O8,
     39: base.O9,
-
     # P
     41: base.P1,
     43: base.P2,
@@ -91,12 +93,11 @@ ATOMIC_SUBSHELLS = {
     53: base.P9,
     55: base.P10,
     56: base.P11,
-
     # Q
     58: base.Q1,
     60: base.Q2,
     61: base.Q3,
-    }
+}
 
 # C
 REACTION_DESCRIPTOR_SUBSHELL = 91
@@ -119,19 +120,19 @@ OUTGOING_PARTICLE_NONE = 0
 OUTGOING_PARTICLE_PHOTON = 7
 OUTGOING_PARTICLE_ELECTRON = 9
 
-SEPERATOR = '                                                                       1'
+SEPERATOR = "                                                                       1"
 
 MAX_Z = 100
 
-class Perkins1991Parser(base._Parser):
 
+class Perkins1991Parser(base._Parser):
     def __iter__(self):
         r = requests.get(EADL_URL, stream=True, verify=False)
 
         try:
             rows = []
             for line in r.iter_lines():
-                line = line.decode('ascii')
+                line = line.decode("ascii")
 
                 if line == SEPERATOR:
                     yield from self._iter_rows(rows)
@@ -151,10 +152,11 @@ class Perkins1991Parser(base._Parser):
         yield from self._parse_atomic_weight(rows)
         yield from self._parse_atomic_subshell_binding_energy(rows)
         yield from self._parse_atomic_subshell_radiative_width(rows)
-#        yield from self._parse_atomic_subshell_nonradiative_width(rows)
+        #        yield from self._parse_atomic_subshell_nonradiative_width(rows)
         yield from self._parse_atomic_subshell_occupaqncy(rows)
         yield from self._parse_radiative_transition(rows)
-#        yield from self._parse_nonradiative_transition(rows)
+
+    #        yield from self._parse_nonradiative_transition(rows)
 
     def _extract_element(self, rows):
         return Element(int(rows[0][0:3]))
@@ -194,7 +196,7 @@ class Perkins1991Parser(base._Parser):
         element = self._extract_element(rows)
         value = float_(rows[0][13:24])
         prop = ElementAtomicWeight(PERKINS1991, element, value)
-        logger.debug('Parsed: {0}'.format(prop))
+        logger.debug("Parsed: {0}".format(prop))
         yield prop
 
     def _parse_atomic_subshell_binding_energy(self, rows):
@@ -219,9 +221,10 @@ class Perkins1991Parser(base._Parser):
         for row in rows[2:]:
             atomic_subshell = self._extract_source_subshell([row])
             value_eV = float_(row[11:22]) * 1e6
-            prop = AtomicSubshellBindingEnergy(PERKINS1991, element,
-                                               atomic_subshell, value_eV)
-            logger.debug('Parsed: {0}'.format(prop))
+            prop = AtomicSubshellBindingEnergy(
+                PERKINS1991, element, atomic_subshell, value_eV
+            )
+            logger.debug("Parsed: {0}".format(prop))
             yield prop
 
     def _parse_atomic_subshell_radiative_width(self, rows):
@@ -246,9 +249,10 @@ class Perkins1991Parser(base._Parser):
         for row in rows[2:]:
             atomic_subshell = self._extract_source_subshell([row])
             value_eV = float_(row[11:22]) * 1e6
-            prop = AtomicSubshellRadiativeWidth(PERKINS1991, element,
-                                                atomic_subshell, value_eV)
-            logger.debug('Parsed: {0}'.format(prop))
+            prop = AtomicSubshellRadiativeWidth(
+                PERKINS1991, element, atomic_subshell, value_eV
+            )
+            logger.debug("Parsed: {0}".format(prop))
             yield prop
 
     def _parse_atomic_subshell_nonradiative_width(self, rows):
@@ -273,9 +277,10 @@ class Perkins1991Parser(base._Parser):
         for row in rows[2:]:
             atomic_subshell = self._extract_source_subshell([row])
             value_eV = float_(row[11:22]) * 1e6
-            prop = AtomicSubshellNonRadiativeWidth(PERKINS1991, element,
-                                                   atomic_subshell, value_eV)
-            logger.debug('Parsed: {0}'.format(prop))
+            prop = AtomicSubshellNonRadiativeWidth(
+                PERKINS1991, element, atomic_subshell, value_eV
+            )
+            logger.debug("Parsed: {0}".format(prop))
             yield prop
 
     def _parse_atomic_subshell_occupaqncy(self, rows):
@@ -300,9 +305,8 @@ class Perkins1991Parser(base._Parser):
         for row in rows[2:]:
             atomic_subshell = self._extract_source_subshell([row])
             value = int(float_(row[11:22]))
-            prop = AtomicSubshellOccupancy(PERKINS1991, element,
-                                           atomic_subshell, value)
-            logger.debug('Parsed: {0}'.format(prop))
+            prop = AtomicSubshellOccupancy(PERKINS1991, element, atomic_subshell, value)
+            logger.debug("Parsed: {0}".format(prop))
             yield prop
 
     def _parse_radiative_transition(self, rows):
@@ -332,13 +336,14 @@ class Perkins1991Parser(base._Parser):
 
             value = float_(row[11:22])
             prop = XrayTransitionProbability(PERKINS1991, element, transition, value)
-            logger.debug('Parsed: {0}'.format(prop))
+            logger.debug("Parsed: {0}".format(prop))
             yield prop
 
             value_eV = float_(row[22:33]) * 1e6
             prop = XrayTransitionEnergy(PERKINS1991, element, transition, value_eV)
-            logger.debug('Parsed: {0}'.format(prop))
+            logger.debug("Parsed: {0}".format(prop))
             yield prop
+
 
 #    def _parse_nonradiative_transition(self, rows):
 #        reaction_descriptor = self._extract_reaction_descriptor(rows)
