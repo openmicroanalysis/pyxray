@@ -288,6 +288,12 @@ It can be pickled or copied.
 Release notes
 =============
 
+1.7
+---
+
+- `#19 <https://github.com/openmicroanalysis/pyxray/pull/19>`_ Get transitions for light elements when no probability are available
+- `#20 <https://github.com/openmicroanalysis/pyxray/pull/20>`_ Use GitHub Actions for continuous integration. Add pre-commit hooks and black formatting.
+
 1.6.1
 -----
 
@@ -396,7 +402,7 @@ supervision of Dr. Silvia Richter.
 
 Copyright (c) 2015-2016/06 Philippe Pinard and Silvia Richter
 
-Copyright (c) 2016/06-2019 Philippe Pinard
+Copyright (c) 2016/06-2020 Philippe Pinard
 
 
 
