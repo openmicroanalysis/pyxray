@@ -6,6 +6,7 @@ pyxray
    :target: https://pypi.python.org/pypi/pyxray
 
 .. image:: https://img.shields.io/github/workflow/status/openmicroanalysis/pyxray/CI
+   :target: https://github.com/openmicroanalysis/pyxray/actions
    :alt: GitHub Workflow Status
 
 .. image:: https://img.shields.io/codecov/c/github/openmicroanalysis/pyxray.svg
