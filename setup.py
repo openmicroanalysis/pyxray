@@ -2,6 +2,7 @@
 
 # Standard library modules.
 from pathlib import Path
+import logging
 
 # Third party modules.
 from setuptools import setup, find_packages
@@ -12,6 +13,7 @@ import versioneer
 
 # Globals and constants variables.
 BASEDIR = Path(__file__).parent.resolve()
+logger = logging.getLogger("pyxray")
 
 
 class build_py(_build_py.build_py):
@@ -23,11 +25,11 @@ class build_py(_build_py.build_py):
         logging.basicConfig()
         logger.setLevel(logging.INFO)
 
-        filepath = os.path.abspath(os.path.join(BASEDIR, "pyxray", "data", "pyxray.db"))
-        if os.path.exists(filepath):
-            os.remove(filepath)
+        filepath = BASEDIR.joinpath("pyxray", "data", "pyxray.db").resolve()
+        if filepath.exists():
+            filepath.unlink()
 
-        engine = sqlalchemy.create_engine("sqlite:///" + filepath)
+        engine = sqlalchemy.create_engine("sqlite:///" + str(filepath))
         builder = pyxray.sql.build.SqlDatabaseBuilder(engine)
         builder.build()
 
