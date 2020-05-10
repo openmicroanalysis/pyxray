@@ -11,6 +11,7 @@ from pyxray.parser.dtsa import DtsaSubshellParser, DtsaLineParser
 
 # Globals and constants variables.
 
+
 def test_dtsa1992_subshell():
     parser = DtsaSubshellParser()
     props = list(parser)
@@ -22,6 +23,7 @@ def test_dtsa1992_subshell():
 
     assert props[-1].element.z == 95
     assert props[-1].value_eV == pytest.approx(366.49, abs=1e-2)
+
 
 def test_dtsa1992_line():
     parser = DtsaLineParser()

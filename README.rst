@@ -5,8 +5,9 @@ pyxray
 .. image:: https://img.shields.io/pypi/v/pyxray.svg
    :target: https://pypi.python.org/pypi/pyxray
 
-.. image:: https://img.shields.io/travis/openmicroanalysis/pyxray.svg
-   :target: https://travis-ci.org/openmicroanalysis/pyxray
+.. image:: https://img.shields.io/github/workflow/status/openmicroanalysis/pyxray/CI
+   :target: https://github.com/openmicroanalysis/pyxray/actions
+   :alt: GitHub Workflow Status
 
 .. image:: https://img.shields.io/codecov/c/github/openmicroanalysis/pyxray.svg
    :target: https://codecov.io/github/openmicroanalysis/pyxray
@@ -34,6 +35,7 @@ For development installation from the git repository::
     git clone git@github.com/openmicroanalysis/pyxray.git
     cd pyxray
     pip install -e .
+    pre-commit install
 
 See development section below
 

@@ -10,6 +10,7 @@ from pyxray.parser.wikipedia import WikipediaElementNameParser
 
 # Globals and constants variables.
 
+
 def test_wikipedia():
     parser = WikipediaElementNameParser()
     assert len(list(parser)) > 0

@@ -11,6 +11,7 @@ from pyxray.parser.nist import NISTElementAtomicWeightParser
 
 # Globals and constants variables.
 
+
 def test_coursey2015():
     parser = NISTElementAtomicWeightParser()
     props = list(parser)

@@ -16,50 +16,45 @@ import pyxray.descriptor as descriptor
 
 # Globals and constants variables.
 
+
 class NotFound(Exception):
     pass
 
-_docextras = {'element': """:arg element: either
+
+_docextras = {
+    "element": """:arg element: either
             * :class:`Element <pyxray.descriptor.Element>` object
             * atomic number
             * symbol (case insensitive)
             * name (in any language, case insensitive)
             * object with attribute :attr:`atomic_number` or :attr:`z`""",
-
-            'atomic_shell': """:arg atomic_shell: either
+    "atomic_shell": """:arg atomic_shell: either
             * :class:`AtomicShell <pyxray.descriptor.AtomicShell>` object
             * principal quantum number
             * any notation (case insensitive)""",
-
-            'atomic_subshell': """:arg atomic_subshell: either
+    "atomic_subshell": """:arg atomic_subshell: either
             * :class:`AtomicSubshell <pyxray.descriptor.AtomicSubshell>` object
             * a :class:`tuple` of principal quantum number,
             azimuthal quantum number, and total angular momentum_nominator
             * any notation (case insensitive)""",
-
-            'xray_transition': """:arg xray_transition: either
+    "xray_transition": """:arg xray_transition: either
             * :class:`XrayTransition <pyxray.descriptor.XrayTransition>` object
             * a :class:`tuple` of source and destination subshells
             * any notation (case insensitive)""",
-
-            'language': """:arg language: language code (e.g. ``en``, ``fr``, ``de``)""",
-
-            'notation': """:arg notation: name of a notation (case insensitive),
+    "language": """:arg language: language code (e.g. ``en``, ``fr``, ``de``)""",
+    "notation": """:arg notation: name of a notation (case insensitive),
                 ``iupac``, ``siegbahn`` and ``orbital`` are usually supported""",
-
-            'encoding': """:arg encoding: type of encoding, either
+    "encoding": """:arg encoding: type of encoding, either
                 ``ascii``, ``utf16``, ``html`` or ``latex``""",
-
-            'reference': """:arg reference: reference to use to retrieve this value, either
+    "reference": """:arg reference: reference to use to retrieve this value, either
             * :class:`Reference <pyxray.descriptor.Reference>` object
             * BibTeX key of a reference
             * ``None``, the default reference will be used or the first reference found""",
-
-            'exception': """:raise NotFound:""",
+    "exception": """:raise NotFound:""",
 }
 
-class _DatabaseMixin(metaclass=abc.ABCMeta):
 
+class _DatabaseMixin(metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def get_preferred_references(self):
         """
@@ -94,7 +89,7 @@ class _DatabaseMixin(metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     @formatdoc(**_docextras)
-    def element(self, element): #pragma: no cover
+    def element(self, element):  # pragma: no cover
         """
         Returns element descriptor.
 
@@ -108,7 +103,7 @@ class _DatabaseMixin(metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     @formatdoc(**_docextras)
-    def element_atomic_number(self, element): #pragma: no cover
+    def element_atomic_number(self, element):  # pragma: no cover
         """
         Returns atomic number of an element.
 
@@ -122,7 +117,7 @@ class _DatabaseMixin(metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     @formatdoc(**_docextras)
-    def element_symbol(self, element, reference=None): #pragma: no cover
+    def element_symbol(self, element, reference=None):  # pragma: no cover
         """
         Returns symbol of an element.
 
@@ -136,7 +131,7 @@ class _DatabaseMixin(metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     @formatdoc(**_docextras)
-    def element_name(self, element, language='en', reference=None): #pragma: no cover
+    def element_name(self, element, language="en", reference=None):  # pragma: no cover
         """
         Returns full name of an element, in the language specified.
 
@@ -152,7 +147,7 @@ class _DatabaseMixin(metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     @formatdoc(**_docextras)
-    def element_atomic_weight(self, element, reference=None): #pragma: no cover
+    def element_atomic_weight(self, element, reference=None):  # pragma: no cover
         """
         Returns atomic weight of an element.
         The atomic weight is defined by the CIAAW as it is the ratio of
@@ -170,7 +165,9 @@ class _DatabaseMixin(metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     @formatdoc(**_docextras)
-    def element_mass_density_kg_per_m3(self, element, reference=None): #pragma: no cover
+    def element_mass_density_kg_per_m3(
+        self, element, reference=None
+    ):  # pragma: no cover
         """
         Returns mass density (in kg/m3) of an element.
 
@@ -184,7 +181,9 @@ class _DatabaseMixin(metaclass=abc.ABCMeta):
         raise NotImplementedError
 
     @formatdoc(**_docextras)
-    def element_mass_density_g_per_cm3(self, element, reference=None): #pragma: no cover
+    def element_mass_density_g_per_cm3(
+        self, element, reference=None
+    ):  # pragma: no cover
         """
         Returns mass density (in g/cm3) of an element.
 
@@ -199,7 +198,9 @@ class _DatabaseMixin(metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     @formatdoc(**_docextras)
-    def element_xray_transition(self, element, xray_transition, reference=None): #pragma: no cover
+    def element_xray_transition(
+        self, element, xray_transition, reference=None
+    ):  # pragma: no cover
         """
         Returns X-ray transition descriptor if x-ray transition has a
         probability greater than 0 for that element.
@@ -216,7 +217,9 @@ class _DatabaseMixin(metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     @formatdoc(**_docextras)
-    def element_xray_transitions(self, element, xray_transition=None, reference=None): #pragma: no cover
+    def element_xray_transitions(
+        self, element, xray_transition=None, reference=None
+    ):  # pragma: no cover
         """
         Returns all x-ray transitions which have a probability greater than 0 for that element.
         If *xray_transition* is not ``None``, only the x-ray transitions matching this x-ray transition are returned.
@@ -232,7 +235,9 @@ class _DatabaseMixin(metaclass=abc.ABCMeta):
         raise NotImplementedError
 
     @formatdoc(**_docextras)
-    def print_element_xray_transitions(self, element, file=sys.stdout, tabulate_kwargs=None):
+    def print_element_xray_transitions(
+        self, element, file=sys.stdout, tabulate_kwargs=None
+    ):
         """
         Prints all x-ray transitions for an element, with their different
         notations and energy.
@@ -241,34 +246,36 @@ class _DatabaseMixin(metaclass=abc.ABCMeta):
 
         :arg file: file for output, default to standard out
         """
-        header = ['IUPAC', 'Siegbahn', 'Energy (eV)', 'Probability', 'Relative weight']
+        header = ["IUPAC", "Siegbahn", "Energy (eV)", "Probability", "Relative weight"]
 
         rows = []
         for xray_transition in self.element_xray_transitions(element):
             try:
-                iupac = self.xray_transition_notation(xray_transition, 'iupac')
+                iupac = self.xray_transition_notation(xray_transition, "iupac")
             except:
-                iupac = ''
+                iupac = ""
 
             try:
-                siegbahn = self.xray_transition_notation(xray_transition, 'siegbahn')
+                siegbahn = self.xray_transition_notation(xray_transition, "siegbahn")
             except:
-                siegbahn = ''
+                siegbahn = ""
 
             try:
                 energy_eV = self.xray_transition_energy_eV(element, xray_transition)
             except:
-                energy_eV = ''
+                energy_eV = ""
 
             try:
                 probability = self.xray_transition_probability(element, xray_transition)
             except:
-                probability = ''
+                probability = ""
 
             try:
-                relative_weight = self.xray_transition_relative_weight(element, xray_transition)
+                relative_weight = self.xray_transition_relative_weight(
+                    element, xray_transition
+                )
             except:
-                relative_weight = ''
+                relative_weight = ""
 
             rows.append([iupac, siegbahn, energy_eV, probability, relative_weight])
 
@@ -280,7 +287,7 @@ class _DatabaseMixin(metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     @formatdoc(**_docextras)
-    def atomic_shell(self, atomic_shell): #pragma: no cover
+    def atomic_shell(self, atomic_shell):  # pragma: no cover
         """
         Returns atomic shell descriptor.
 
@@ -294,7 +301,9 @@ class _DatabaseMixin(metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     @formatdoc(**_docextras)
-    def atomic_shell_notation(self, atomic_shell, notation, encoding='utf16', reference=None): #pragma: no cover
+    def atomic_shell_notation(
+        self, atomic_shell, notation, encoding="utf16", reference=None
+    ):  # pragma: no cover
         """
         Returns notation of an atomic shell.
 
@@ -311,7 +320,7 @@ class _DatabaseMixin(metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     @formatdoc(**_docextras)
-    def atomic_subshell(self, atomic_subshell): #pragma: no cover
+    def atomic_subshell(self, atomic_subshell):  # pragma: no cover
         """
         Returns atomic subshell descriptor.
 
@@ -325,7 +334,9 @@ class _DatabaseMixin(metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     @formatdoc(**_docextras)
-    def atomic_subshell_notation(self, atomic_subshell, notation, encoding='utf16', reference=None): #pragma: no cover
+    def atomic_subshell_notation(
+        self, atomic_subshell, notation, encoding="utf16", reference=None
+    ):  # pragma: no cover
         """
         Returns notation of an atomic subshell.
 
@@ -342,7 +353,9 @@ class _DatabaseMixin(metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     @formatdoc(**_docextras)
-    def atomic_subshell_binding_energy_eV(self, element, atomic_subshell, reference=None): #pragma: no cover
+    def atomic_subshell_binding_energy_eV(
+        self, element, atomic_subshell, reference=None
+    ):  # pragma: no cover
         """
         Returns binding energy of an element and atomic subshell (in eV).
 
@@ -358,7 +371,9 @@ class _DatabaseMixin(metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     @formatdoc(**_docextras)
-    def atomic_subshell_radiative_width_eV(self, element, atomic_subshell, reference=None): #pragma: no cover
+    def atomic_subshell_radiative_width_eV(
+        self, element, atomic_subshell, reference=None
+    ):  # pragma: no cover
         """
         Returns radiative width of an element and atomic subshell (in eV).
 
@@ -374,7 +389,9 @@ class _DatabaseMixin(metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     @formatdoc(**_docextras)
-    def atomic_subshell_nonradiative_width_eV(self, element, atomic_subshell, reference=None): #pragma: no cover
+    def atomic_subshell_nonradiative_width_eV(
+        self, element, atomic_subshell, reference=None
+    ):  # pragma: no cover
         """
         Returns nonradiative width of an element and atomic subshell (in eV).
 
@@ -390,7 +407,9 @@ class _DatabaseMixin(metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     @formatdoc(**_docextras)
-    def atomic_subshell_occupancy(self, element, atomic_subshell, reference=None): #pragma: no cover
+    def atomic_subshell_occupancy(
+        self, element, atomic_subshell, reference=None
+    ):  # pragma: no cover
         """
         Returns occupancy of an element and atomic subshell.
 
@@ -406,7 +425,7 @@ class _DatabaseMixin(metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     @formatdoc(**_docextras)
-    def xray_transition(self, xray_transition): #pragma: no cover
+    def xray_transition(self, xray_transition):  # pragma: no cover
         """
         Returns x-ray transition descriptor.
 
@@ -420,7 +439,9 @@ class _DatabaseMixin(metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     @formatdoc(**_docextras)
-    def xray_transition_notation(self, xray_transition, notation, encoding='utf16', reference=None): #pragma: no cover
+    def xray_transition_notation(
+        self, xray_transition, notation, encoding="utf16", reference=None
+    ):  # pragma: no cover
         """
         Returns notation of an x-ray transition.
 
@@ -437,7 +458,9 @@ class _DatabaseMixin(metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     @formatdoc(**_docextras)
-    def xray_transition_energy_eV(self, element, xray_transition, reference=None): #pragma: no cover
+    def xray_transition_energy_eV(
+        self, element, xray_transition, reference=None
+    ):  # pragma: no cover
         """
         Returns energy of an element and X-ray transition (in eV).
 
@@ -453,7 +476,9 @@ class _DatabaseMixin(metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     @formatdoc(**_docextras)
-    def xray_transition_probability(self, element, xray_transition, reference=None): #pragma: no cover
+    def xray_transition_probability(
+        self, element, xray_transition, reference=None
+    ):  # pragma: no cover
         """
         Returns probability of an element and X-ray transition.
 
@@ -469,7 +494,9 @@ class _DatabaseMixin(metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     @formatdoc(**_docextras)
-    def xray_transition_relative_weight(self, element, xray_transition, reference=None): #pragma: no cover
+    def xray_transition_relative_weight(
+        self, element, xray_transition, reference=None
+    ):  # pragma: no cover
         """
         Returns relative weight of an element and X-ray transition.
 
@@ -500,10 +527,14 @@ class _DatabaseMixin(metaclass=abc.ABCMeta):
 
         transition = self.xray_transition(xray_transition)
 
-        iupac = '{} {}'.format(symbol, self.xray_transition_notation(transition, 'iupac', 'utf16'))
+        iupac = "{} {}".format(
+            symbol, self.xray_transition_notation(transition, "iupac", "utf16")
+        )
 
         try:
-            siegbahn = '{} {}'.format(symbol, self.xray_transition_notation(transition, 'siegbahn', 'utf16'))
+            siegbahn = "{} {}".format(
+                symbol, self.xray_transition_notation(transition, "siegbahn", "utf16")
+            )
         except:
             siegbahn = iupac
 
@@ -522,4 +553,12 @@ class _DatabaseMixin(metaclass=abc.ABCMeta):
         except NotFound:
             relative_weight = None
 
-        return descriptor.XrayLine(element, transition, iupac, siegbahn, energy_eV, probability, relative_weight)
+        return descriptor.XrayLine(
+            element,
+            transition,
+            iupac,
+            siegbahn,
+            energy_eV,
+            probability,
+            relative_weight,
+        )

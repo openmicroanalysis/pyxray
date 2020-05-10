@@ -16,8 +16,8 @@ from pyxray.sql.base import SqlBase
 # Globals and constants variables.
 logger = logging.getLogger(__name__)
 
-class SqlDatabaseBuilder(SqlBase):
 
+class SqlDatabaseBuilder(SqlBase):
     def _convert_dataclass_to_params(self, dataclass):
         params = {}
         for field in dataclasses.fields(dataclass):
@@ -26,7 +26,7 @@ class SqlDatabaseBuilder(SqlBase):
 
             if dataclasses.is_dataclass(value):
                 row_id = self.insert(value, check_duplicate=True)
-                params[name + '_id'] = row_id
+                params[name + "_id"] = row_id
             else:
                 params[name] = value
 
@@ -68,7 +68,7 @@ class SqlDatabaseBuilder(SqlBase):
         list_params = []
         for dataclass in list_dataclass:
             if type(dataclass) != clasz:
-                raise ValueError('All dataclasses do not have the same type')
+                raise ValueError("All dataclasses do not have the same type")
 
             params = self._convert_dataclass_to_params(dataclass)
             list_params.append(params)
@@ -87,15 +87,15 @@ class SqlDatabaseBuilder(SqlBase):
         Find all parsers and insert their properties in the database.
         """
         parsers = self._find_parsers()
-        logger.info('Found {:d} parsers'.format(len(parsers)))
+        logger.info("Found {:d} parsers".format(len(parsers)))
 
-        for name, parser in tqdm.tqdm(parsers, desc='Building database'):
+        for name, parser in tqdm.tqdm(parsers, desc="Building database"):
             buffer = {}
 
-            for prop in tqdm.tqdm(parser, desc='Processing {}'.format(name)):
+            for prop in tqdm.tqdm(parser, desc="Processing {}".format(name)):
                 buffer.setdefault(type(prop), []).append(prop)
 
-            for list_dataclass in tqdm.tqdm(buffer.values(), desc='Inserting {}'.format(name)):
+            for list_dataclass in tqdm.tqdm(
+                buffer.values(), desc="Inserting {}".format(name)
+            ):
                 self.insert_many(list_dataclass)
-
-

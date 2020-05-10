@@ -11,6 +11,7 @@ from pyxray.parser.campbell2001 import CampbellAtomicSubshellRadiativeWidthParse
 
 # Globals and constants variables.
 
+
 def test_campbell2011():
     parser = CampbellAtomicSubshellRadiativeWidthParser()
 
