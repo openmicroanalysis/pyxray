@@ -13,6 +13,7 @@ import pytest
 # Local modules.
 import pyxray.descriptor as descriptor
 from pyxray.sql.data import SqlDatabase, NotFound
+import pyxray.data
 
 # Globals and constants variables.
 K = descriptor.AtomicSubshell(1, 0, 1)
@@ -22,6 +23,10 @@ L2 = descriptor.AtomicSubshell(2, 1, 1)
 @pytest.fixture(scope='session')
 def database(builder):
     return SqlDatabase(builder.engine)
+
+@pytest.fixture
+def database_real(tmp_path):
+    return pyxray.data.database
 
 def test_add_preferred_reference(database):
     database.clear_preferred_references()
@@ -129,6 +134,17 @@ def test_element_xray_transitions(database, element, reference):
 ])
 def test_element_xray_transitions_with_xray_transition(database, xray_transition, expected):
     transitions = database.element_xray_transitions(118, xray_transition)
+    assert len(transitions) == expected
+
+@pytest.mark.parametrize('element, expected', [
+    (13, 14),
+    (6, 2),
+    (5, 3),
+    (4, 3),
+    (3, 2),
+])
+def test_element_xray_transitions(database_real, element, expected):
+    transitions = database_real.element_xray_transitions(element)
     assert len(transitions) == expected
 
 @pytest.mark.parametrize('element,reference', [(118, 'unknown'), (1, None)])

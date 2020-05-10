@@ -367,9 +367,39 @@ class SqlDatabase(_DatabaseMixin, SqlBase):
             self._update_xray_transition(builder, table_probability, xray_transition, search=True)
 
         transitions = []
-        for src_n, src_l, src_j_n, dst_n, dst_l, dst_j_n in self._execute_many(builder):
-            transition = descriptor.XrayTransition(src_n, src_l, src_j_n, dst_n, dst_l, dst_j_n)
-            transitions.append(transition)
+        try:
+            for src_n, src_l, src_j_n, dst_n, dst_l, dst_j_n in self._execute_many(builder):
+                transition = descriptor.XrayTransition(src_n, src_l, src_j_n, dst_n, dst_l, dst_j_n)
+                transitions.append(transition)
+        except NotFound:
+            logger.info("No transition found for {}".format(element))
+
+        if len(transitions) == 0:
+            table_relative_weight = self.require_table(property.XrayTransitionRelativeWeight)
+            builder = StatementBuilder()
+            builder.add_column(table_xray.c['source_principal_quantum_number'])
+            builder.add_column(table_xray.c['source_azimuthal_quantum_number'])
+            builder.add_column(table_xray.c['source_total_angular_momentum_nominator'])
+            builder.add_column(table_xray.c['destination_principal_quantum_number'])
+            builder.add_column(table_xray.c['destination_azimuthal_quantum_number'])
+            builder.add_column(table_xray.c['destination_total_angular_momentum_nominator'])
+            builder.add_join(table_relative_weight, table_xray, table_relative_weight.c['xray_transition_id'] == table_xray.c['id'])
+            builder.add_clause(table_relative_weight.c['value'] > 0.0)
+            self._update_element(builder, table_relative_weight, element)
+            self._update_reference(builder, table_relative_weight, reference)
+            if xray_transition is not None:
+                self._update_xray_transition(builder, table_relative_weight, xray_transition, search=True)
+
+            transitions = []
+            try:
+                for src_n, src_l, src_j_n, dst_n, dst_l, dst_j_n in self._execute_many(builder):
+                    transition = descriptor.XrayTransition(src_n, src_l, src_j_n, dst_n, dst_l, dst_j_n)
+                    transitions.append(transition)
+            except NotFound:
+                logger.info("No transition found for {}".format(element))
+
+        if len(transitions) == 0:
+            raise NotFound
 
         return tuple(transitions)
 
