@@ -8,5 +8,5 @@ coverage:
         target: auto
         threshold: 5%
         base: auto 
-  comment:
-    layout: "diff"
+comment:
+  layout: "diff"
