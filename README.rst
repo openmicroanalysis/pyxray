@@ -35,6 +35,7 @@ For development installation from the git repository::
     git clone git@github.com/openmicroanalysis/pyxray.git
     cd pyxray
     pip install -e .
+    pre-commit install
 
 See development section below
 
