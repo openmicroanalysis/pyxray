@@ -5,8 +5,8 @@ pyxray
 .. image:: https://img.shields.io/pypi/v/pyxray.svg
    :target: https://pypi.python.org/pypi/pyxray
 
-.. image:: https://img.shields.io/travis/openmicroanalysis/pyxray.svg
-   :target: https://travis-ci.org/openmicroanalysis/pyxray
+.. image:: https://img.shields.io/github/workflow/status/openmicroanalysis/pyxray/CI
+   :alt: GitHub Workflow Status
 
 .. image:: https://img.shields.io/codecov/c/github/openmicroanalysis/pyxray.svg
    :target: https://codecov.io/github/openmicroanalysis/pyxray
