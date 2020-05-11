@@ -21,7 +21,7 @@ from pyxray import __version__
 # -- Project information -----------------------------------------------------
 
 project = "pyxray"
-copyright = "2019, Philippe T. Pinard"
+copyright = "2020, Philippe T. Pinard"
 author = "Philippe T. Pinard"
 
 # The short X.Y version
