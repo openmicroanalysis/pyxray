@@ -80,6 +80,7 @@ ENTRY_POINTS = {
         "dtsa1992 transition = pyxray.parser.dtsa:DtsaLineParser",
         "elam2002 = pyxray.parser.elam2002:Elam2002Parser",
         "chantler2005 = pyxray.parser.chantler2005:Chantler2005Parser",
+        "deslattes2005 = pyxray.parser.deslattes2005:Deslattes2005Parser",
     ],
 }
 
