@@ -78,19 +78,18 @@ class Chantler2005Parser(base._Parser):
             row = [item.strip() for item in rows[z].split(',')]
             element = Element(z)
 
-            if row[0]:
-                prop = ElementAtomicWeight(CHANTLER2005, element, float(row[0]))
-                logger.debug("Parsed: {0}".format(prop))
-                yield prop
+            prop = ElementAtomicWeight(CHANTLER2005, element, float(row[0]))
+            logger.debug("Parsed: {0}".format(prop))
+            yield prop
 
-            if row[2]:
-                prop = ElementMassDensity(CHANTLER2005, element, float(row[2])*1e3)
-                logger.debug("Parsed: {0}".format(prop))
-                yield prop
+            prop = ElementMassDensity(CHANTLER2005, element, float(row[2])*1e3)
+            logger.debug("Parsed: {0}".format(prop))
+            yield prop
 
             for i in range(_NUM_SUBSHELLS):
-                if row[i+7]:
-                    prop = AtomicSubshellBindingEnergy(CHANTLER2005, element, _SUBSHELLS[i], float(row[i+7]))
+                value = row[i+7]
+                if value:
+                    prop = AtomicSubshellBindingEnergy(CHANTLER2005, element, _SUBSHELLS[i], float(value))
                     logger.debug("Parsed: {0}".format(prop))
                     yield prop
 
