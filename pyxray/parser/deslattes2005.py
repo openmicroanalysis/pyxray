@@ -157,22 +157,11 @@ class Deslattes2005Parser(base._Parser):
                 subshell_str = transition_str.split()[0]
                 subshell = _SUBSHELL_LOOKUP[subshell_str]
 
-                value = row[_THEORY]
-                if value:
-                    yield from Deslattes2005Parser._edge_energy_parser(DESLATTES2005THEORY, element, subshell,
-                                                                       float(value))
-                value = row[_DIRECT]
-                if value:
-                    yield from Deslattes2005Parser._edge_energy_parser(DESLATTES2005DIRECT, element, subshell,
-                                                                       float(value))
-                value = row[_COMBINED]
-                if value:
-                    yield from Deslattes2005Parser._edge_energy_parser(DESLATTES2005COMBINED, element, subshell,
-                                                                       float(value))
-                value = row[_VAPOR]
-                if value:
-                    yield from Deslattes2005Parser._edge_energy_parser(DESLATTES2005VAPOR, element, subshell,
-                                                                       float(value))
+                yield from Deslattes2005Parser._edge_energy_parser(DESLATTES2005THEORY, element, subshell, row[_THEORY])
+                yield from Deslattes2005Parser._edge_energy_parser(DESLATTES2005DIRECT, element, subshell, row[_DIRECT])
+                yield from Deslattes2005Parser._edge_energy_parser(DESLATTES2005COMBINED, element, subshell,
+                                                                   row[_COMBINED])
+                yield from Deslattes2005Parser._edge_energy_parser(DESLATTES2005VAPOR, element, subshell, row[_VAPOR])
                 if subshell_str == 'K':
                     self.update(int((element.z - 9) / _NUM_ELEMENTS * 100))
 
@@ -182,21 +171,17 @@ class Deslattes2005Parser(base._Parser):
                 blend_str = row[_BLEND]
                 blend = _BLEND_LOOKUP[row[_BLEND]] if blend_str else False
 
-                value = row[_THEORY]
-                if value:
-                    yield from Deslattes2005Parser._transition_energy_parser(DESLATTES2005THEORY, element, transition,
-                                                                             float(value))
+                yield from Deslattes2005Parser._transition_energy_parser(DESLATTES2005THEORY, element, transition,
+                                                                         row[_THEORY])
 
-                value = row[_DIRECT]
-                if value:
-                    value = float(value)
-                    yield from Deslattes2005Parser._transition_energy_parser(DESLATTES2005DIRECT, element, transition,
-                                                                             value)
+                yield from Deslattes2005Parser._transition_energy_parser(DESLATTES2005DIRECT, element, transition,
+                                                                         row[_DIRECT])
 
-                    # If blend is stipulated (Eg. KL2,3) add the direct measured value also to the blend, but only once
-                    if blend and (transition_str in blend_str or (blend_str == "KM" and transition_str == "KM1")):
-                        yield from Deslattes2005Parser._transition_energy_parser(DESLATTES2005DIRECT, element, blend,
-                                                                                 value)
+                # If blend is stipulated (Eg. KL2,3) add the direct measured value also to the blend, but only once
+                if blend and (transition_str in blend_str or (blend_str == "KM" and transition_str == "KM1") or
+                              (blend_str == 'L2,3M1' and transition_str == 'L2M1')):
+                    yield from Deslattes2005Parser._transition_energy_parser(DESLATTES2005DIRECT, element, blend,
+                                                                             row[_DIRECT])
 
     @staticmethod
     def _get_transition(transition_str):
@@ -205,13 +190,15 @@ class Deslattes2005Parser(base._Parser):
         return XrayTransition(_SUBSHELL_LOOKUP[transition_str[2:]], _SUBSHELL_LOOKUP[transition_str[:2]])
 
     @staticmethod
-    def _transition_energy_parser(reference, element, transition, value_ev):
-        prop = XrayTransitionEnergy(reference, element, transition, value_ev)
-        logger.debug("Parsed: {0}".format(prop))
-        yield prop
+    def _transition_energy_parser(reference, element, transition, value_ev_str):
+        if value_ev_str:
+            prop = XrayTransitionEnergy(reference, element, transition, float(value_ev_str))
+            logger.debug("Parsed: {0}".format(prop))
+            yield prop
 
     @staticmethod
-    def _edge_energy_parser(reference, element, subshell, value_ev):
-        prop = AtomicSubshellBindingEnergy(reference, element, subshell, value_ev)
-        logger.debug("Parsed: {0}".format(prop))
-        yield prop
+    def _edge_energy_parser(reference, element, subshell, value_ev_str):
+        if value_ev_str:
+            prop = AtomicSubshellBindingEnergy(reference, element, subshell, float(value_ev_str))
+            logger.debug("Parsed: {0}".format(prop))
+            yield prop
