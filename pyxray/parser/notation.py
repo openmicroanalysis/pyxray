@@ -15,7 +15,6 @@ from pyxray.descriptor import (
     XrayTransition,
     AtomicShell,
     AtomicSubshell,
-    Notation,
 )
 from pyxray.property import (
     ElementSymbol,

@@ -4,7 +4,6 @@ Parser for the Evaluated Atomic Data Library (EADL)
 """
 
 # Standard library modules.
-import os
 import re
 import logging
 
@@ -12,7 +11,7 @@ import logging
 import requests
 
 # Local modules.
-from pyxray.descriptor import Reference, Element, AtomicSubshell, XrayTransition
+from pyxray.descriptor import Reference, Element, XrayTransition
 from pyxray.property import (
     ElementAtomicWeight,
     AtomicSubshellBindingEnergy,
