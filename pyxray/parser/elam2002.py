@@ -98,7 +98,6 @@ _MAX_Z = 98
 
 
 class Elam2002Parser(base._Parser):
-
     def __iter__(self):
         relpath = os.path.join("..", "data", "ElamDB12.txt")
         content = pkgutil.get_data(__name__, relpath).decode("utf8")
@@ -110,19 +109,27 @@ class Elam2002Parser(base._Parser):
         for line in content.splitlines():
             line = line.strip()
 
-            if not line or line[:2] == '//':
+            if not line or line[:2] == "//":
                 continue
 
             if transition_line_expected:
                 if line.startswith(curr_subshell):
-                    yield from Elam2002Parser._transition_line_parser(curr_element, fluorescence_yield, line)
+                    yield from Elam2002Parser._transition_line_parser(
+                        curr_element, fluorescence_yield, line
+                    )
                     continue
                 transition_line_expected = False
 
             if curr_element is not None:
                 if line.startswith("Edge"):
-                    curr_subshell, energy_ev, fluorescence_yield = self._extract_edge_data(line)
-                    yield from Elam2002Parser._subshell_parser(curr_element, curr_subshell, energy_ev)
+                    (
+                        curr_subshell,
+                        energy_ev,
+                        fluorescence_yield,
+                    ) = self._extract_edge_data(line)
+                    yield from Elam2002Parser._subshell_parser(
+                        curr_element, curr_subshell, energy_ev
+                    )
                     continue
                 if line == "Lines":
                     transition_line_expected = True
@@ -133,10 +140,16 @@ class Elam2002Parser(base._Parser):
                     continue
 
             if line.startswith("Element"):
-                curr_element, atomic_weight, density_kg_per_m3 = self._extract_element_data(line)
+                (
+                    curr_element,
+                    atomic_weight,
+                    density_kg_per_m3,
+                ) = self._extract_element_data(line)
                 if density_kg_per_m3 < 0:
                     print(curr_element.z, density_kg_per_m3)
-                yield from Elam2002Parser._element_parser(curr_element, atomic_weight, density_kg_per_m3)
+                yield from Elam2002Parser._element_parser(
+                    curr_element, atomic_weight, density_kg_per_m3
+                )
                 continue
 
     @staticmethod
@@ -156,18 +169,20 @@ class Elam2002Parser(base._Parser):
     def _element_parser(element, atomic_weight, density_kg_per_m3):
         if atomic_weight > 1e-15:
             prop = ElementAtomicWeight(ELAM2002, element, atomic_weight)
-            logger.debug("Parsed: {0}".format(prop))
+            logger.debug(f"Parsed: {prop}")
             yield prop
 
         if density_kg_per_m3 > 1e-15:
             prop = ElementMassDensity(ELAM2002, element, density_kg_per_m3)
-            logger.debug("Parsed: {0}".format(prop))
+            logger.debug(f"Parsed: {prop}")
             yield prop
 
     @staticmethod
     def _subshell_parser(element, subshell, energy_ev):
-        prop = AtomicSubshellBindingEnergy(ELAM2002, element, _SUBSHELL_LOOKUP[subshell], energy_ev)
-        logger.debug("Parsed: {0}".format(prop))
+        prop = AtomicSubshellBindingEnergy(
+            ELAM2002, element, _SUBSHELL_LOOKUP[subshell], energy_ev
+        )
+        logger.debug(f"Parsed: {prop}")
         yield prop
 
     @staticmethod
@@ -177,10 +192,10 @@ class Elam2002Parser(base._Parser):
 
         energy_ev = float(line_data[2])
         prop = XrayTransitionEnergy(ELAM2002, element, transition, energy_ev)
-        logger.debug("Parsed: {0}".format(prop))
+        logger.debug(f"Parsed: {prop}")
         yield prop
 
         probability = float(line_data[3]) * fluorescence_yield
         prop = XrayTransitionProbability(ELAM2002, element, transition, probability)
-        logger.debug("Parsed: {0}".format(prop))
+        logger.debug(f"Parsed: {prop}")
         yield prop
