@@ -97,7 +97,7 @@ Variables of the methods are defined as follows
 
     * `Reference <http://github.com/openmicroanalysis/pyxray/blob/master/pyxray/descriptor.py>`_ object
     * BibTeX key of a reference
-    * ``None``, the default reference will be used or the first reference found
+    * ``None``, the newest reference will be returned
 
 Element properties
 ------------------

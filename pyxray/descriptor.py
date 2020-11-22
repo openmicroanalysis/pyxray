@@ -352,7 +352,7 @@ class Notation:
 class Reference:
     bibtexkey: str
     author: str = None
-    year: str = None
+    year: int = None
     title: str = None
     type: str = None
     booktitle: str = None
