@@ -18,7 +18,8 @@ logger = logging.getLogger(__name__)
 
 
 class StatementBuilder:
-    def __init__(self):
+    def __init__(self, distinct=False):
+        self._distinct = distinct
         self._columns = []
         self._joins = {}
         self._clauses = []
@@ -41,6 +42,9 @@ class StatementBuilder:
     def build(self):
         statement = sqlalchemy.sql.select(self._columns)
 
+        if self._distinct:
+            statement = statement.distinct()
+
         if self._joins:
             # Joins have to be nested to work with sqlalchemy
             # E.g.
@@ -58,7 +62,8 @@ class StatementBuilder:
 
             statement = statement.select_from(finaljoin)
 
-        statement = statement.where(sqlalchemy.sql.and_(*self._clauses))
+        if self._clauses:
+            statement = statement.where(sqlalchemy.sql.and_(*self._clauses))
 
         if self._orderbys:
             orderbys = [
@@ -411,7 +416,7 @@ class SqlDatabase(_DatabaseMixin, SqlBase):
         table_xray = self.require_table(descriptor.XrayTransition)
         table_probability = self.require_table(property.XrayTransitionProbability)
 
-        builder = StatementBuilder()
+        builder = StatementBuilder(distinct=True)
         builder.add_column(table_xray.c["source_principal_quantum_number"])
         builder.add_column(table_xray.c["source_azimuthal_quantum_number"])
         builder.add_column(table_xray.c["source_total_angular_momentum_nominator"])
@@ -447,7 +452,7 @@ class SqlDatabase(_DatabaseMixin, SqlBase):
             table_relative_weight = self.require_table(
                 property.XrayTransitionRelativeWeight
             )
-            builder = StatementBuilder()
+            builder = StatementBuilder(distinct=True)
             builder.add_column(table_xray.c["source_principal_quantum_number"])
             builder.add_column(table_xray.c["source_azimuthal_quantum_number"])
             builder.add_column(table_xray.c["source_total_angular_momentum_nominator"])
