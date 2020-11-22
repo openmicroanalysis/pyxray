@@ -15,7 +15,6 @@ from pyxray.descriptor import (
     XrayTransition,
     AtomicShell,
     AtomicSubshell,
-    Notation,
 )
 from pyxray.property import (
     ElementSymbol,
@@ -251,12 +250,12 @@ class AtomicShellNotationParser(base._Parser):
 
             atomic_shell = AtomicShell(n)
 
-            ascii, utf16, html, latex = self._create_entry_siegbahn(n)
+            ascii_, utf16, html, latex = self._create_entry_siegbahn(n)
             prop = AtomicShellNotation(
                 base.UNATTRIBUTED,
                 atomic_shell,
                 base.SIEGBAHN,
-                ascii,
+                ascii_,
                 utf16,
                 html,
                 latex,
@@ -264,16 +263,22 @@ class AtomicShellNotationParser(base._Parser):
             logger.debug("Parsed: {0}".format(prop))
             yield prop
 
-            ascii, utf16, html, latex = self._create_entry_iupac(n)
+            ascii_, utf16, html, latex = self._create_entry_iupac(n)
             prop = AtomicShellNotation(
-                base.UNATTRIBUTED, atomic_shell, base.IUPAC, ascii, utf16, html, latex
+                base.UNATTRIBUTED, atomic_shell, base.IUPAC, ascii_, utf16, html, latex
             )
             logger.debug("Parsed: {0}".format(prop))
             yield prop
 
-            ascii, utf16, html, latex = self._create_entry_orbital(n)
+            ascii_, utf16, html, latex = self._create_entry_orbital(n)
             prop = AtomicShellNotation(
-                base.UNATTRIBUTED, atomic_shell, base.ORBITAL, ascii, utf16, html, latex
+                base.UNATTRIBUTED,
+                atomic_shell,
+                base.ORBITAL,
+                ascii_,
+                utf16,
+                html,
+                latex,
             )
             logger.debug("Parsed: {0}".format(prop))
             yield prop
@@ -330,12 +335,12 @@ class AtomicSubshellNotationParser(base._Parser):
 
             atomic_subshell = AtomicSubshell(n, l, j_n)
 
-            ascii, utf16, html, latex = self._create_entry_siegbahn(n, l, j_n, i)
+            ascii_, utf16, html, latex = self._create_entry_siegbahn(n, l, j_n, i)
             prop = AtomicSubshellNotation(
                 base.UNATTRIBUTED,
                 atomic_subshell,
                 base.SIEGBAHN,
-                ascii,
+                ascii_,
                 utf16,
                 html,
                 latex,
@@ -343,12 +348,12 @@ class AtomicSubshellNotationParser(base._Parser):
             logger.debug("Parsed: {0}".format(prop))
             yield prop
 
-            ascii, utf16, html, latex = self._create_entry_iupac(n, l, j_n, i)
+            ascii_, utf16, html, latex = self._create_entry_iupac(n, l, j_n, i)
             prop = AtomicSubshellNotation(
                 base.UNATTRIBUTED,
                 atomic_subshell,
                 base.IUPAC,
-                ascii,
+                ascii_,
                 utf16,
                 html,
                 latex,
@@ -356,12 +361,12 @@ class AtomicSubshellNotationParser(base._Parser):
             logger.debug("Parsed: {0}".format(prop))
             yield prop
 
-            ascii, utf16, html, latex = self._create_entry_orbital(n, l, j_n, i)
+            ascii_, utf16, html, latex = self._create_entry_orbital(n, l, j_n, i)
             prop = AtomicSubshellNotation(
                 base.UNATTRIBUTED,
                 atomic_subshell,
                 base.ORBITAL,
-                ascii,
+                ascii_,
                 utf16,
                 html,
                 latex,
@@ -398,13 +403,13 @@ class GenericXrayTransitionNotationParser(base._Parser):
                 dst.n, dst.l, dst.j_n, dst_i
             )
 
-            ascii = "{0}-{1}".format(ascii1, ascii0)
+            ascii_ = "{0}-{1}".format(ascii1, ascii0)
             utf = "{0}\u2013{1}".format(utf1, utf0)
             html = "{0}&ndash;{1}".format(html1, html0)
             latex = "{0}--{1}".format(latex1, latex0)
 
             prop = XrayTransitionNotation(
-                base.UNATTRIBUTED, transition, base.IUPAC, ascii, utf, html, latex
+                base.UNATTRIBUTED, transition, base.IUPAC, ascii_, utf, html, latex
             )
             logger.debug("Parsed: {0}".format(prop))
             yield prop
@@ -1278,18 +1283,20 @@ class SeriesXrayTransitionNotationParser(base._Parser):
             )  # All transitions to this shell
 
             (
-                ascii,
+                ascii_,
                 utf16,
                 html,
                 latex,
             ) = AtomicShellNotationParser._create_entry_siegbahn(n)
             yield XrayTransitionNotation(
-                base.UNATTRIBUTED, transition, base.SIEGBAHN, ascii, utf16, html, latex
+                base.UNATTRIBUTED, transition, base.SIEGBAHN, ascii_, utf16, html, latex
             )
 
-            ascii, utf16, html, latex = AtomicShellNotationParser._create_entry_iupac(n)
+            ascii_, utf16, html, latex = AtomicShellNotationParser._create_entry_iupac(
+                n
+            )
             yield XrayTransitionNotation(
-                base.UNATTRIBUTED, transition, base.IUPAC, ascii, utf16, html, latex
+                base.UNATTRIBUTED, transition, base.IUPAC, ascii_, utf16, html, latex
             )
 
 
@@ -1314,21 +1321,21 @@ class FamilyXrayTransitionNotationParser(base._Parser):
             )  # All transitions to this subshell
 
             (
-                ascii,
+                ascii_,
                 utf16,
                 html,
                 latex,
             ) = AtomicSubshellNotationParser._create_entry_siegbahn(n, l, j_n, i)
             yield XrayTransitionNotation(
-                base.UNATTRIBUTED, transition, base.SIEGBAHN, ascii, utf16, html, latex
+                base.UNATTRIBUTED, transition, base.SIEGBAHN, ascii_, utf16, html, latex
             )
 
             (
-                ascii,
+                ascii_,
                 utf16,
                 html,
                 latex,
             ) = AtomicSubshellNotationParser._create_entry_iupac(n, l, j_n, i)
             yield XrayTransitionNotation(
-                base.UNATTRIBUTED, transition, base.IUPAC, ascii, utf16, html, latex
+                base.UNATTRIBUTED, transition, base.IUPAC, ascii_, utf16, html, latex
             )

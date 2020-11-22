@@ -3,7 +3,6 @@ Parsers from data collected from Wikipedia.
 """
 
 # Standard library modules.
-import os
 import logging
 
 logger = logging.getLogger(__name__)
