@@ -11,7 +11,7 @@ import sqlalchemy.sql
 from pyxray.base import _DatabaseMixin, NotFound
 from pyxray.sql.base import SqlBase
 import pyxray.descriptor as descriptor
-import pyxray.property as property
+import pyxray.property as prop
 
 # Globals and constants variables.
 logger = logging.getLogger(__name__)
@@ -105,13 +105,13 @@ class SqlDatabase(_DatabaseMixin, SqlBase):
             element = element.atomic_number
 
         if isinstance(element, str):
-            table_name = self.require_table(property.ElementName)
+            table_name = self.require_table(prop.ElementName)
             builder.add_join(
                 table, table_name, table.c[column] == table_name.c["element_id"]
             )
             clause_name = table_name.c["value"] == element
 
-            table_symbol = self.require_table(property.ElementSymbol)
+            table_symbol = self.require_table(prop.ElementSymbol)
             builder.add_join(
                 table, table_symbol, table.c[column] == table_symbol.c["element_id"]
             )
@@ -136,7 +136,7 @@ class SqlDatabase(_DatabaseMixin, SqlBase):
             atomic_shell = atomic_shell.principal_quantum_number
 
         if isinstance(atomic_shell, str):
-            table_notation = self.require_table(property.AtomicShellNotation)
+            table_notation = self.require_table(prop.AtomicShellNotation)
             builder.add_join(
                 table,
                 table_notation,
@@ -165,7 +165,7 @@ class SqlDatabase(_DatabaseMixin, SqlBase):
         self, builder, table, atomic_subshell, column="atomic_subshell_id"
     ):
         if isinstance(atomic_subshell, str):
-            table_notation = self.require_table(property.AtomicSubshellNotation)
+            table_notation = self.require_table(prop.AtomicSubshellNotation)
             builder.add_join(
                 table,
                 table_notation,
@@ -196,7 +196,7 @@ class SqlDatabase(_DatabaseMixin, SqlBase):
         self, builder, table, xray_transition, column="xray_transition_id", search=False
     ):
         if isinstance(xray_transition, str):
-            table_notation = self.require_table(property.XrayTransitionNotation)
+            table_notation = self.require_table(prop.XrayTransitionNotation)
             builder.add_join(
                 table,
                 table_notation,
@@ -399,7 +399,7 @@ class SqlDatabase(_DatabaseMixin, SqlBase):
         return self._execute(builder)
 
     def element_symbol(self, element, reference=None):
-        table = self.require_table(property.ElementSymbol)
+        table = self.require_table(prop.ElementSymbol)
 
         builder = StatementBuilder()
         builder.add_column(table.c["value"])
@@ -409,7 +409,7 @@ class SqlDatabase(_DatabaseMixin, SqlBase):
         return self._execute(builder)
 
     def element_name(self, element, language="en", reference=None):
-        table = self.require_table(property.ElementName)
+        table = self.require_table(prop.ElementName)
 
         builder = StatementBuilder()
         builder.add_column(table.c["value"])
@@ -420,7 +420,7 @@ class SqlDatabase(_DatabaseMixin, SqlBase):
         return self._execute(builder)
 
     def element_atomic_weight(self, element, reference=None):
-        table = self.require_table(property.ElementAtomicWeight)
+        table = self.require_table(prop.ElementAtomicWeight)
 
         builder = StatementBuilder()
         builder.add_column(table.c["value"])
@@ -430,7 +430,7 @@ class SqlDatabase(_DatabaseMixin, SqlBase):
         return self._execute(builder)
 
     def element_mass_density_kg_per_m3(self, element, reference=None):
-        table = self.require_table(property.ElementMassDensity)
+        table = self.require_table(prop.ElementMassDensity)
 
         builder = StatementBuilder()
         builder.add_column(table.c["value_kg_per_m3"])
@@ -441,7 +441,7 @@ class SqlDatabase(_DatabaseMixin, SqlBase):
 
     def element_xray_transitions(self, element, xray_transition=None, reference=None):
         table_xray = self.require_table(descriptor.XrayTransition)
-        table_probability = self.require_table(property.XrayTransitionProbability)
+        table_probability = self.require_table(prop.XrayTransitionProbability)
 
         builder = StatementBuilder()
         builder.add_column(table_xray.c["source_principal_quantum_number"])
@@ -477,7 +477,7 @@ class SqlDatabase(_DatabaseMixin, SqlBase):
 
         if len(transitions) == 0:
             table_relative_weight = self.require_table(
-                property.XrayTransitionRelativeWeight
+                prop.XrayTransitionRelativeWeight
             )
             builder = StatementBuilder()
             builder.add_column(table_xray.c["source_principal_quantum_number"])
@@ -520,7 +520,7 @@ class SqlDatabase(_DatabaseMixin, SqlBase):
 
     def element_xray_transition(self, element, xray_transition, reference=None):
         table_xray = self.require_table(descriptor.XrayTransition)
-        table_probability = self.require_table(property.XrayTransitionProbability)
+        table_probability = self.require_table(prop.XrayTransitionProbability)
 
         builder = StatementBuilder()
         builder.add_column(table_xray.c["source_principal_quantum_number"])
@@ -555,7 +555,7 @@ class SqlDatabase(_DatabaseMixin, SqlBase):
     def atomic_shell_notation(
         self, atomic_shell, notation, encoding="utf16", reference=None
     ):
-        table = self.require_table(property.AtomicShellNotation)
+        table = self.require_table(prop.AtomicShellNotation)
 
         builder = StatementBuilder()
         builder.add_column(table.c[encoding])
@@ -580,7 +580,7 @@ class SqlDatabase(_DatabaseMixin, SqlBase):
     def atomic_subshell_notation(
         self, atomic_subshell, notation, encoding="utf16", reference=None
     ):
-        table = self.require_table(property.AtomicSubshellNotation)
+        table = self.require_table(prop.AtomicSubshellNotation)
 
         builder = StatementBuilder()
         builder.add_column(table.c[encoding])
@@ -593,7 +593,7 @@ class SqlDatabase(_DatabaseMixin, SqlBase):
     def atomic_subshell_binding_energy_eV(
         self, element, atomic_subshell, reference=None
     ):
-        table = self.require_table(property.AtomicSubshellBindingEnergy)
+        table = self.require_table(prop.AtomicSubshellBindingEnergy)
 
         builder = StatementBuilder()
         builder.add_column(table.c["value_eV"])
@@ -606,7 +606,7 @@ class SqlDatabase(_DatabaseMixin, SqlBase):
     def atomic_subshell_radiative_width_eV(
         self, element, atomic_subshell, reference=None
     ):
-        table = self.require_table(property.AtomicSubshellRadiativeWidth)
+        table = self.require_table(prop.AtomicSubshellRadiativeWidth)
 
         builder = StatementBuilder()
         builder.add_column(table.c["value_eV"])
@@ -619,7 +619,7 @@ class SqlDatabase(_DatabaseMixin, SqlBase):
     def atomic_subshell_nonradiative_width_eV(
         self, element, atomic_subshell, reference=None
     ):
-        table = self.require_table(property.AtomicSubshellNonRadiativeWidth)
+        table = self.require_table(prop.AtomicSubshellNonRadiativeWidth)
 
         builder = StatementBuilder()
         builder.add_column(table.c["value_eV"])
@@ -630,7 +630,7 @@ class SqlDatabase(_DatabaseMixin, SqlBase):
         return self._execute(builder)
 
     def atomic_subshell_occupancy(self, element, atomic_subshell, reference=None):
-        table = self.require_table(property.AtomicSubshellOccupancy)
+        table = self.require_table(prop.AtomicSubshellOccupancy)
 
         builder = StatementBuilder()
         builder.add_column(table.c["value"])
@@ -658,7 +658,7 @@ class SqlDatabase(_DatabaseMixin, SqlBase):
     def xray_transition_notation(
         self, xray_transition, notation, encoding="utf16", reference=None
     ):
-        table = self.require_table(property.XrayTransitionNotation)
+        table = self.require_table(prop.XrayTransitionNotation)
 
         builder = StatementBuilder()
         builder.add_column(table.c[encoding])
@@ -669,7 +669,7 @@ class SqlDatabase(_DatabaseMixin, SqlBase):
         return self._execute(builder)
 
     def xray_transition_energy_eV(self, element, xray_transition, reference=None):
-        table = self.require_table(property.XrayTransitionEnergy)
+        table = self.require_table(prop.XrayTransitionEnergy)
 
         builder = StatementBuilder()
         builder.add_column(table.c["value_eV"])
@@ -680,7 +680,7 @@ class SqlDatabase(_DatabaseMixin, SqlBase):
         return self._execute(builder)
 
     def xray_transition_probability(self, element, xray_transition, reference=None):
-        table = self.require_table(property.XrayTransitionProbability)
+        table = self.require_table(prop.XrayTransitionProbability)
 
         builder = StatementBuilder()
         builder.add_column(table.c["value"])
@@ -691,7 +691,7 @@ class SqlDatabase(_DatabaseMixin, SqlBase):
         return self._execute(builder)
 
     def xray_transition_relative_weight(self, element, xray_transition, reference=None):
-        table = self.require_table(property.XrayTransitionRelativeWeight)
+        table = self.require_table(prop.XrayTransitionRelativeWeight)
 
         builder = StatementBuilder()
         builder.add_column(table.c["value"])
