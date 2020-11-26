@@ -18,10 +18,12 @@ logger = logging.getLogger(__name__)
 
 
 class StatementBuilder:
-    def __init__(self):
+    def __init__(self, distinct=False):
+        self._distinct = distinct
         self._columns = []
         self._joins = {}
         self._clauses = []
+        self._orderbys = []
 
     def add_column(self, column):
         self._columns.append(column)
@@ -34,8 +36,14 @@ class StatementBuilder:
     def add_clause(self, clause):
         self._clauses.append(clause)
 
+    def add_orderby(self, column, ascending=True):
+        self._orderbys.append((column, ascending))
+
     def build(self):
         statement = sqlalchemy.sql.select(self._columns)
+
+        if self._distinct:
+            statement = statement.distinct()
 
         if self._joins:
             # Joins have to be nested to work with sqlalchemy
@@ -54,13 +62,22 @@ class StatementBuilder:
 
             statement = statement.select_from(finaljoin)
 
-        return statement.where(sqlalchemy.sql.and_(*self._clauses))
+        if self._clauses:
+            statement = statement.where(sqlalchemy.sql.and_(*self._clauses))
+
+        if self._orderbys:
+            orderbys = [
+                sqlalchemy.asc(column) if ascending else sqlalchemy.desc(column)
+                for column, ascending in self._orderbys
+            ]
+            statement = statement.order_by(*orderbys)
+
+        return statement
 
 
 class SqlDatabase(_DatabaseMixin, SqlBase):
     def __init__(self, engine):
         super().__init__(engine)
-        self._preferred_references = []
 
     def _expand_atomic_subshell(self, atomic_subshell):
         if (
@@ -280,10 +297,10 @@ class SqlDatabase(_DatabaseMixin, SqlBase):
             reference = reference.bibtexkey
 
         table_reference = self.require_table(descriptor.Reference)
-        builder.add_column(table_reference.c["bibtexkey"])
         builder.add_join(
             table, table_reference, table.c[column] == table_reference.c["id"]
         )
+        builder.add_orderby(table_reference.c["year"], ascending=False)  # Newest first
 
         if reference:
             builder.add_clause(table_reference.c["bibtexkey"] == reference)
@@ -308,38 +325,22 @@ class SqlDatabase(_DatabaseMixin, SqlBase):
         )
         builder.add_clause(table_notation.c["key"] == notation)
 
-    def _execute(self, builder, remove_bibtexkey_column=True):
+    def _execute(self, builder):
         statement = builder.build()
         logger.debug(statement.compile())
 
         # Execute
         with self.engine.connect() as conn:
-            rows = conn.execute(statement).fetchall()
-            if not rows:
+            row = conn.execute(statement).first()
+            if not row:
                 raise NotFound
-
-            # Only one row, no need to check for the preferred references
-            elif len(rows) == 1:
-                row = rows[0]
-
-            else:
-                dictrows = dict((dict(row).get("bibtexkey", None), row) for row in rows)
-                row = rows[0]  # fall back
-                for bibtexkey in self._preferred_references:
-                    if bibtexkey in dictrows:
-                        row = dictrows[bibtexkey]
-                        break
-
-            row = dict(row)
-            if remove_bibtexkey_column:
-                row.pop("bibtexkey", None)
 
             if len(row) == 1:
-                return row.popitem()[1]
+                return row[0]
             else:
-                return row.values()
+                return row
 
-    def _execute_many(self, builder, remove_bibtexkey_column=True):
+    def _execute_many(self, builder):
         statement = builder.build()
         logger.debug(statement.compile())
 
@@ -349,35 +350,7 @@ class SqlDatabase(_DatabaseMixin, SqlBase):
             if not rows:
                 raise NotFound
 
-            outrows = []
-            for row in rows:
-                row = dict(row)
-                if remove_bibtexkey_column:
-                    row.pop("bibtexkey", None)
-                outrows.append(list(row.values()))
-
-            return outrows
-
-    def get_preferred_references(self):
-        return tuple(self._preferred_references)
-
-    def add_preferred_reference(self, reference):
-        if isinstance(reference, descriptor.Reference):
-            reference = reference.bibtexkey
-        if reference in self._preferred_references:
-            return
-
-        table = self.require_table(descriptor.Reference)
-
-        builder = StatementBuilder()
-        self._update_reference(builder, table, reference, "id")
-
-        bibtexkey = self._execute(builder, remove_bibtexkey_column=False)
-
-        self._preferred_references.append(bibtexkey)
-
-    def clear_preferred_references(self):
-        self._preferred_references.clear()
+            return rows
 
     def element(self, element):
         table = self.require_table(descriptor.Element)
@@ -443,7 +416,7 @@ class SqlDatabase(_DatabaseMixin, SqlBase):
         table_xray = self.require_table(descriptor.XrayTransition)
         table_probability = self.require_table(prop.XrayTransitionProbability)
 
-        builder = StatementBuilder()
+        builder = StatementBuilder(distinct=True)
         builder.add_column(table_xray.c["source_principal_quantum_number"])
         builder.add_column(table_xray.c["source_azimuthal_quantum_number"])
         builder.add_column(table_xray.c["source_total_angular_momentum_nominator"])
@@ -479,7 +452,7 @@ class SqlDatabase(_DatabaseMixin, SqlBase):
             table_relative_weight = self.require_table(
                 prop.XrayTransitionRelativeWeight
             )
-            builder = StatementBuilder()
+            builder = StatementBuilder(distinct=True)
             builder.add_column(table_xray.c["source_principal_quantum_number"])
             builder.add_column(table_xray.c["source_azimuthal_quantum_number"])
             builder.add_column(table_xray.c["source_total_angular_momentum_nominator"])

@@ -2,10 +2,6 @@
 """ """
 
 # Standard library modules.
-import os
-import tempfile
-import shutil
-import sqlite3
 
 # Third party modules.
 import pytest
@@ -29,22 +25,6 @@ def database(builder):
 @pytest.fixture
 def database_real(tmp_path):
     return pyxray.data.database
-
-
-def test_add_preferred_reference(database):
-    database.clear_preferred_references()
-    database.add_preferred_reference("lee1966")
-
-    assert len(database.get_preferred_references()) == 1
-    assert "lee1966" in database.get_preferred_references()
-
-    database.clear_preferred_references()
-    assert len(database.get_preferred_references()) == 0
-
-
-def test_add_preferred_reference_not_found(database):
-    with pytest.raises(NotFound):
-        database.add_preferred_reference("foo")
 
 
 @pytest.mark.parametrize("element", [118, "Vi", "Vibranium"])
@@ -108,7 +88,8 @@ def test_element_name_notfound_wrong_reference(database):
 
 
 def test_element_atomic_weight_no_reference(database):
-    assert database.element_atomic_weight(118) == pytest.approx(999.1, abs=1e-2)
+    # doe2016 (111.1) takes precedence over lee1966 (999.1) because it is newer
+    assert database.element_atomic_weight(118) == pytest.approx(111.1, abs=1e-2)
 
 
 def test_element_atomic_weight_lee1966(database):
@@ -121,18 +102,6 @@ def test_element_atomic_weight_doe2016(database):
     assert database.element_atomic_weight(118, "doe2016") == pytest.approx(
         111.1, abs=1e-2
     )
-
-
-def test_element_atomic_weight_preferred_reference(database):
-    database.clear_preferred_references()
-    database.add_preferred_reference("doe2016")
-    assert database.element_atomic_weight(118) == pytest.approx(111.1, abs=1e-2)
-
-    database.clear_preferred_references()
-    database.add_preferred_reference("lee1966")
-    assert database.element_atomic_weight(118) == pytest.approx(999.1, abs=1e-2)
-
-    database.clear_preferred_references()
 
 
 @pytest.mark.parametrize("element", [118, "Vi", "Vibranium"])

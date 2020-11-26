@@ -20,8 +20,8 @@ L2 = descriptor.AtomicSubshell(2, 1, 1)
 
 class MockParser(_Parser):
     def __iter__(self):
-        reference = descriptor.Reference("lee1966")
-        reference2 = descriptor.Reference("doe2016")
+        reference = descriptor.Reference("lee1966", year=1966)
+        reference2 = descriptor.Reference("doe2016", year=2016)
         element = descriptor.Element(118)
         atomic_shell = descriptor.AtomicShell(1)
         transition = descriptor.XrayTransition(L3, K)
