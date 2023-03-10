@@ -139,7 +139,7 @@ class SqlBase:
 
             clauses.append(clause)
 
-        statement = sqlalchemy.sql.select([table.c.id]).where(
+        statement = sqlalchemy.sql.select(table.c.id).where(
             sqlalchemy.sql.and_(*clauses)
         )
 

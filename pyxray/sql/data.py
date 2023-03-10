@@ -40,7 +40,7 @@ class StatementBuilder:
         self._orderbys.append((column, ascending))
 
     def build(self):
-        statement = sqlalchemy.sql.select(self._columns)
+        statement = sqlalchemy.sql.select(*self._columns)
 
         if self._distinct:
             statement = statement.distinct()
